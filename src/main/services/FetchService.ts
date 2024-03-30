@@ -10,7 +10,7 @@ import { LoggerService } from "./LoggerService";
 import { Report, Report_Attributes, Report_Filters } from "src/types/counter";
 import { SupportedAPIResponse } from "src/types/reports";
 
-type FetchData = {
+export type FetchData = {
   fetchReports: Report[];
   selectedVendors: VendorRecord[];
   version: string;
@@ -26,20 +26,22 @@ type FetchResult = {
 /** The main service for performing GET operations on vendors that use the SUSHI API */
 
 export class FetchService {
-  //
-
   /** Performs an *HTTP GET* call on the root of a vendor's SUSHI API to discover all the different types of reports
-   * they can supply. */
-  static async getSupportedReportIds(
+   *  they can supply.
+   *  @param vendor - The vendor to fetch reports from.
+   */
+  static async getSupportedReports(
     vendor: VendorRecord | VendorData
   ): Promise<string[] | IFetchError | null> {
     const vendorInfo = vendor.data5_0 ?? vendor.data5_1;
     if (!vendorInfo) return [];
 
-    const url = `${vendorInfo.baseURL}?customer_id=${vendorInfo.customerId}
-                  &requestor_id=${vendorInfo.requestorId}
-                  ${this.getAPIKeySegment(vendorInfo)}`;
+    const url =
+      `${vendorInfo.baseURL}?customer_id=${vendorInfo.customerId}` +
+      `&requestor_id=${vendorInfo.requestorId}` +
+      `${this.getAPIKeySegment(vendorInfo)}`;
 
+    console.log("URL", url);
     try {
       const response = await fetch(url);
       if (!response.ok)
@@ -55,13 +57,13 @@ export class FetchService {
   }
 
   /** Fetches reports from a list of vendors. */
-  static fetchReports = async ({
+  static async fetchReports({
     fetchReports,
     selectedVendors,
     version,
     fromDate,
     toDate,
-  }: FetchData) => {
+  }: FetchData) {
     const logger = new LoggerService();
 
     const dataVersion = version === "5.1" ? "data5_1" : "data5_0";
@@ -117,11 +119,11 @@ export class FetchService {
     });
 
     return fetchResults;
-  };
+  }
 
   /** Performs an *HTTP GET* call on a specific route of a vendor's SUSHI API to harvest reports of a specified type. */
 
-  static async fetchReport(
+  private static async fetchReport(
     vendor: VendorRecord,
     reportSettings: Report,
     startDate: Date,
@@ -251,7 +253,7 @@ export class FetchService {
   /** Attempts to discover a fetch error in a fetch result, returning the error as an **IFetchError** object
    * if one is found, and *null* otherwise. */
 
-  static getExistingFetchError(data: any): IFetchError | null {
+  private static getExistingFetchError(data: any): IFetchError | null {
     if ("Code" in data) {
       const meaning = SushiExceptionDictionary[data.Code];
       return {

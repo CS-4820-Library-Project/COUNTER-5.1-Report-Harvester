@@ -6,6 +6,7 @@ import DatabaseRouter from "./routers/databaseRouter";
 import tsvRouter from "./routers/tsvRouter";
 import loggerRouter from "./routers/loggerRouter";
 import { filterReloadMenu } from "./menu";
+import FetchRouter from "./routers/FetchRouter";
 
 process.env.DIST = path.join(__dirname, "../dist");
 
@@ -35,6 +36,7 @@ function createWindow() {
 
   // Routers
   VendorRouter();
+  FetchRouter();
   SettingsRouter();
   tsvRouter();
   DatabaseRouter();

@@ -3,7 +3,7 @@
  * and interacting with Prisma reports.
  */
 import { LocalAPI } from "./Interface/ILocalAPI";
-import { IReportsApi } from "./Interface/IReportsAPI";
+import { IFetchReportsAPI } from "./Interface/IFetchReportsAPI";
 import { IVendorsApi } from "./Interface/IVendorAPI";
 import { ITsvAPI } from "./Interface/ITsvAPI";
 import { ISettingsAPI } from "./Interface/ISettingsAPI";
@@ -20,7 +20,7 @@ declare global {
     /**
      * API for fetching reports.
      */
-    reports: IReportsApi;
+    reports: IFetchReportsAPI;
 
     /**
      * API for managing vendors.
