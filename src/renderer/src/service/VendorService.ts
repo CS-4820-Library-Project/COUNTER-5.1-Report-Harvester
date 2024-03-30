@@ -38,19 +38,15 @@ class VendorService {
   /** Returns an array of all vendors (both 5.0-formatted vendors and 5.1-formatted vendors) */
 
   async getVendors(sortby?: SortOptions): Promise<VendorRecord[]> {
-    console.log("Waiting for ready");
     await this.vendorsReady;
-    console.log("FINSHED WAIITNG", this.vendors);
     this.sort(sortby || "name");
     return this.vendors;
   }
 
   async refreshVendors() {
-    console.log("SERVICE REFRESH VENDORS");
     this.vendorsReady = window.vendors
       .read(this.password)
       .then((vendors: VendorRecord[] | false) => {
-        console.log("Refresh Vendors, got vendors", vendors);
         if (vendors) this.vendors = vendors;
       });
   }

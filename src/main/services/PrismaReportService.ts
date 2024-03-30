@@ -31,6 +31,7 @@ export class PrismaReportService {
    * @throws If an error occurs while creating the report.
    */
   async createReport(data: Omit<Report, "id">): Promise<Report> {
+    // console.log("Creating Report from", data);
     try {
       return await prisma.report.create({
         data,
