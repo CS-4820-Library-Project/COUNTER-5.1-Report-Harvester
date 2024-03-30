@@ -45,16 +45,7 @@ https://github.com/CS-4820-Library-Project/COUNTER-5.1-Report-Harvester.git
 * Install dependencies by typing the command: 
    * npm install
 * Now type these commands:
-   * npx prisma generate (To create a test database and create Prisma client)
    * npm start (To preview the production version)
-   * npm run dev (to build the project and start development environment)
-     
-* For development mode:
-   * Run the project in watch mode to automatically rebuild on file changes by typing: npm run dev
-   * To package the application for distribution: npm run package
-   * This will generate an executable file in the dist directory.
-   * Modify any necessary settings in the configuration files provided.
-   * If you encounter any issues, refer to the project's documentation
 
 # Developer Setup (using VSCode)
 * Download and install Visual Studio Code from the official website: Visual Studio Code
@@ -72,12 +63,24 @@ https://github.com/CS-4820-Library-Project/COUNTER-5.1-Report-Harvester.git
     * Simple React Snippets
     * SQLite Explorer
  
-* Open a terminal within VSCode (or use the integrated terminal) and navigate to the project directory. Then run the following command to install project dependencies: npm install
+* Open a terminal within VSCode (or use the integrated terminal) and navigate to the project directory. 
+* Then run the following command to install project dependencies:
+   * npm install
+* Now type these commands:
+   * npx prisma generate (Create Prisma client)
+   * npx prims migrate dev (To create a test database)
 * After installing dependencies, preview the production application by running the following command: 
-npm start
+   * npm start
 
 * To start the development environment and make changes in real-time, use the command: 
-npm run dev
+   * npm run dev (to build the project and start the development environment)
+     
+* For development mode:
+   * Run the project in watch mode to automatically rebuild on file changes by typing: npm run dev
+   * To package the application for distribution: npm run package
+   * This will generate an executable file in the dist directory.
+   * Modify any necessary settings in the configuration files provided.
+   * If you encounter any issues, refer to the project's documentation
 
 * This command will compile TypeScript code, start the Electron application, and open it for development. It uses electron vite, so all changes are reflected immediately in the application.
 
