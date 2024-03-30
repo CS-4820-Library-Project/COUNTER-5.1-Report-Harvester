@@ -1,3 +1,23 @@
+import {
+  Box,
+  Typography,
+  List,
+  ListItem,
+  IconButton,
+  useTheme,
+} from "@mui/material";
+import CloseIcon from "@mui/icons-material/Close";
+import { VendorData, VendorRecord } from "src/types/vendors";
+import { useEffect, useState } from "react";
+import { useNotification } from "../../components/NotificationBadge";
+import { REPORTS } from "../../../../constants";
+
+type Props = {
+  onClose: () => void;
+  isPopupOpen: boolean;
+  vendor: VendorRecord | VendorData;
+};
+
 /**
  * This is the "SupportedReportsModal" component.
  *
@@ -12,26 +32,6 @@
  * - isPopupOpen: A boolean indicating whether the modal is currently open.
  * - vendor: An object representing the selected vendor, including its name and other pertinent information.
  */
-import {
-  Box,
-  Typography,
-  List,
-  ListItem,
-  IconButton,
-  useTheme,
-} from "@mui/material";
-import CloseIcon from "@mui/icons-material/Close";
-import { VendorData, VendorRecord } from "src/types/vendors";
-import { useEffect, useState } from "react";
-import { useNotification } from "../../components/NotificationBadge";
-import { REPORTS } from "../../../../constants";
-import FetchService from "../../../../main/services/FetchService";
-
-type Props = {
-  onClose: () => void;
-  isPopupOpen: boolean;
-  vendor: VendorRecord | VendorData;
-};
 
 function SupportedReportsModal({ onClose, isPopupOpen, vendor }: Props) {
   const { palette } = useTheme();
@@ -42,7 +42,7 @@ function SupportedReportsModal({ onClose, isPopupOpen, vendor }: Props) {
   const [fetchResults, setFetchResults] = useState(false);
 
   useEffect(() => {
-    FetchService.getSupportedReportIds(vendor).then((reportIds) => {
+    window.reports.getSupported(vendor).then((reportIds) => {
       if (Array.isArray(reportIds)) {
         setReports(reportIds);
         setFetchResults(true);
@@ -154,7 +154,7 @@ function SupportedReportsModal({ onClose, isPopupOpen, vendor }: Props) {
                       paddingLeft: "20px",
                     }}
                   >
-                    {`${reportId} - ${REPORTS[reportId as keyof typeof REPORTS]} `}
+                    {`${reportId.toUpperCase()} - ${REPORTS[reportId.toUpperCase() as keyof typeof REPORTS]} `}
                   </Typography>
                 </ListItem>
               ))}

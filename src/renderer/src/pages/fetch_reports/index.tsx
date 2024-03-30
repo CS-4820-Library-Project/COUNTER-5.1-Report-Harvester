@@ -27,7 +27,6 @@ import FetchProgress from "./fetch_progress/FetchProgress";
 import { SortOptions, VendorRecord, VendorVersions } from "src/types/vendors";
 import FiltersPopUp from "../vendors/FiltersPopUp";
 import DualToggle from "../../components/buttons/DualToggle";
-import FetchService from "../../../../main/services/FetchService";
 import FetchReportsResult from "./fetch_progress/FetchReportsResult";
 import { useNotification } from "../../components/NotificationBadge";
 import { SideBadge } from "../../components/badge/SideBadge";
@@ -112,7 +111,7 @@ const FetchReportsPage = () => {
     setFetching(true);
 
     const fetchReports = all ? reports.all : selectedReports;
-    const allResults = await FetchService.fetchReports({
+    const allResults = await window.reports.fetch({
       fetchReports,
       selectedVendors,
       version,

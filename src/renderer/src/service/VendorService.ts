@@ -234,16 +234,10 @@ class VendorService {
 
   /** Imports vendors from a TSV file using the window.localAPI.importVendors method.
    * @param version - The version of the vendors to import. Can be '5.0' or '5.1'.
-   * @param path
-   */
-
-  /** Imports vendors from a TSV file using the window.localAPI.importVendors method.
-   * @param version - The version of the vendors to import. Can be '5.0' or '5.1'.
    * @param tsv - The TSV file to import.
    * @param action - The action to perform. Can be 'add' or 'replace'.
    * @returns true if import was succesfull or an array or errors as string[].
    */
-
   async importVendors(
     version: VendorVersions,
     tsv: File,
