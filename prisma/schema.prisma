@@ -1,0 +1,99 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Vendor {
+  id               Int               @id @default(autoincrement())
+  name             String            @unique
+  usageCount       Int               @default(0)
+  VendorRecord_5_1 VendorRecord_5_1?
+  VendorRecord_5_0 VendorRecord_5_0?
+}
+
+model VendorRecord_5_1 {
+  id                         Int      @id @default(autoincrement())
+  vendorId                   Int      @unique
+  customerId                 String
+  requestorId                String?
+  baseURL                    String
+  apiKey                     String?
+  platform                   String
+  provider                   String
+  notes                      String
+  requireTwoAttempsPerReport String
+  requireIpChecking          String
+  requrieRequestsThrottled   String
+  createdAt                  DateTime @default(now())
+  updatedAt                  DateTime @updatedAt
+  vendor                     Vendor   @relation(fields: [vendorId], references: [id])
+}
+
+model VendorRecord_5_0 {
+  id          Int      @id @default(autoincrement())
+  vendorId    Int      @unique
+  customerId  String
+  requestorId String?
+  baseURL     String
+  apiKey      String?
+  platform    String
+  provider    String
+  nonSUSHI    Boolean
+  notes       String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  vendor      Vendor   @relation(fields: [vendorId], references: [id])
+}
+
+model Report {
+  id               Int            @id @default(autoincrement())
+  report_id        String
+  report_name      String
+  release          String
+  institution_name String
+  institution_id   String
+  created          String
+  created_by       String
+  ReportFilter     ReportFilter[]
+  ReportItem       ReportItem[]
+}
+
+model ReportFilter {
+  id          Int    @id @default(autoincrement())
+  reportId    Int
+  report      Report @relation(fields: [reportId], references: [id])
+  filter_type String
+  value       String
+}
+
+model ReportItem {
+  id             Int            @id @default(autoincrement())
+  reportId       Int
+  report         Report         @relation(fields: [reportId], references: [id])
+  title          String?
+  publisher      String?
+  publisher_id   String?
+  platform       String?
+  doi            String?
+  proprietary_id String?
+  isbn           String?
+  print_issn     String?
+  online_issn    String?
+  uri            String?
+  data_type      String?
+  metric_type    String?
+  ReportMetric   ReportMetric[]
+}
+
+model ReportMetric {
+  id           Int        @id @default(autoincrement())
+  reportItemId Int
+  reportItem   ReportItem @relation(fields: [reportItemId], references: [id])
+  period       String
+  value        Int
+  metricType   String
+}

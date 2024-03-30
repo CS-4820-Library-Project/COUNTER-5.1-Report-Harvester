@@ -1,0 +1,351 @@
+import ActionButton from "../../components/buttons/ActionButton";
+import {
+  BrowserUpdatedOutlined,
+  Deselect,
+  FilterList,
+  SelectAll,
+} from "@mui/icons-material";
+import {
+  FlexBetween,
+  FlexCenter,
+  FlexColumn,
+  FlexColumnStart,
+  FlexRowEnd,
+} from "../../components/flex";
+import PageTitle from "../../components/PageTitle";
+import Page from "../../components/page/Page";
+import PageColumn from "../../components/page/PageColumn";
+import VendorList from "../../components/vendor/VendorList";
+import SearchBar from "../../components/SearchBar";
+import SectionTitle from "../../components/SectionTitle";
+import { useMediaQuery, useTheme } from "@mui/material";
+import ReportOptions from "./ReportOptions";
+import { useEffect, useState } from "react";
+import { Report } from "../../../../types/counter";
+import Calendar from "../../components/calendar/Calendar";
+import FetchProgress from "./fetch_progress/FetchProgress";
+import { SortOptions, VendorRecord, VendorVersions } from "src/types/vendors";
+import FiltersPopUp from "../vendors/FiltersPopUp";
+import DualToggle from "../../components/buttons/DualToggle";
+import FetchService from "../../../../main/services/FetchService";
+import { CounterVersion } from "../../const/CounterVersion";
+import FetchReportsResult from "./fetch_progress/FetchReportsResult";
+import { LoggerService } from "../../../../main/services/LoggerService";
+import { useNotification } from "../../components/NotificationBadge";
+import { SideBadge } from "../../components/badge/SideBadge";
+import { reports_5_1 } from "../../../../constants/Reports_5_1";
+import { reports_5 } from "../../../../constants/Reports_5";
+
+/**
+ * This is the "FetchReportsPage" component.
+ *
+ * This component allows users to fetch reports for selected vendors within a specific date range. Users can select vendors, specify the type of reports they are interested in, and initiate the fetching process. The component demonstrates the use of React hooks for state management, useEffect for side effects, conditional rendering, and integration with custom services for data retrieval.
+ *
+ * The main elements of this component are:
+ * - A search bar to filter through the list of vendors.
+ * - A list of vendors from which the user can select.
+ * - Options to select the types of reports to fetch.
+ * - A calendar component for selecting the date range for the reports.
+ * - Action buttons to initiate the fetching of reports based on selected criteria.
+ */
+
+const FetchReportsPage = () => {
+  const { palette } = useTheme();
+  const setNotification = useNotification();
+  const isNonMobile = useMediaQuery("(min-width:1300px)");
+
+  // States for managing selected reports, query for searching, vendors, selected vendors, date range, and fetch status
+  const [selectedReports, setSelectedReports] = useState<Report[]>([]);
+  const [version, setVersion] = useState<string>("5.0");
+
+  const [reports, setReports] = useState(reports_5);
+
+  const [filtersPopUp, setFiltersPopUp] = useState(false);
+  const [query, setQuery] = useState<string | null>(null);
+  const [sortBy, setSortBy] = useState<SortOptions>("name");
+
+  const [fetching, setFetching] = useState(false);
+  const [selectAll, setSelectAll] = useState(false);
+
+  const [selectedVendors, setSelectedVendors] = useState<VendorRecord[]>([]);
+
+  const currentYear = new Date().getFullYear();
+  const currentMonth = new Date().getMonth();
+
+  const [fromDate, setFromDate] = useState<Date>(new Date(currentYear, 0));
+  const [toDate, setToDate] = useState<Date>(
+    new Date(currentYear, currentMonth - 1)
+  );
+
+  const [progressMessage, setProgressMessage] = useState<string>("");
+  const [fetchResults, setFetchResults] = useState<string[]>([]);
+
+  const handleSelectedVendor = (vendor: VendorRecord | VendorRecord[]) => {
+    if (Array.isArray(vendor)) {
+      setSelectedVendors([...vendor]);
+      return;
+    }
+
+    setSelectedVendors((prev) => {
+      const isSelected = prev.some((v) => v.id === vendor.id);
+      return isSelected
+        ? prev.filter((v) => v.id !== vendor.id)
+        : [...prev, vendor];
+    });
+  };
+
+  const cancelFetch = () => setFetching(false);
+
+  const openFilters = () => setFiltersPopUp(!filtersPopUp);
+
+  const handleFetchReports = async (all?: "all") => {
+    if (selectedVendors.length < 1) {
+      const message =
+        selectedReports.length < 1 && !all
+          ? "Please select at least one vendor and one report type."
+          : "Please select at least one vendor.";
+
+      return setNotification({
+        type: "warning",
+        message,
+      });
+    }
+
+    setFetching(true);
+
+    const settings = await window.settings.readSettings();
+    const requestInterval = settings?.requestInterval || 1000;
+    const requestTimeout = settings?.requestTimeout || 30000;
+
+    let reportFetchResults: string[] = [];
+
+    const fetchReports = all ? reports.all : selectedReports;
+
+    const logger = new LoggerService();
+
+    for (const vendor of selectedVendors) {
+      for (const report of fetchReports) {
+        setProgressMessage(
+          `Fetching and storing ${report.id} report from ${vendor.name}...`
+        );
+
+        if (
+          (version == CounterVersion.v5_0 &&
+            vendor.data5_0 &&
+            vendor.data5_0.requireRequestsThrottled) ||
+          (version == CounterVersion.v5_1 &&
+            vendor.data5_1 &&
+            vendor.data5_1.requireRequestsThrottled)
+        ) {
+          await new Promise((resolve) => setTimeout(resolve, requestInterval));
+        }
+
+        const result = await FetchService.fetchReport(
+          vendor,
+          report,
+          fromDate,
+          toDate,
+          version as CounterVersion,
+          requestTimeout,
+          logger
+        );
+
+        console.log(result);
+
+        if (result instanceof Error) {
+          reportFetchResults.push(
+            `FAILED: Fetching ${report.id} from ${vendor.name} failed`
+          );
+          continue;
+        }
+
+        // Save the fetched report to the database
+        try {
+          console.log("Saving fetched report to database");
+          await window.database.saveFetchedReport(result);
+          console.log("Successful");
+        } catch (error) {
+          console.log(`ERROR: `, error);
+        }
+
+        reportFetchResults.push(
+          `SUCCESS: Fetching ${report.id} from ${vendor.name} succeeded`
+        );
+      }
+    }
+
+    const logFileName = logger.writeLogsToFile();
+
+    reportFetchResults.push(`See ${logFileName}.txt for more details.`);
+
+    setFetching(false);
+    setFetchResults(reportFetchResults);
+  };
+
+  useEffect(() => {
+    setSelectedReports([]);
+    version === "5.1" ? setReports(reports_5_1) : setReports(reports_5);
+  }, [version]);
+
+  return (
+    <Page>
+      <PageColumn component="main" width={isNonMobile ? "50%" : "40%"}>
+        {/* Main Section */}
+        {fetching && (
+          <FlexCenter
+            position="absolute"
+            zIndex={9}
+            top="0"
+            left="0"
+            width="100%"
+            height="100%"
+            bgcolor="rgba(0, 0, 0, 0.25)"
+          >
+            <FetchProgress close={cancelFetch} text={progressMessage} />
+          </FlexCenter>
+        )}
+
+        {!fetching && fetchResults.length > 0 && (
+          <FlexCenter
+            position="absolute"
+            zIndex={9}
+            top="0"
+            left="0"
+            width="100%"
+            height="100%"
+            bgcolor="rgba(0, 0, 0, 0.25)"
+          >
+            <FetchReportsResult
+              close={() => setFetchResults([])}
+              messages={fetchResults}
+            />
+          </FlexCenter>
+        )}
+
+        {/* Page Header */}
+        <PageTitle>
+          <FlexBetween width="100%">
+            Fetch Reports
+            <DualToggle
+              option1="5.1"
+              option2="5.0"
+              value={version}
+              setValue={setVersion}
+            />
+          </FlexBetween>
+        </PageTitle>
+
+        {/* Actions */}
+        <FlexBetween gap="10px" width="100%">
+          <SideBadge badgeContent={selectedVendors.length} color="primary">
+            <SectionTitle>Select Vendors</SectionTitle>
+          </SideBadge>
+
+          {/* Buttons */}
+          <FlexCenter gap="10px">
+            <ActionButton
+              label="Select All"
+              color="secondary"
+              icon={<SelectAll fontSize="small" />}
+              onClick={() => setSelectAll(true)}
+            />
+            <ActionButton
+              label="Deselect All"
+              color="secondary"
+              icon={<Deselect fontSize="small" />}
+              onClick={() => {
+                setSelectAll(false);
+                setSelectedVendors([]);
+              }}
+            />
+            <ActionButton
+              onClick={openFilters}
+              icon={<FilterList />}
+              padding="1px 0"
+              color="secondary"
+            />
+          </FlexCenter>
+        </FlexBetween>
+
+        <FlexRowEnd width="100%" position="relative">
+          {filtersPopUp && (
+            <FiltersPopUp setSortBy={setSortBy} sortby={sortBy} />
+          )}
+        </FlexRowEnd>
+
+        <SearchBar
+          onValueChange={(value) => {
+            setQuery(value);
+          }}
+          placeholder="Search vendors"
+        />
+
+        <VendorList
+          query={query}
+          sortBy={sortBy}
+          selectAll={selectAll}
+          selected={selectedVendors}
+          setSelected={handleSelectedVendor}
+          version={version as VendorVersions}
+        />
+      </PageColumn>
+
+      {/* Side Section - Forms */}
+      <PageColumn height="100%" width={isNonMobile ? "50%" : "60%"}>
+        {/* Report Types */}
+
+        <ReportOptions
+          reports={reports}
+          version={version as VendorVersions}
+          setSelectedReports={setSelectedReports}
+          selectedReports={selectedReports}
+        />
+
+        {/* Fetch Tools */}
+        <FlexColumnStart
+          height="50%"
+          width="100%"
+          minHeight="max-content"
+          maxWidth="100%"
+          borderRadius="25px"
+          padding="20px"
+          border={`1px solid ${palette.primary.main}`}
+        >
+          <FlexBetween gap="20px" maxWidth="max-content">
+            {/* Date Picker */}
+            <Calendar
+              setFromDate={setFromDate}
+              setToDate={setToDate}
+              toDate={toDate}
+              fromDate={fromDate}
+            />
+
+            {/* Buttons */}
+            <FlexColumn gap="20px">
+              <ActionButton
+                width="100%"
+                padding="0.5rem 1.5rem"
+                icon={<BrowserUpdatedOutlined />}
+                label="Fetch Selected Reports"
+                hint="Will fetch only the reports selected above for the selected vendors."
+                color="secondary"
+                onClick={() => handleFetchReports()}
+              />
+              <ActionButton
+                width="100%"
+                padding="0.5rem 1.5rem"
+                icon={<BrowserUpdatedOutlined />}
+                hint="Will fetch all reports available for the selected vendors."
+                label="Fetch All Available Reports"
+                color="secondary"
+                onClick={() => handleFetchReports("all")}
+              />
+            </FlexColumn>
+          </FlexBetween>
+        </FlexColumnStart>
+      </PageColumn>
+    </Page>
+  );
+};
+
+export default FetchReportsPage;

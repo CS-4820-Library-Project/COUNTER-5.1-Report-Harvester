@@ -1,0 +1,179 @@
+@import url("https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap");
+
+html,
+body {
+  height: 100dvh;
+  width: 100%;
+  font-family: "Poppins", sans-serif;
+}
+img {
+  border: none;
+  outline: none;
+  border-color: transparent;
+}
+button {
+  background-color: transparent;
+  border: 0;
+  outline: 0;
+  color: inherit;
+  cursor: pointer;
+}
+
+ul {
+  margin: 0;
+  padding: 0;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+input {
+  border: none;
+}
+input:focus {
+  /* border: none; */
+  outline: none;
+}
+
+input[type="number"] {
+  height: 2.5rem;
+  width: 100px;
+  padding: 0 15px;
+  border: 0;
+  font-size: 1.2rem;
+  outline: solid 1.3px;
+  border-radius: 25px;
+}
+
+input[type="color"] {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  width: 60px;
+  height: 60px;
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+}
+input[type="color"]::-webkit-color-swatch {
+  border-radius: 10px;
+  border: none;
+}
+input[type="color"]::-moz-color-swatch {
+  border-radius: 15px;
+  border: none;
+}
+
+/* Style the up and down arrow buttons */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  /* -webkit-appearance: none; */
+  height: auto;
+  margin: 0;
+  width: 20px;
+  background-color: white; /* Background color of the buttons */
+  border: none;
+  cursor: pointer;
+  color: black; /*Color of the icon*/
+}
+
+input {
+  font-family: "Lato";
+}
+
+input[type="checkbox"] {
+  cursor: pointer;
+}
+
+/* Scrollbar */
+.invisible-scroll {
+  overflow: auto;
+}
+
+.invisible-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.card-scroll {
+  overflow: auto;
+  height: 100%;
+  width: 100%;
+  padding: 0 10px;
+}
+
+.form {
+  width: 100%;
+}
+
+.form-input {
+  background-color: #ebf2f5;
+  border-radius: 10px;
+  padding: "5px";
+  border: 0;
+  height: 2rem;
+  width: 100%;
+  padding: 5px 8px;
+  font-weight: 700;
+  font-size: 10pt;
+}
+
+.form-label {
+  font-size: 10pt;
+  padding-left: 8px;
+  font-weight: 300;
+}
+
+.form-input::placeholder {
+  font-size: 10pt;
+  color: #333;
+  opacity: 1;
+  font-weight: 400;
+}
+
+.expand {
+  width: 100%;
+  height: 100%;
+}
+
+/* Style the datalist options */
+datalist option {
+  background-color: white;
+  color: black; /* Adjust text color as needed */
+}
+
+/* label {
+  cursor: pointer;
+} */
+
+#root {
+  display: flex;
+  position: relative;
+}
+/* Scrollbar */
+.invisible-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: #1188b4;
+  border-radius: 20px;
+  cursor: pointer;
+}
+::-webkit-scrollbar-corner {
+  background: rgba(0, 0, 0, 0);
+}
+
+.material-symbols-outlined {
+  font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
+}
+
+.material-symbols-outlined {
+  font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
+}

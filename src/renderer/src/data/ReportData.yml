@@ -1,0 +1,104 @@
+Title Report:
+  abbreviation:
+  columns:
+
+Common Data:
+  - Host_Type:
+      - A&I_Database
+      - Aggregated_Full_Content
+      - Data_Repository
+      - Discovery_Service
+      - eBook
+      - eBook_Collection
+      - eJournal
+      - Full_Content_Database
+      - Multimedia
+      - Multimedia_Collection
+      - Data_Repository
+      - Scholarly_Collaboration_Network
+  - Data_Type:
+      - Article
+      - Book
+      - Book_Segment
+      - Database
+      - Dataset
+      - Journal
+      - Multimedia
+      - Newspaper_or_Newsletter
+      - Other
+      - Platform
+      - Repository_Item
+      - Thesis_or_Dissertation
+      - Unspecified
+  - Section_Types:
+      - Article
+      - Book
+      - Chapter
+      - Other
+      - Section
+  - Metric_Types:
+      - Searches_Regular
+      - Searches_Automated
+      - Searches_Federated
+      - Searches_Platform
+  - Metric_Types_Optional:
+      - Total_Item_Investigation
+      - Unique_Item_Investigation
+      - Unique_Title_Investigation
+      - Total_Item_Request
+      - Unique_Item_Request
+      - Unique_Title_Request
+  - Metric_Types_Access_Denied:
+      - No_License
+      - Limit_Exceeded
+  - Access_Types:
+      - Controlled
+      - OA_Gold
+      - OA_Delayed
+      - Other_Free_To_Read
+  - Access_Methods:
+      - Regular
+      - TDM
+  - YOP:
+      - yyyy
+  - Attributes:
+      - Attributes_To_Show
+      - Exclude_Monthly_Details
+      - Granularity
+      - Include_Component_Details
+      - Include_Parent_Details
+  - Filters:
+      - Access_Method
+      - Access_Type
+      - Begin_Date
+      - End_Date
+      - Data_Type
+      - Item_Contributor
+      - Item_ID
+      - Metric_Type
+      - Platform
+      - Section_Type
+      - YOP
+
+Host_Types:
+  - A&I_Database
+  - Aggregated_Full_Content
+  - Data_Repository
+  - Discovery_Service
+  - eBook
+  - eBook_Collection
+  - eJournal
+  - Full_Content_Database
+  - Multimedia
+  - Multimedia_Collection
+  - Repositoty
+  - Scholarly_Collaboration_Network
+
+Reports:
+  - PR
+  - TR
+  - IR
+  - DR
+  - TR_J3
+  - TR_B3
+  - DR_D1
