@@ -28,9 +28,13 @@ dist-ssr
 out/*
 dist/*
 
-# Private Files
+# Private Files and User/Test Data
 **/vendors.json
 **/.DS_Store
+**/dev.db
+**/test.db
+**/*.db-journal
+**/*.db
 
 # Settings
 settings/directorySettings.json

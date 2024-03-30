@@ -45,7 +45,11 @@ function createWindow() {
   // Load the index.html of the app
   if (app.isPackaged) mainWindow.loadFile(productionPath);
   // Vite dev server URL
-  else mainWindow.loadURL("http://localhost:5173");
+  else {
+    process.env.NODE_ENV === "development"
+      ? mainWindow.loadURL("http://localhost:5173")
+      : mainWindow.loadFile(productionPath);
+  }
 
   mainWindow.on("closed", () => (mainWindow = null));
 }
