@@ -1,5 +1,6 @@
-# COUNTER-5.1-Report-Tool
+# STILL UNDER TESTING AND DEVELOPMENT - use most stable branch --main
 
+# COUNTER-5.1-Report-Tool
 This project helps libraries to harvest and manage their Project COUNTER-compliant usage reports. Leveraging TypeScript, it processes JSON data to generate TSV reports adhering to the COUNTER 5.0 and COUNTER 5.1 standards. Developed within the Electron framework to craft a user-friendly GUI for seamless interaction. 
 
 # Licence
