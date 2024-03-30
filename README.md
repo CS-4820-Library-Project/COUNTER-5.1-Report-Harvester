@@ -33,7 +33,7 @@ https://cop5.projectcounter.org/en/5.1/
 
 # Setup instructions (windows)
 * Open the command prompt and type: git clone 
-https://github.com/UPEI-COUNTER-Harvester/Counter-5.1-Electron](https://github.com/CS-4820-Library-Project/COUNTER-5.1-Report-Harvester.git 
+https://github.com/CS-4820-Library-Project/COUNTER-5.1-Report-Harvester.git 
 
 * Download and install the latest version of Node.js from the official website: Node.js
     * - https://nodejs.org/
