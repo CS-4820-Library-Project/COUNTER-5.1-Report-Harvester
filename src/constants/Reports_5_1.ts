@@ -607,19 +607,18 @@ export const IR_TEMPLATE: Report = {
       "Limit_Exceeded",
       "No_License",
     ],
-    Data_Type: Data_Types.filter(
-      (d) =>
-        [
-          "Book",
-          "Conference",
-          "Database_Aggregated",
-          "Database_AI",
-          "Database_Full",
-          "Journal",
-          "Newspaper_or_Newsletter",
-          "Platform",
-          "Reference_Work",
-        ].includes(d) // TODO
+    Data_Type: Data_Types.filter((d) =>
+      [
+        "Book",
+        "Conference",
+        "Database_Aggregated",
+        "Database_AI",
+        "Database_Full",
+        "Journal",
+        "Newspaper_or_Newsletter",
+        "Platform",
+        "Reference_Work",
+      ].includes(d)
     ),
 
     Access_Method: ["Regular", "TDM"],
@@ -667,7 +666,19 @@ export const IR: Report = {
       "Limit_Exceeded",
       "No_License",
     ],
-    Data_Type: [], // TODO
+    Data_Type: Data_Types.filter((d) =>
+      [
+        "Book",
+        "Conference",
+        "Database_Aggregated",
+        "Database_AI",
+        "Database_Full",
+        "Journal",
+        "Newspaper_or_Newsletter",
+        "Platform",
+        "Reference_Work",
+      ].includes(d)
+    ),
     Access_Method: ["Regular", "TDM"],
     Access_Type: ["Controlled", "Open", "Free_To_Read"],
     YOP: "All",

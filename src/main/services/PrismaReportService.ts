@@ -13,8 +13,6 @@ import {
   IReport,
   ITRIRReportItem,
 } from "../../renderer/src/interface/IReport";
-import * as fs from "fs";
-import * as path from "path";
 import ReportService from "../../renderer/src/service/ReportService";
 import { DirectorySettingService } from "./DirectorySettingService";
 import { writeFile } from "../utils/files";
@@ -194,7 +192,7 @@ export class PrismaReportService {
    * This function is responsible for saving the fetched report into the database.
    *
    * @param {Object} report - The report object that contains all the information about the report.
-   * @returns {Promise<void>} - Aromise that resolves when all the report information has been saved into the database.
+   * @returns {Promise<void>} - A Promise that resolves when all the report information has been saved into the database.
    */
   async saveFetchedReport(report: IReport): Promise<void> {
     try {
@@ -307,6 +305,12 @@ export class PrismaReportService {
     }
   }
 
+  /**
+   * This function is responsible for saving the fetched report into the database.
+   *
+   * @param {Object} report - The report object that contains all the information about the report.
+   * @returns {Promise<void>} - Aromise that resolves when all the report information has been saved into the database.
+   */
   async searchReport(
     title?: string,
     issn?: string,
@@ -354,6 +358,12 @@ export class PrismaReportService {
     }
   }
 
+  /**
+   * This function is responsible for converting the fetched report into a TSV format.
+   *
+   * @param {Object} report - The report object that contains all the information about the report.
+   * @returns {Promise<string>} - A promise that resolves to the TSV formatted report.
+   */
   async convertReportToTSV(report: any): Promise<string> {
     let tsv = "";
 
@@ -389,6 +399,13 @@ export class PrismaReportService {
     return tsv;
   }
 
+  /**
+   * This function is responsible for writing the TSV formatted report into a file.
+   *
+   * @param {string} tsv - The TSV formatted report.
+   * @param {string} fileName - The name of the file to write to.
+   * @returns {Promise<void>} - A promise that resolves when the TSV report has been written to the file.
+   */
   async writeTSVToFile(tsv: string, fileName: string): Promise<void> {
     const dirService = new DirectorySettingService();
     const filePath = dirService.getPath("search", `${fileName}.tsv`);
@@ -396,6 +413,13 @@ export class PrismaReportService {
     writeFile(filePath, tsv);
   }
 
+  /**
+   * This function is responsible for generating a TSV filename.
+   *
+   * @param {string} vendorName - The name of the vendor.
+   * @param {string} reportId - The ID of the report.
+   * @returns {string} - The generated TSV filename.
+   */
   async writeSearchedReportsToTSV(
     title?: string,
     issn?: string,

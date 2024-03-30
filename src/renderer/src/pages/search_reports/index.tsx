@@ -32,7 +32,6 @@ const SearchReportsPage = () => {
     const startTime = Date.now();
 
     try {
-      // TODO : fix the path
       const results = await window.database.writeSearchedReportsToTSV(
         activeButton === "Title" ? searchValue : "",
         activeButton === "ISSN" ? searchValue : "",

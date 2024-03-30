@@ -66,7 +66,6 @@ const VendorList = ({
       // Since it already has a reference to the array, it is considered the same and will not re-render when the array is updated.
       const newVendors = JSON.parse(JSON.stringify(vendorsResponse));
 
-      // TODO: See if rendering the vendor array directly without state will work
       setVendors([...newVendors]);
 
       setIsLoading(false);

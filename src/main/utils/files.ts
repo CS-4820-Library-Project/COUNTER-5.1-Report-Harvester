@@ -58,7 +58,6 @@ export const readSettings = (filePath: string): AppSettings => {
     return JSON.parse(data);
   } catch (error) {
     writeFile(filePath, JSON.stringify(defaultSettings));
-    // TODO: Handle error.
     return defaultSettings;
   }
 };
