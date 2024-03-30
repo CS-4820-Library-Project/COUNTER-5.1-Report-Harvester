@@ -26,7 +26,7 @@ It is released with all students' permission under the MIT License for open-sour
 Melissa Belvadi, mbelvadi@upei.ca
 
 # Download Project
-https://github.com/UPEI-COUNTER-Harvester/Counter-5.1-Electron](https://github.com/CS-4820-Library-Project/COUNTER-5.1-Report-Harvester.git
+https://github.com/CS-4820-Library-Project/COUNTER-5.1-Report-Harvester.git
 
 # COUNTER Documentation
 https://cop5.projectcounter.org/en/5.1/
