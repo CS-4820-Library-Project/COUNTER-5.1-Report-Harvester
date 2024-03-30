@@ -28,9 +28,7 @@ import { SortOptions, VendorRecord, VendorVersions } from "src/types/vendors";
 import FiltersPopUp from "../vendors/FiltersPopUp";
 import DualToggle from "../../components/buttons/DualToggle";
 import FetchService from "../../../../main/services/FetchService";
-import { CounterVersion } from "../../const/CounterVersion";
 import FetchReportsResult from "./fetch_progress/FetchReportsResult";
-import { LoggerService } from "../../../../main/services/LoggerService";
 import { useNotification } from "../../components/NotificationBadge";
 import { SideBadge } from "../../components/badge/SideBadge";
 import { reports_5_1 } from "../../../../constants/Reports_5_1";
@@ -113,73 +111,18 @@ const FetchReportsPage = () => {
 
     setFetching(true);
 
-    const settings = await window.settings.readSettings();
-    const requestInterval = settings?.requestInterval || 1000;
-    const requestTimeout = settings?.requestTimeout || 30000;
-
-    let reportFetchResults: string[] = [];
-
     const fetchReports = all ? reports.all : selectedReports;
+    const allResults = await FetchService.fetchReports({
+      fetchReports,
+      selectedVendors,
+      version,
+      fromDate,
+      toDate,
+    });
 
-    const logger = new LoggerService();
-
-    for (const vendor of selectedVendors) {
-      for (const report of fetchReports) {
-        setProgressMessage(
-          `Fetching and storing ${report.id} report from ${vendor.name}...`
-        );
-
-        if (
-          (version == CounterVersion.v5_0 &&
-            vendor.data5_0 &&
-            vendor.data5_0.requireRequestsThrottled) ||
-          (version == CounterVersion.v5_1 &&
-            vendor.data5_1 &&
-            vendor.data5_1.requireRequestsThrottled)
-        ) {
-          await new Promise((resolve) => setTimeout(resolve, requestInterval));
-        }
-
-        const result = await FetchService.fetchReport(
-          vendor,
-          report,
-          fromDate,
-          toDate,
-          version as CounterVersion,
-          requestTimeout,
-          logger
-        );
-
-        console.log(result);
-
-        if (result instanceof Error) {
-          reportFetchResults.push(
-            `FAILED: Fetching ${report.id} from ${vendor.name} failed`
-          );
-          continue;
-        }
-
-        // Save the fetched report to the database
-        try {
-          console.log("Saving fetched report to database");
-          await window.database.saveFetchedReport(result);
-          console.log("Successful");
-        } catch (error) {
-          console.log(`ERROR: `, error);
-        }
-
-        reportFetchResults.push(
-          `SUCCESS: Fetching ${report.id} from ${vendor.name} succeeded`
-        );
-      }
-    }
-
-    const logFileName = logger.writeLogsToFile();
-
-    reportFetchResults.push(`See ${logFileName}.txt for more details.`);
-
+    console.log("allResults", allResults);
+    setFetchResults(allResults);
     setFetching(false);
-    setFetchResults(reportFetchResults);
   };
 
   useEffect(() => {
