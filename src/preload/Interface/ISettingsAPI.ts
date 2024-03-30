@@ -6,7 +6,7 @@ import { UserDirectories } from "src/types/settings";
 export interface ISettingsAPI {
   /**
    * Opens a dialog to choose a directory.
-   * @param dir - The directory type ("main" or "custom").
+   * @param dir - The directory type one of "main", "custom", "search", "vendors".
    * @returns A promise that resolves with the chosen directory as string.
    */
   saveDirectory: (dir: string) => Promise<string>;
@@ -19,6 +19,13 @@ export interface ISettingsAPI {
   saveDirectories: (directories: any) => Promise<string[]>;
 
   /**
+   * Gets the path of a user directory.
+   * @param dir - The directory key. one of "data", "vendors", "search", "main", "custom".
+   * @returns A promise that resolves with the directory settings.
+   */
+  getDirectory: (dir: keyof UserDirectories) => Promise<string>;
+
+  /**
    * Gets the directory settings.
    * @returns A promise that resolves with the directory settings.
    */
@@ -29,6 +36,12 @@ export interface ISettingsAPI {
    * @returns A promise that resolves with the chosen directory as string.
    */
   chooseDirectory: () => Promise<string>;
+
+  /**
+   * Opens the specified directory in the file explorer.
+   * @param path - An absolute path.
+   */
+  openPath: (path: string) => Promise<void>;
 
   /**
    * Resets the application.

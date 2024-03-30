@@ -4,13 +4,25 @@ import {
   SushiExceptionDictionary,
   SushiGeneralWarningMeaning,
 } from "../../renderer/src/const/ExceptionDictionary";
-import { IReport } from "../../renderer/src/interface/IReport";
 import { CounterVersion } from "../../renderer/src/const/CounterVersion";
 import { VendorData, VendorInfo, VendorRecord } from "src/types/vendors";
 import { LoggerService } from "./LoggerService";
 import { Report, Report_Attributes, Report_Filters } from "src/types/counter";
 import { SupportedAPIResponse } from "src/types/reports";
 
+type FetchData = {
+  fetchReports: Report[];
+  selectedVendors: VendorRecord[];
+  version: string;
+  fromDate: Date;
+  toDate: Date;
+};
+
+type FetchResult = {
+  reportId: string;
+  vendorName: string;
+  success: boolean;
+};
 /** The main service for performing GET operations on vendors that use the SUSHI API */
 
 export class FetchService {
@@ -37,10 +49,75 @@ export class FetchService {
 
       return Array.isArray(data) ? data.map((val) => val.Report_ID) : null;
     } catch (error) {
-      console.error("Error fetching reports:", error);
+      // console.error("Error fetching reports:", error);
       return null;
     }
   }
+
+  /** Fetches reports from a list of vendors. */
+  static fetchReports = async ({
+    fetchReports,
+    selectedVendors,
+    version,
+    fromDate,
+    toDate,
+  }: FetchData) => {
+    const logger = new LoggerService();
+
+    const dataVersion = version === "5.1" ? "data5_1" : "data5_0";
+
+    const settings = await window.settings.readSettings();
+    const requestInterval = settings?.requestInterval || 1000;
+    const requestTimeout = settings?.requestTimeout || 30000;
+
+    // Create an array to store all promises
+    let allPromises: Promise<any>[] = [];
+
+    for (const vendor of selectedVendors) {
+      // If requests need to be throttled for this vendor, fetch reports sequentially
+      if (vendor[dataVersion]?.requireRequestsThrottled) {
+        let promise = fetchReports.reduce(async (prevPromise, report) => {
+          await prevPromise;
+          await new Promise((resolve) => setTimeout(resolve, requestInterval));
+          await FetchService.fetchReport(
+            vendor,
+            report,
+            fromDate,
+            toDate,
+            version as CounterVersion,
+            requestTimeout,
+            logger
+          );
+        }, Promise.resolve());
+
+        allPromises.push(promise);
+      } else {
+        // If requests don't need to be throttled for this vendor, fetch reports concurrently
+        for (const report of fetchReports) {
+          let promise = FetchService.fetchReport(
+            vendor,
+            report,
+            fromDate,
+            toDate,
+            version as CounterVersion,
+            requestTimeout,
+            logger
+          );
+          allPromises.push(promise);
+        }
+      }
+    }
+    // Wait for all promises to resolve
+    let results = (await Promise.all(allPromises)) as FetchResult[];
+    const fetchResults = results.map((result) => {
+      if (result.success)
+        return `SUCCESS: Fetching ${result.reportId} from ${result.vendorName} succeeded`;
+      else
+        return `FAILED: Fetching ${result.reportId} from ${result.vendorName} failed`;
+    });
+
+    return fetchResults;
+  };
 
   /** Performs an *HTTP GET* call on a specific route of a vendor's SUSHI API to harvest reports of a specified type. */
 
@@ -52,8 +129,14 @@ export class FetchService {
     counterVersion: CounterVersion,
     requestTimeout: number,
     logger = new LoggerService()
-  ): Promise<IReport | IFetchError | Error | null> {
-    if (!reportSettings.id || !vendor) return null;
+  ): Promise<FetchResult> {
+    let fetchResult: FetchResult = {
+      reportId: reportSettings.id,
+      vendorName: vendor.name,
+      success: false,
+    };
+
+    if (!reportSettings.id || !vendor) return fetchResult;
 
     const isCustomReport = reportSettings.name.includes("Custom");
 
@@ -68,7 +151,7 @@ export class FetchService {
       const vendorInfo =
         counterVersion == CounterVersion.v5_0 ? vendor.data5_0 : vendor.data5_1;
 
-      if (!vendorInfo) return null;
+      if (!vendorInfo) return fetchResult;
 
       logger.log(`Vendor has counter version ${counterVersion}`);
 
@@ -112,9 +195,8 @@ export class FetchService {
 
       logger.log(`Response received!`);
 
-      if ("ok" in response && !response.ok) {
-        return this.getExistingFetchError(await response.json());
-      }
+      if (response && "ok" in response && !response.ok)
+        throw this.getExistingFetchError(await response.json());
 
       response = response as Response;
       const data = await response.json();
@@ -123,11 +205,7 @@ export class FetchService {
 
       let report = reportFromJsonFunc(data);
 
-      if (!report) {
-        return null;
-      }
-
-      console.log(report);
+      if (!report) return fetchResult;
 
       logger.log(`Converting object to TSV`);
 
@@ -140,19 +218,33 @@ export class FetchService {
 
       logger.log(`Writing TSV content to ${tsvFilename}.tsv`);
 
-      await window.tsv.writeTsvToFile(tsv, tsvFilename, isCustomReport);
+      window.tsv.writeTsvToFile(tsv, tsvFilename, isCustomReport);
 
-      return report;
+      if (reportSettings.id.includes("TR"))
+        window.database.saveFetchedReport(report);
+
+      fetchResult.success = true;
+
+      return fetchResult;
     } catch (error) {
-      if (error.hasOwnProperty("meaning")) {
+      // LOG COUNTER ERROR
+      if (
+        typeof error === "object" &&
+        error !== null &&
+        "hasOwnProperty" in error &&
+        error.hasOwnProperty("meaning")
+      ) {
+        const fetchError = error as IFetchError;
         logger.log(
-          `ERROR ${error.code} (${reportSettings.id} from ${vendor.name}): ${error.message}`
+          `ERROR ${fetchError.code} (${reportSettings.id} from ${vendor.name}): ${fetchError.message}`
         );
+      } else {
+        // LOG GENERAL ERROR
+        const errorMessage = `Error fetching report ${reportSettings.id}: ${error}`;
+        // console.error(errorMessage);
+        logger.log(errorMessage);
       }
-      const errorMessage = `Error fetching report ${reportSettings.id}: ${error}`;
-      console.error(errorMessage);
-      logger.log(errorMessage);
-      return error;
+      return fetchResult;
     }
   }
 
