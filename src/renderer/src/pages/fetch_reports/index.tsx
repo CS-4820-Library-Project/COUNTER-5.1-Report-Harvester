@@ -111,6 +111,7 @@ const FetchReportsPage = () => {
     setFetching(true);
 
     const fetchReports = all ? reports.all : selectedReports;
+    console.log(window.reports);
     const allResults = await window.reports.fetch({
       fetchReports,
       selectedVendors,

@@ -11,6 +11,10 @@ const FetchRouter = () => {
     return await FetchService.fetchReports(args);
   });
 
+  /**
+   * Fetches the supported reports from the FetchService.
+   * @returns string[] - The promise object representing the supported reports
+   */
   ipcMain.handle("supported-reports", async (_, args) => {
     return await FetchService.getSupportedReports(args);
   });

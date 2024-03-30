@@ -22,7 +22,6 @@ const FetchReportsAPI = () => {
      * @returns string[] - The promise object representing the supported reports
      */
     getSupported: async (vendor: VendorRecord | VendorData) => {
-      console.log("Getting Get Supported Reports", vendor);
       return await ipcRenderer.invoke("supported-reports", vendor);
     },
   });
