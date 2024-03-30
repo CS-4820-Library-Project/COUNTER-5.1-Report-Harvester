@@ -11,7 +11,7 @@ export class LoggerService {
    * @param line - The line of text to be logged.
    */
   public log(line: string): void {
-    console.log(line);
+    // console.log(line);
     this.currentLogs.push(line);
   }
 
