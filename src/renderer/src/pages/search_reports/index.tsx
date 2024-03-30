@@ -1,12 +1,19 @@
 import { useState } from "react";
 import { Typography, Box, useTheme, Button } from "@mui/material";
-import { FlexRowStart } from "../../components/flex";
+import {
+  FlexBetween,
+  FlexColumnStart,
+  FlexRowStart,
+} from "../../components/flex";
 import SearchBar from "../../components/SearchBar";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import ActionButton from "../../components/buttons/ActionButton";
 import HelpMessages from "../../data/HelpMessages";
 import Strong from "../../components/text/Strong";
 import { useNotification } from "../../components/NotificationBadge";
+import { FolderOpen } from "@mui/icons-material";
+import Page from "../../components/page/Page";
+import PageColumn from "../../components/page/PageColumn";
 
 const SearchReportsPage = () => {
   const theme = useTheme();
@@ -90,101 +97,113 @@ const SearchReportsPage = () => {
     helpContent && alert(helpContent);
   };
 
+  const handleOpenResults = async () => {
+    const searchPath = await window.settings.getDirectory("search");
+    window.settings.openPath(searchPath);
+  };
+
   return (
-    <div>
-      <Box ml={135}>
-        <ActionButton
-          label="Help"
-          color="secondary"
-          icon={<HelpOutlineIcon fontSize="small" />}
-          onClick={handleHelpClick} // Updated onClick handler
-        />
-      </Box>
-      <Typography variant="h1" color="primary" sx={{ mt: 4, ml: 3 }}>
-        Search Reports in Database
-      </Typography>
-      <Box
-        sx={{
-          mt: 2, // Set margin top
-          ml: 3,
-          mr: 5,
-          padding: 2, // Set padding
-          border: `1px solid ${theme.palette.primary.main}`, // Set border
-          borderRadius: theme.shape.borderRadius, // Set border radius
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "flex-start",
-          position: "relative", // Add position relative to the box
-        }}
-      >
-        <Typography variant="h5">
-          Retrieve Title Reports from Database
-        </Typography>
-
-        <Typography color="text.main" sx={{ fontSize: "12px" }}>
-          Search and export for title reports you previously fetched. You can
-          search by Title, ISSN, ISBN.
-        </Typography>
-
-        <Typography variant="h5" color="text.primary" sx={{ mt: 2, ml: 1 }}>
-          Search By:
-        </Typography>
-
-        <Box mt={1}>
-          <FlexRowStart gap="20px">
-            <Button
-              variant="contained"
-              style={getButtonStyles(activeButton === "Title")}
-              onClick={() => handleButtonClick("Title")}
-            >
-              Title
-            </Button>
-            <Button
-              variant="contained"
-              style={getButtonStyles(activeButton === "ISBN")}
-              onClick={() => handleButtonClick("ISBN")}
-            >
-              ISBN
-            </Button>
-            <Button
-              variant="contained"
-              style={getButtonStyles(activeButton === "ISSN")}
-              onClick={() => handleButtonClick("ISSN")}
-            >
-              ISSN
-            </Button>
-          </FlexRowStart>
-        </Box>
-        <Box mt={2} display="flex" alignItems="center">
-          <SearchBar
-            onValueChange={handleSearch}
-            placeholder={`Search for a ${activeButton?.toLowerCase()}`}
+    <Page>
+      <PageColumn width="100%" gap="70px">
+        <FlexBetween width="100%" mb="20px">
+          <Typography variant="h1" color="primary">
+            Search Reports in Database
+          </Typography>
+          <ActionButton
+            label="Help"
+            color="secondary"
+            icon={<HelpOutlineIcon fontSize="small" />}
+            onClick={handleHelpClick} // Updated onClick handler
           />
-          <Box ml={2}>
-            <ActionButton
-              label="Run Search"
-              color="secondary"
-              onClick={handleSearchButtonClick}
+        </FlexBetween>
+
+        <FlexColumnStart
+          width="100%"
+          sx={{
+            padding: 2, // Set padding
+            border: `1px solid ${theme.palette.primary.main}`, // Set border
+            borderRadius: theme.shape.borderRadius, // Set border radius
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "flex-start",
+            position: "relative", // Add position relative to the box
+          }}
+        >
+          <Typography variant="h5">
+            Retrieve Title Reports from Database
+          </Typography>
+
+          <Typography color="text.main" sx={{ fontSize: "12px" }}>
+            Search and export for title reports you previously fetched. You can
+            search by Title, ISSN, ISBN.
+          </Typography>
+
+          <Typography variant="h5" color="text.primary" sx={{ mt: 2, ml: 1 }}>
+            Search By:
+          </Typography>
+
+          <Box mt={1}>
+            <FlexRowStart gap="20px">
+              <Button
+                variant="contained"
+                style={getButtonStyles(activeButton === "Title")}
+                onClick={() => handleButtonClick("Title")}
+              >
+                Title
+              </Button>
+              <Button
+                variant="contained"
+                style={getButtonStyles(activeButton === "ISBN")}
+                onClick={() => handleButtonClick("ISBN")}
+              >
+                ISBN
+              </Button>
+              <Button
+                variant="contained"
+                style={getButtonStyles(activeButton === "ISSN")}
+                onClick={() => handleButtonClick("ISSN")}
+              >
+                ISSN
+              </Button>
+            </FlexRowStart>
+          </Box>
+
+          {/* Search Bar */}
+          <Box mt={2} display="flex" alignItems="center" width="100%">
+            <SearchBar
+              onValueChange={handleSearch}
+              placeholder={`Search for a ${activeButton?.toLowerCase()}`}
             />
+            <Box ml={2}>
+              <ActionButton
+                label="Run Search"
+                color="secondary"
+                onClick={handleSearchButtonClick}
+              />
+            </Box>
           </Box>
-        </Box>
 
-        {searchResults !== null && (
-          <Box mt={2} gap="10px">
-            <Typography variant="h5" color="text">
-              Search Results: <Strong colored="primary">{searchResults}</Strong>{" "}
-              results found
-            </Typography>
+          {searchResults !== null && (
+            <FlexColumnStart mt="30px" gap="20px" width="100%">
+              <Typography variant="h5" color="text" width="max-content">
+                Search Results:{" "}
+                <Strong colored="primary">{searchResults}</Strong> results found
+              </Typography>
 
-            <Typography variant="body2" color="text" mt={2}>
-              Search completed in{" "}
-              <Strong colored="primary">{searchDuration.toFixed(2)}</Strong>{" "}
-              seconds.
-            </Typography>
-          </Box>
-        )}
-      </Box>
-    </div>
+              <Typography variant="body2" color="text">
+                Search completed in{" "}
+                <Strong colored="primary">{searchDuration.toFixed(2)}</Strong>{" "}
+                seconds.
+              </Typography>
+
+              <Button onClick={handleOpenResults}>
+                Open Results Directory
+              </Button>
+            </FlexColumnStart>
+          )}
+        </FlexColumnStart>
+      </PageColumn>
+    </Page>
   );
 };
 

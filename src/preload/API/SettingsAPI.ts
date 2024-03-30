@@ -20,6 +20,14 @@ const SettingsAPI = () =>
 
     /**
      * Gets the directory settings.
+     * @returns {Promise<string>} A promise that resolves with the directory settings.
+     */
+    getDirectory: (dir: keyof UserDirectories): Promise<string> => {
+      return ipcRenderer.invoke("get-directory", dir);
+    },
+
+    /**
+     * Gets the directory settings.
      * @returns {Promise<UserDirectories>} A promise that resolves with the directory settings.
      */
     getDirectories: (): Promise<UserDirectories> => {
