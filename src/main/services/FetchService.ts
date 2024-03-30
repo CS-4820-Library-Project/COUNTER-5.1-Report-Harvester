@@ -49,7 +49,7 @@ export class FetchService {
 
       return Array.isArray(data) ? data.map((val) => val.Report_ID) : null;
     } catch (error) {
-      console.error("Error fetching reports:", error);
+      // console.error("Error fetching reports:", error);
       return null;
     }
   }
@@ -219,7 +219,9 @@ export class FetchService {
       logger.log(`Writing TSV content to ${tsvFilename}.tsv`);
 
       window.tsv.writeTsvToFile(tsv, tsvFilename, isCustomReport);
-      window.database.saveFetchedReport(report);
+
+      if (reportSettings.id.includes("TR"))
+        window.database.saveFetchedReport(report);
 
       fetchResult.success = true;
 
@@ -239,7 +241,7 @@ export class FetchService {
       } else {
         // LOG GENERAL ERROR
         const errorMessage = `Error fetching report ${reportSettings.id}: ${error}`;
-        console.error(errorMessage);
+        // console.error(errorMessage);
         logger.log(errorMessage);
       }
       return fetchResult;

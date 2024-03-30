@@ -120,7 +120,6 @@ const FetchReportsPage = () => {
       toDate,
     });
 
-    console.log("allResults", allResults);
     setFetchResults(allResults);
     setFetching(false);
   };
