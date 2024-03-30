@@ -60,8 +60,6 @@ const VendorList = ({
           sortBy as SortOptions
         );
 
-      console.log("Vendors Response", vendorsResponse);
-
       // Make a full copy to avoid reference issues. Passing the array directly will cause the component to not re-render.
       // Since it already has a reference to the array, it is considered the same and will not re-render when the array is updated.
       const newVendors = JSON.parse(JSON.stringify(vendorsResponse));
@@ -87,7 +85,6 @@ const VendorList = ({
 
   useEffect(() => {
     resetVendorList(version);
-    console.log("Refreshing Vendors", vendors);
   }, [version, reload, sortBy]);
 
   // Filter Selected Vendors based on the selected version
