@@ -45,7 +45,6 @@ https://github.com/CS-4820-Library-Project/COUNTER-5.1-Report-Harvester.git
 * Install dependencies by typing the command: 
    * npm install
 * Now type these commands:
-   * npx prisma generate (To create a test database and create Prisma client)
    * npm start (To preview the production version)
 
 # Developer Setup (using VSCode)
