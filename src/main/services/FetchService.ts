@@ -9,6 +9,9 @@ import { VendorData, VendorInfo, VendorRecord } from "src/types/vendors";
 import { LoggerService } from "./LoggerService";
 import { Report, Report_Attributes, Report_Filters } from "src/types/counter";
 import { SupportedAPIResponse } from "src/types/reports";
+import { APIRequestSettingService } from "./APIRequestSettingService";
+import TSVService from "./TSVService";
+import { prismaReportService } from "./PrismaReportService";
 
 export type FetchData = {
   fetchReports: Report[];
@@ -68,7 +71,7 @@ export class FetchService {
 
     const dataVersion = version === "5.1" ? "data5_1" : "data5_0";
 
-    const settings = await window.settings.readSettings();
+    const settings = await new APIRequestSettingService().readSettings();
     const requestInterval = settings?.requestInterval || 1000;
     const requestTimeout = settings?.requestTimeout || 30000;
 
@@ -220,10 +223,10 @@ export class FetchService {
 
       logger.log(`Writing TSV content to ${tsvFilename}.tsv`);
 
-      window.tsv.writeTsvToFile(tsv, tsvFilename, isCustomReport);
+      TSVService.writeTSVReport(tsvFilename, tsv, isCustomReport);
 
       if (reportSettings.id.includes("TR"))
-        window.database.saveFetchedReport(report);
+        prismaReportService.saveFetchedReport(report);
 
       fetchResult.success = true;
 
