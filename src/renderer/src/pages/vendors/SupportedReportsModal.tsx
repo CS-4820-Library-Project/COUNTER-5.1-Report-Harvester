@@ -132,7 +132,6 @@ function SupportedReportsModal({ onClose, isPopupOpen, vendor }: Props) {
               }}
             />
             <List sx={{ position: "relative" }}>
-              {/* TODO: List Report Available */}
               {reports.map((reportId, index) => (
                 <ListItem
                   key={index}

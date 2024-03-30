@@ -611,7 +611,7 @@ export const IR: Report = {
       "Limit_Exceeded",
       "No_License",
     ],
-    Data_Type: [], // TODO
+    Data_Type: Data_Types.filter((d) => !["Database", "Platform"].includes(d)),
     Access_Method: ["Regular", "TDM"],
     Access_Type: ["Controlled", "OA_Gold", "Other_Free_To_Read"],
     YOP: "All",

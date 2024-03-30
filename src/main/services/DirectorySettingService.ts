@@ -16,6 +16,9 @@ export const defaultUserDirectories: UserDirectories = {
   logs: "./logs",
 };
 
+/**
+ * Service for managing directory settings. Get, Store, and Validate User Paths.
+ */
 export class DirectorySettingService {
   private settingsPath = path.join(app.getAppPath(), "./settings");
   private userDirectories: UserDirectories;
@@ -78,10 +81,10 @@ export class DirectorySettingService {
   }
 
   /**
-   * Gets the full path of a directory.
-   * @param dir - The directory name.
-   * @returns The full path of the directory.
-   * @example
+   * Gets the full path of a user directory.
+   * @param dir - The directory name. One of "data", "vendors", "search", "main", "custom",
+   * @returns The full path of the directory for the user OS.
+   * @example getDirectory("data")
    */
   getDirectory(dir: keyof UserDirectories | "settings"): string {
     return dir === "settings" ? this.settingsPath : this.userDirectories[dir];
@@ -93,7 +96,7 @@ export class DirectorySettingService {
    * @param filepath - The file path. One of "data", "vendors", "search", "main", "custom",
    * "logs", or "settings
    * @returns The full path of the file.
-   * @example
+   * @example getPath("data", "myTextFile.txt") // Returns "/path/to/data/file.txt"
    */
   getPath(dir: keyof UserDirectories | "settings", filepath: string): string {
     const storedPath =
@@ -104,9 +107,11 @@ export class DirectorySettingService {
   }
 
   /**
-   *  Saves the specified directory path and updates the directory settings.
+   *  Opens a Dialog to Choose a Directory and saves the specified directory path
+   * to the user directory settings.
    * @param dir  - The directory name.
    * @returns  A promise that resolves with the selected directory path.
+   * @example saveDirectory("data") // Returns "/newPath/to/data"
    */
   async saveDirectory(dir: keyof UserDirectories): Promise<string> {
     let selectedPath: string = "";
@@ -129,10 +134,11 @@ export class DirectorySettingService {
   }
 
   /**
-   * Saves the specified directory paths and updates the directory settings.
+   * Validates and Writtes a directory settings object to the User Directories Settings File.
+   * Used when saving multiple directories at once in the UI.
    * @param directories - The directory settings to save.
    * @returns An array of invalid directory names.
-   * @example
+   * @example saveDirectories({ data: "/newPath/to/data", vendors: "/newPath/to/vendors" })
    */
   async saveDirectories(directories: UserDirectories): Promise<string[]> {
     const invalidDirectories: string[] = [];
@@ -187,7 +193,7 @@ export class DirectorySettingService {
 
   /**
    * Writes the directory settings to the JSON file.
-   * @returns A promise that resolves when the settings are written.
+   * @returns Boolean Result - A promise that resolves when the settings are written.
    */
   private async writeSettingsToFile() {
     try {
@@ -195,11 +201,13 @@ export class DirectorySettingService {
       const path = this.getPath("settings", "directorySettings.json");
 
       await writeFile(path, settings, "utf8");
+      return true;
     } catch (error) {
       console.error(
         "Failed to write directory settings to the JSON file:",
         error
       );
+      return false;
     }
   }
 }

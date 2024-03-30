@@ -335,7 +335,7 @@ const ReportOptions = ({
       padding="20px"
       border={`1px solid ${palette.primary.main}`}
       flexGrow={1}
-      height={"55%"} //TODO: Choose with melissa what display style - %55
+      height={"55%"}
       width="100%"
     >
       {/* Main Reports */}
@@ -564,7 +564,6 @@ const ReportOptions = ({
                       ));
                     }
 
-                    // TODO Render YOP
                     if (typeof options === "string")
                       return <YopFilter value={yop} onValueChange={setYop} />;
                   })()}

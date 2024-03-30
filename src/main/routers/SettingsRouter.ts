@@ -2,7 +2,6 @@ import { ipcMain } from "electron";
 import { APIRequestSettingService } from "../services/APIRequestSettingService";
 import { DirectorySettingService } from "../services/DirectorySettingService";
 import { PasswordSettingService } from "../services/PasswordSettingService";
-import path from "path";
 import fs from "fs";
 
 /**
@@ -120,11 +119,9 @@ const SettingsRouter = () => {
    * @returns A boolean indicating whether the application was reset successfully.
    */
   ipcMain.handle("reset-app", async () => {
-    // TODO: Use User Settings Path.
     try {
-      const passwordSettingsDir = path.join(__dirname, "..", "..", "data");
-      const passwordSettingsPath = path.join(
-        passwordSettingsDir,
+      const passwordSettingsPath = directorySettingService.getPath(
+        "settings",
         "passwordSettings.json"
       );
 
@@ -136,13 +133,9 @@ const SettingsRouter = () => {
 
       if (isProtected) {
         isProtected = false;
-        const settingsDir = path.join(__dirname, "..", "..", "data");
-        const passwordSettingsFile = path.join(
-          settingsDir,
-          "passwordSettings.json"
-        );
+
         await fs.promises.writeFile(
-          passwordSettingsFile,
+          passwordSettingsPath,
           JSON.stringify({ isProtected: isProtected })
         );
 

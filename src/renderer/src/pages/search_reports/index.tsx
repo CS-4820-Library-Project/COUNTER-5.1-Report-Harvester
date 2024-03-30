@@ -1,19 +1,22 @@
 import { useState } from "react";
 import { Typography, Box, useTheme, Button } from "@mui/material";
 import { FlexRowStart } from "../../components/flex";
-import SearchBar from "../../components/SearchBar"; // Import the SearchBar component
-import HelpOutlineIcon from "@mui/icons-material/HelpOutline"; // Import the HelpOutlineIcon component
+import SearchBar from "../../components/SearchBar";
+import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import ActionButton from "../../components/buttons/ActionButton";
 import HelpMessages from "../../data/HelpMessages";
 import Strong from "../../components/text/Strong";
+import { useNotification } from "../../components/NotificationBadge";
 
 const SearchReportsPage = () => {
   const theme = useTheme();
+  const setNotification = useNotification();
+
   const [activeButton, setActiveButton] = useState<string | null>("Title");
 
   // Add states for search results and vendors
-  const [searchResults, setSearchResults] = useState<number>(0);
-  const [vendorsCount, setVendorsCount] = useState<number>(0);
+  const [searchResults, setSearchResults] = useState<number | null>(null);
+  const [vendorsCount, setVendorsCount] = useState<number>(0); //TODO: Add vendors count if possible
   const [searchDuration, setSearchDuration] = useState<number>(0);
   const [searchValue, setSearchValue] = useState<string>("");
 
@@ -32,12 +35,23 @@ const SearchReportsPage = () => {
     const startTime = Date.now();
 
     try {
-      // TODO : fix the path
       const results = await window.database.writeSearchedReportsToTSV(
         activeButton === "Title" ? searchValue : "",
         activeButton === "ISSN" ? searchValue : "",
         activeButton === "ISBN" ? searchValue : ""
       );
+
+      if (results.length > 0) {
+        setNotification({
+          type: "success",
+          message: "Search Results Exported to your search folder",
+        });
+      } else {
+        setNotification({
+          type: "info",
+          message: "Search returned no results.",
+        });
+      }
 
       setSearchResults(results.length);
       setVendorsCount(new Set(results.map((r: any) => r.vendor)).size);
@@ -155,18 +169,20 @@ const SearchReportsPage = () => {
           </Box>
         </Box>
 
-        <Box mt={2} gap="10px">
-          <Typography variant="h5" color="text">
-            Search Results: <Strong colored="primary">{searchResults}</Strong>{" "}
-            results found
-          </Typography>
+        {searchResults !== null && (
+          <Box mt={2} gap="10px">
+            <Typography variant="h5" color="text">
+              Search Results: <Strong colored="primary">{searchResults}</Strong>{" "}
+              results found
+            </Typography>
 
-          <Typography variant="body2" color="text" mt={2}>
-            Search completed in{" "}
-            <Strong colored="primary">{searchDuration.toFixed(2)}</Strong>{" "}
-            seconds.
-          </Typography>
-        </Box>
+            <Typography variant="body2" color="text" mt={2}>
+              Search completed in{" "}
+              <Strong colored="primary">{searchDuration.toFixed(2)}</Strong>{" "}
+              seconds.
+            </Typography>
+          </Box>
+        )}
       </Box>
     </div>
   );
