@@ -3,6 +3,7 @@ import { APIRequestSettingService } from "../services/APIRequestSettingService";
 import { DirectorySettingService } from "../services/DirectorySettingService";
 import { PasswordSettingService } from "../services/PasswordSettingService";
 import fs from "fs";
+import { UserDirectories } from "src/types/settings";
 
 /**
  * Creates a router for handling settings-related functionality.
@@ -76,6 +77,16 @@ const SettingsRouter = () => {
    */
   ipcMain.handle("read-settings", async () => {
     return await apiRequestSettingService.readSettings();
+  });
+
+  /**
+   * Handles the "get-directory" event and gets the saved directory.
+   * @param _ - The event object.
+   * @param dir - The directory type. One of "main", "custom", "vendors", "search".
+   * @returns The saved directory.
+   */
+  ipcMain.handle("get-directory", async (_, dir: keyof UserDirectories) => {
+    return directorySettingService.getDirectory(dir);
   });
 
   /**
