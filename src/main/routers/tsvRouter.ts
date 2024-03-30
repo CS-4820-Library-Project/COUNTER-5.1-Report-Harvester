@@ -15,7 +15,7 @@ const tsvRouter = () => {
    */
   ipcMain.handle(
     "write-tsv-to-file",
-    async (_, filename: string, content: string, isCustom) => {
+    async (_, filename: string, content: string, isCustom: boolean) => {
       try {
         const dirService = new DirectorySettingService();
         const dirType = isCustom ? "custom" : "main";
