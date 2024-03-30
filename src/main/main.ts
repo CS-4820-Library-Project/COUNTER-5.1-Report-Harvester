@@ -62,7 +62,9 @@ if (process.platform === "darwin") {
 
 app.whenReady().then(() => {
   createWindow();
-  filterReloadMenu();
+
+  // RELOAD IS NOT ALLOWED IN PRODUCTION, ONLY IN DEVELOPMENT thanks to Vite dev server
+  process.env.NODE_ENV === "production" && filterReloadMenu();
 
   // Ignore Reload command
   globalShortcut.register("CommandOrControl+R", () => {});

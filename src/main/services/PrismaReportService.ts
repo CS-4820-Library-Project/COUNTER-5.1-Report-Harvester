@@ -427,6 +427,8 @@ export class PrismaReportService {
   ): Promise<Report[]> {
     const reports = await this.searchReport(title, issn, isbn);
 
+    console.log(reports);
+
     for (const report of reports) {
       if (report) {
         const tsv = this.convertReportToTSV(report);
