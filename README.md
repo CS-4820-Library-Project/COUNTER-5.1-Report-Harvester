@@ -1,11 +1,11 @@
 <img alt="COUNTER Harvester Logo" src="https://github.com/CS-4820-Library-Project/COUNTER-5.1-Report-Harvester/assets/124853347/b84496c6-9a5a-46f8-950b-b5501e2a46cb" height="120px"/>
 
 #
-COUNTER 5.1 Report Harvester is a project helps libraries to harvest and manage their Project COUNTER-compliant usage reports. Leveraging TypeScript, it processes JSON data to generate TSV reports adhering to the COUNTER 5.0 and COUNTER 5.1 standards. Developed within the Electron framework to craft a user-friendly GUI for seamless interaction. 
+COUNTER 5.1 Report Harvester is an open-source desktop application that helps libraries harvest and manage their Project COUNTER-compliant usage reports. Leveraging TypeScript, it processes JSON data to generate TSV reports adhering to the COUNTER 5.0 and COUNTER 5.1 standards. Developed within the Electron framework to craft a user-friendly GUI for seamless interaction. 
 
 # Alpha Release Available
 
-This project still under development. Please, use most main branch to test the app.
+This project is still under development. Please use the main branch to test the app.
 
 # Licence
 It is released with all students' permission under the MIT License for open-source software.
