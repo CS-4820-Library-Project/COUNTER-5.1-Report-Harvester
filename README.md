@@ -1,7 +1,11 @@
-# STILL UNDER TESTING AND DEVELOPMENT - use most stable branch --main
+<img alt="COUNTER Harvester Logo" src="https://github.com/CS-4820-Library-Project/COUNTER-5.1-Report-Harvester/assets/124853347/b84496c6-9a5a-46f8-950b-b5501e2a46cb" height="120px"/>
 
-# COUNTER-5.1-Report-Tool
-This project helps libraries to harvest and manage their Project COUNTER-compliant usage reports. Leveraging TypeScript, it processes JSON data to generate TSV reports adhering to the COUNTER 5.0 and COUNTER 5.1 standards. Developed within the Electron framework to craft a user-friendly GUI for seamless interaction. 
+#
+COUNTER 5.1 Report Harvester is a project helps libraries to harvest and manage their Project COUNTER-compliant usage reports. Leveraging TypeScript, it processes JSON data to generate TSV reports adhering to the COUNTER 5.0 and COUNTER 5.1 standards. Developed within the Electron framework to craft a user-friendly GUI for seamless interaction. 
+
+# Alpha Release Available
+
+This project still under development. Please, use most main branch to test the app.
 
 # Licence
 It is released with all students' permission under the MIT License for open-source software.
@@ -37,26 +41,29 @@ https://cop5.projectcounter.org/en/5.1/
 https://github.com/CS-4820-Library-Project/COUNTER-5.1-Report-Harvester.git 
 
 * Download and install the latest version of Node.js from the official website: Node.js
-    * - https://nodejs.org/
+  https://nodejs.org/
 
 * Open the command prompt and type cd
 * Open the location where you cloned the project and drag the folder into the command prompt window. Your command prompt window should now show "C:\Users\NAME>cd 
   C:\Users\NAME\DOWNLOAD_LOCATION
 * Hit Enter
-* Install dependencies by typing the command: 
-   * npm install
-* Now type these commands:
-   * npm start (To preview the production version)
+* Install dependencies by typing the command:
+
+      npm install
+  
+* To preview the production version:
+
+      npm start 
 
 # Developer Setup (using VSCode)
 * Download and install Visual Studio Code from the official website: Visual Studio Code
 * Download and install Git from the official website: Git
 * Open VSCode and use the built-in terminal or the command prompt to clone the GitHub repository using the following command: git clone:
-    * - https://github.com/CS-4820-Library-Project/COUNTER-5.1-Report-Harvester.git
+  - https://github.com/CS-4820-Library-Project/COUNTER-5.1-Report-Harvester.git
 
 * Once cloned, open the project folder in VSCode by dragging it into the VSCode window or using the File > Open Folder option.
 * If Node.js is not already installed on the system, download and install it from the official website: Node.js
-    * - https://nodejs.org/
+  - https://nodejs.org/
 * Recommended extensions:
     * Prettier
     * ESLint
@@ -66,15 +73,25 @@ https://github.com/CS-4820-Library-Project/COUNTER-5.1-Report-Harvester.git
  
 * Open a terminal within VSCode (or use the integrated terminal) and navigate to the project directory. 
 * Then run the following command to install project dependencies:
-   * npm install
-* Now type these commands:
-   * npx prisma generate (Create Prisma client)
-   * npx prisma migrate dev (To create a test database)
+
+      npm install
+   
+### Now type these commands:
+* Create Prisma client
+
+      npx prisma generate
+
+* To create a test database
+
+      npx prisma migrate dev 
+
 * After installing dependencies, preview the production application by running the following command: 
-   * npm start
+
+      npm start
 
 * To start the development environment and make changes in real-time, use the command: 
-   * npm run dev (to build the project and start the development environment)
+
+      npm run dev
      
 * For development mode:
    * Run the project in watch mode to automatically rebuild on file changes by typing: npm run dev
