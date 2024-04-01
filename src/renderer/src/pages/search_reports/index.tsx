@@ -11,7 +11,6 @@ import ActionButton from "../../components/buttons/ActionButton";
 import HelpMessages from "../../data/HelpMessages";
 import Strong from "../../components/text/Strong";
 import { useNotification } from "../../components/NotificationBadge";
-import { FolderOpen } from "@mui/icons-material";
 import Page from "../../components/page/Page";
 import PageColumn from "../../components/page/PageColumn";
 
@@ -67,6 +66,10 @@ const SearchReportsPage = () => {
       const duration = (endTime - startTime) / 1000;
       setSearchDuration(duration);
     } catch (error) {
+      setNotification({
+        type: "error",
+        message: "Could not search reports. Please try again.",
+      });
       console.error("Error searching report: ", error);
     }
   };
