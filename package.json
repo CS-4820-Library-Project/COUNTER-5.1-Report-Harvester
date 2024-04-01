@@ -37,11 +37,10 @@
     ]
   },
   "scripts": {
-    "start": "cross-env NODE_ENV=production npm run build && electron-vite preview",
-    "dev": "cross-env NODE_ENV=development npm run build && electron-vite dev -w",
+    "start": "cross-env NODE_ENV=production && electron-vite preview",
+    "dev": "cross-env NODE_ENV=development && electron-vite dev -w",
     "build": "electron-vite build && npm run prisma:init",
-    "preview": "electron-vite preview",
-    "dist": "cross-env NODE_ENV=production npm run build && electron-builder -w",
+    "dist": "cross-env NODE_ENV=production npm run build && electron-builder -mwl",
     "pack": "cross-env NODE_ENV=production electron-builder --dir",
     "postinstall": "electron-builder install-app-deps",
     "test": "jest",
