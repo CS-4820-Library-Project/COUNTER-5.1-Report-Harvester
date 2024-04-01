@@ -16,6 +16,8 @@ import {
 import ReportService from "../../renderer/src/service/ReportService";
 import { DirectorySettingService } from "./DirectorySettingService";
 import { writeFile } from "../utils/files";
+import { exec } from "child_process";
+import * as fs from "fs";
 
 const prisma = new PrismaClient();
 
@@ -31,7 +33,6 @@ export class PrismaReportService {
    * @throws If an error occurs while creating the report.
    */
   async createReport(data: Omit<Report, "id">): Promise<Report> {
-    // console.log("Creating Report from", data);
     try {
       return await prisma.report.create({
         data,
@@ -50,7 +51,7 @@ export class PrismaReportService {
    * @throws If an error occurs while creating the report filter.
    */
   async createReportFilter(
-    data: Omit<ReportFilter, "id">
+    data: Omit<ReportFilter, "id">,
   ): Promise<ReportFilter> {
     try {
       return await prisma.reportFilter.create({
@@ -158,7 +159,7 @@ export class PrismaReportService {
    */
   async updateReportById(
     id: number,
-    data: Partial<Report>
+    data: Partial<Report>,
   ): Promise<Report | null> {
     try {
       return await prisma.report.update({
@@ -193,7 +194,7 @@ export class PrismaReportService {
    * This function is responsible for saving the fetched report into the database.
    *
    * @param {Object} report - The report object that contains all the information about the report.
-   * @returns {Promise<void>} - A Promise that resolves when all the report information has been saved into the database.
+   * @returns {Promise<void>} - Aromise that resolves when all the report information has been saved into the database.
    */
   async saveFetchedReport(report: IReport): Promise<void> {
     try {
@@ -306,16 +307,10 @@ export class PrismaReportService {
     }
   }
 
-  /**
-   * This function is responsible for saving the fetched report into the database.
-   *
-   * @param {Object} report - The report object that contains all the information about the report.
-   * @returns {Promise<void>} - Aromise that resolves when all the report information has been saved into the database.
-   */
   async searchReport(
     title?: string,
     issn?: string,
-    isbn?: string
+    isbn?: string,
   ): Promise<Report[]> {
     try {
       let whereClause: Prisma.ReportItemWhereInput = {};
@@ -359,12 +354,6 @@ export class PrismaReportService {
     }
   }
 
-  /**
-   * This function is responsible for converting the fetched report into a TSV format.
-   *
-   * @param {Object} report - The report object that contains all the information about the report.
-   * @returns {Promise<string>} - A promise that resolves to the TSV formatted report.
-   */
   async convertReportToTSV(report: any): Promise<string> {
     let tsv = "";
 
@@ -377,7 +366,7 @@ export class PrismaReportService {
 
     /* Report Filters */
     const reportFilters = report.ReportFilter.map(
-      (filter: any) => `${filter.filter_type}=${filter.value}`
+      (filter: any) => `${filter.filter_type}=${filter.value}`,
     ).join(";");
     tsv += `Report_Filters\t${reportFilters}\n`;
 
@@ -400,13 +389,6 @@ export class PrismaReportService {
     return tsv;
   }
 
-  /**
-   * This function is responsible for writing the TSV formatted report into a file.
-   *
-   * @param {string} tsv - The TSV formatted report.
-   * @param {string} fileName - The name of the file to write to.
-   * @returns {Promise<void>} - A promise that resolves when the TSV report has been written to the file.
-   */
   async writeTSVToFile(tsv: string, fileName: string): Promise<void> {
     const dirService = new DirectorySettingService();
     const filePath = dirService.getPath("search", `${fileName}.tsv`);
@@ -414,21 +396,12 @@ export class PrismaReportService {
     writeFile(filePath, tsv);
   }
 
-  /**
-   * This function is responsible for generating a TSV filename.
-   *
-   * @param {string} vendorName - The name of the vendor.
-   * @param {string} reportId - The ID of the report.
-   * @returns {string} - The generated TSV filename.
-   */
   async writeSearchedReportsToTSV(
     title?: string,
     issn?: string,
-    isbn?: string
+    isbn?: string,
   ): Promise<Report[]> {
     const reports = await this.searchReport(title, issn, isbn);
-
-    console.log(reports);
 
     for (const report of reports) {
       if (report) {
@@ -436,12 +409,48 @@ export class PrismaReportService {
         const vendorName = report.institution_id.split(":")[0];
         const fileName = ReportService.generateTSVFilename(
           vendorName,
-          report.report_id
+          report.report_id,
         );
         await this.writeTSVToFile(await tsv, fileName);
       }
     }
     return reports;
+  }
+
+  // rebuilding database
+  async rebuildDatabase() {
+    // specify the database file
+    const dbFile = process.env.DATABASE_FILE || "../../../prisma/search.db";
+
+    // if the database file exists, delete the file
+    if (fs.existsSync(dbFile)) {
+      try {
+        await fs.promises.unlink(dbFile);
+        console.log("Previous database file deleted.");
+      } catch (error) {
+        console.error("Error while deleting the database file:", error);
+      }
+    }
+
+    // re-run the prisma migrations, which will create a new database file and apply the schema
+    try {
+      exec(
+        "npx prisma migrate dev --rebuild-database",
+        (error, stdout, stderr) => {
+          if (error) {
+            console.error("Error while running Prisma migrate:", error);
+            throw error;
+          } else if (stderr) {
+            console.warn("Warnings during Prisma migrate:", stderr);
+          } else {
+            console.log("Prisma migrate output:", stdout);
+          }
+        },
+      );
+    } catch (error) {
+      console.error("Error while rebuilding the database:", error);
+      throw error;
+    }
   }
 }
 

@@ -44,7 +44,7 @@ const SearchReportsPage = () => {
       const results = await window.database.writeSearchedReportsToTSV(
         activeButton === "Title" ? searchValue : "",
         activeButton === "ISSN" ? searchValue : "",
-        activeButton === "ISBN" ? searchValue : ""
+        activeButton === "ISBN" ? searchValue : "",
       );
 
       if (results.length > 0) {
