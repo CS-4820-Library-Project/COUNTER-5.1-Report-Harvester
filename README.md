@@ -8,17 +8,17 @@ COUNTER 5.1 Report Harvester is an open-source desktop application that helps li
 This project is still under development. Please use the main branch to test the app or download the installer for your platform.
 
 ### Download in Windows
-<a target="_blank" href="https://github.com/CS-4820-Library-Project/COUNTER-5.1-Report-Harvester/releases/download/v1.0.0-alpha/COUNTER.Report.Haverster.Setup.1.0.0.exe">
+<a target="_blank" href="https://github.com/CS-4820-Library-Project/COUNTER-5.1-Report-Harvester/releases/download/v0.1.0-alpha/COUNTER.Report.Haverster.Setup.0.1.0.exe">
   <img alt="Download for Windows" src="https://github.com/CS-4820-Library-Project/COUNTER-5.1-Report-Harvester/assets/124853347/d60506ab-a00d-4930-b629-0197d3e2e935" width="280px"/>
 </a>
 
 ### Download in Mac
-<a target="_blank" href="https://github.com/CS-4820-Library-Project/COUNTER-5.1-Report-Harvester/releases/download/v1.0.0-alpha/COUNTER.Report.Haverster-1.0.0-arm64.dmg">
+<a target="_blank" href="https://github.com/CS-4820-Library-Project/COUNTER-5.1-Report-Harvester/releases/download/v0.1.0-alpha/COUNTER.Report.Haverster-0.1.0-arm64.dmg">
   <img alt="Download for Mac" src="https://github.com/CS-4820-Library-Project/COUNTER-5.1-Report-Harvester/assets/124853347/6a750ede-05f5-4ef1-ab19-3a6619228529" width="280px"/>
 </a>
 
 ### Download in Linux
-<a target="_blank" href="https://github.com/CS-4820-Library-Project/COUNTER-5.1-Report-Harvester/releases/download/v1.0.0-alpha/COUNTER.Report.Haverster-1.0.0.AppImage">
+<a target="_blank" href="https://github.com/CS-4820-Library-Project/COUNTER-5.1-Report-Harvester/releases/download/v0.1.0-alpha/COUNTER.Report.Haverster-0.1.0.AppImage">
   <img alt="Download for Linux" src="https://github.com/CS-4820-Library-Project/COUNTER-5.1-Report-Harvester/assets/124853347/53eddd68-e076-410f-bf76-a1d57756ba80" width="280px"/>
 </a>
 
