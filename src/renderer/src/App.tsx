@@ -1,7 +1,7 @@
 import { ColorModeContext, useMode } from "./theme";
 import { Box, CssBaseline, ThemeProvider } from "@mui/material";
 import Navbar from "./pages/navbar";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, useLocation } from "react-router-dom";
 import VendorsPage from "./pages/vendors";
 import FetchReportsPage from "./pages/fetch_reports";
 import SearchReportsPage from "./pages/search_reports";
