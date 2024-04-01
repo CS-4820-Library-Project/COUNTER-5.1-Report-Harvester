@@ -15,7 +15,6 @@ const DatabaseAPI = () => {
     /**
      * Searches for a report in the database.
      * @returns {Promise<any>} A promise that resolves with the search results.
-     * @param filepath
      * @param title
      * @param issn
      * @param isbn
@@ -23,13 +22,21 @@ const DatabaseAPI = () => {
     writeSearchedReportsToTSV: (
       title: string,
       issn: string,
-      isbn: string
+      isbn: string,
     ): Promise<void> => {
       return ipcRenderer.invoke("write-searched-reports-to-tsv", {
         title,
         issn,
         isbn,
       });
+    },
+
+    /**
+     * Rebuilds the database by deleting the existing database and applying the migrations.
+     * @returns {Promise<void>} A promise that resolves when the database has been rebuilt successfully.
+     */
+    rebuildDatabase: (): Promise<void> => {
+      return ipcRenderer.invoke("rebuild-database");
     },
   });
 };

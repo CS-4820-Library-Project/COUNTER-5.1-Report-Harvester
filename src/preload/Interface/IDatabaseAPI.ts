@@ -19,6 +19,12 @@ export interface IDatabaseAPI {
   writeSearchedReportsToTSV: (
     title: string,
     issn: string,
-    isbn: string
+    isbn: string,
   ) => Promise<any>;
+
+  /**
+   * Rebuilds the database by removing the existing database and applying migrations.
+   * @returns A promise that resolves when the database has been rebuilt successfully.
+   */
+  rebuildDatabase: () => Promise<void>;
 }
