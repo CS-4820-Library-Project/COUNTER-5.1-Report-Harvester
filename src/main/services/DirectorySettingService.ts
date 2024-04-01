@@ -1,7 +1,7 @@
 import { shell, dialog, app } from "electron";
-import { writeFile } from "fs/promises";
 import path from "path";
 import { UserDirectories } from "src/types/settings";
+import { writeFile } from "../utils/files";
 
 export interface IDirectorySetting {
   [key: string]: string;
@@ -20,7 +20,7 @@ export const defaultUserDirectories: UserDirectories = {
  * Service for managing directory settings. Get, Store, and Validate User Paths.
  */
 export class DirectorySettingService {
-  private settingsPath = path.join(app.getAppPath(), "./settings");
+  private settingsPath = path.join(__dirname, "../../../settings");
   private userDirectories: UserDirectories;
 
   constructor() {
@@ -200,7 +200,7 @@ export class DirectorySettingService {
       const settings = JSON.stringify(this.userDirectories, null, 2);
       const path = this.getPath("settings", "directorySettings.json");
 
-      await writeFile(path, settings, "utf8");
+      await writeFile(path, settings);
       return true;
     } catch (error) {
       console.error(
