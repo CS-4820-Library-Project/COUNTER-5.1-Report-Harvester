@@ -4,6 +4,7 @@ import { DirectorySettingService } from "../services/DirectorySettingService";
 import { PasswordSettingService } from "../services/PasswordSettingService";
 import fs from "fs";
 import { UserDirectories } from "src/types/settings";
+import { writeFile } from "../utils/files";
 
 /**
  * Creates a router for handling settings-related functionality.
@@ -145,7 +146,7 @@ const SettingsRouter = () => {
       if (isProtected) {
         isProtected = false;
 
-        await fs.promises.writeFile(
+        await writeFile(
           passwordSettingsPath,
           JSON.stringify({ isProtected: isProtected })
         );
