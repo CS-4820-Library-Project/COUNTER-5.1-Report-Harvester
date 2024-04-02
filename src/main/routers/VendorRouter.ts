@@ -4,7 +4,7 @@ import { decryptData, encryptData, isEncrypted } from "../utils/encrypt";
 import { DataVersions, VendorRecord } from "src/types/vendors";
 import { DirectorySettingService } from "../services/DirectorySettingService";
 import path from "path";
-import fs from "fs";
+import { PasswordSettingService } from "../services/PasswordSettingService";
 
 /**
  * Handles the IPC requests related to vendors.
@@ -49,17 +49,9 @@ const VendorRouter = () => {
   ipcMain.handle("write-json-vendors", async (_, vendors, password: string) => {
     const dirService = new DirectorySettingService();
 
-    const passwordSettingsPath = dirService.getPath(
-      "settings",
-      "passwordSettings.json"
-    );
-
     let data = vendors;
 
-    const passwordSettings = JSON.parse(
-      fs.readFileSync(passwordSettingsPath, "utf8")
-    );
-    const isProtected = passwordSettings.isProtected;
+    const isProtected = await new PasswordSettingService().isPasswordSet();
     if (isProtected) data = encryptData(data, password);
 
     const vendorPath = dirService.getPath("vendors", "vendors.json");
