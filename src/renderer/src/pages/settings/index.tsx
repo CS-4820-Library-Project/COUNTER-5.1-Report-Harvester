@@ -1,3 +1,12 @@
+import React, { useState } from "react";
+import SettingsTab from "./SettingsTab"; // Ensure the path to SettingsTab is correct
+import ChangeReportSavingDirectories from "./ChangeReportSavingDirectories"; // Import the ChangeReportSavingDirectories component
+import ChangeRequestSettings from "./ChangeRequestSettings";
+import SetUpPasswordView from "./SetUpPassword";
+import Page from "../../components/page/Page";
+import PageColumn from "../../components/page/PageColumn";
+import RebuildSearchDatabase from "./DatabaseSettings";
+
 /**
  * This is the "SettingsPage" component.
  *
@@ -9,13 +18,6 @@
  * - A tab component that lets users select which settings they want to adjust.
  * - Dynamic rendering of the selected setting component for users to interact with and modify settings.
  */
-import React, { useState } from "react";
-import SettingsTab from "./SettingsTab"; // Ensure the path to SettingsTab is correct
-import ChangeReportSavingDirectories from "./ChangeReportSavingDirectories"; // Import the ChangeReportSavingDirectories component
-import ChangeRequestSettings from "./ChangeRequestSettings";
-import SetUpPasswordView from "./SetUpPassword";
-import Page from "../../components/page/Page";
-import PageColumn from "../../components/page/PageColumn";
 
 const SettingsPage: React.FC = () => {
   // State to track which settings option is currently selected. Default is "Set Up Root Password".
@@ -46,6 +48,10 @@ const SettingsPage: React.FC = () => {
 
         {selectedOption === "Change API Request Settings" && (
           <ChangeRequestSettings />
+        )}
+
+        {selectedOption === "Rebuild Search Database" && (
+          <RebuildSearchDatabase />
         )}
       </PageColumn>
     </Page>
