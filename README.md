@@ -5,24 +5,24 @@ COUNTER 5.1 Report Harvester is an open-source desktop application that helps li
 
 # Alpha Release Available
 
-This project is still under development. Please use the main branch to test the app or download the installer for your platform.
+This project is still under development. Please use the main branch to test the app or download the installer for your platform. See all releases and installers down below
 
 ### Download in Windows
 <a target="_blank" href="https://github.com/CS-4820-Library-Project/COUNTER-5.1-Report-Harvester/releases/download/v0.2.0/COUNTER.Report.Haverster.Setup.0.1.0.exe">
   <img alt="Download for Windows" src="https://github.com/CS-4820-Library-Project/COUNTER-5.1-Report-Harvester/assets/124853347/d60506ab-a00d-4930-b629-0197d3e2e935" width="280px"/>
 </a>
 
-### Download in Mac
+### Download in Mac - M series (ARM Architecture)
 <a target="_blank" href="https://github.com/CS-4820-Library-Project/COUNTER-5.1-Report-Harvester/releases/download/v0.2.0/COUNTER.Report.Haverster-0.2.0-arm64.dmg">
   <img alt="Download for Mac" src="https://github.com/CS-4820-Library-Project/COUNTER-5.1-Report-Harvester/assets/124853347/6a750ede-05f5-4ef1-ab19-3a6619228529" width="280px"/>
 </a>
 
-### Download in Linux
+### Download in Linux - AppImage
 <a target="_blank" href="https://github.com/CS-4820-Library-Project/COUNTER-5.1-Report-Harvester/releases/download/v0.2.0/COUNTER.Report.Haverster-0.2.0.AppImage">
   <img alt="Download for Linux" src="https://github.com/CS-4820-Library-Project/COUNTER-5.1-Report-Harvester/assets/124853347/53eddd68-e076-410f-bf76-a1d57756ba80" width="280px"/>
 </a>
 
-### All Releases and Versions
+### Additional Installers for all releases and other Platforms
 https://github.com/CS-4820-Library-Project/COUNTER-5.1-Report-Harvester/releases
 
 # Licence
