@@ -8,7 +8,7 @@ COUNTER 5.1 Report Harvester is an open-source desktop application that helps li
 This project is still under development. Please use the main branch to test the app or download the installer for your platform.
 
 ### Download in Windows
-<a target="_blank" href="https://github.com/CS-4820-Library-Project/COUNTER-5.1-Report-Harvester/releases/download/v0.1.0-alpha/COUNTER.Report.Haverster.Setup.0.1.0.exe">
+<a target="_blank" href="https://github.com/CS-4820-Library-Project/COUNTER-5.1-Report-Harvester/releases/download/v0.2.0/COUNTER.Report.Haverster.Setup.0.1.0.exe">
   <img alt="Download for Windows" src="https://github.com/CS-4820-Library-Project/COUNTER-5.1-Report-Harvester/assets/124853347/d60506ab-a00d-4930-b629-0197d3e2e935" width="280px"/>
 </a>
 
