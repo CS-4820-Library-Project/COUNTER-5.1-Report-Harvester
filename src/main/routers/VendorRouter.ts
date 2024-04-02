@@ -24,6 +24,7 @@ const VendorRouter = () => {
       );
 
       let data = await readFile(vendorPath);
+
       if (!data) {
         await writeFile(vendorPath, "[]");
         return [];

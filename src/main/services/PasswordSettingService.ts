@@ -1,9 +1,8 @@
-import { writeFile } from "fs/promises";
 import fs from "fs";
 import crypto from "crypto";
 import lockfile from "lockfile";
 import { DirectorySettingService } from "./DirectorySettingService";
-import { readFile } from "../utils/files";
+import { readFile, writeFile } from "../utils/files";
 
 const algorithm = "aes-256-cbc";
 const iv = Buffer.alloc(16, 0);
