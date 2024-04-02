@@ -40,7 +40,7 @@ It is released with all students' permission under the MIT License for open-sour
 
 # Developer Contact Info - original developers
 * Isaac Garcia igarcia10328@upei.ca
-* William MacKinnon wjmackinnon@upei.ca
+* William MacKinnon wjmackinnon@upei.ca / willjmackinnon@gmail.com
 * Japneet Kalkat jkalkat@upei.ca
 * Albin Thomas athomas8036@upei.ca
 * Kritikiran Angrish kangrish@upei.ca
