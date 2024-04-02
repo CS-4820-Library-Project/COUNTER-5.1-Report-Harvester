@@ -13,7 +13,8 @@ This project is still under development. Please use the main branch to test the 
 </a>
 
 ### Download in Mac - M series (ARM Architecture)
-Requires to disable gatekeeper for installation. We currently don't have a apple developer program certificate. You can also create an installer locally for your machine. See Wiki for more details
+Requires to disable gatekeeper for installation. We currently don't have a apple developer program certificate. You can also create an installer locally for your machine. See Wiki for more details.
+##
 <a target="_blank" href="https://github.com/CS-4820-Library-Project/COUNTER-5.1-Report-Harvester/releases/download/v0.2.0/COUNTER.Report.Haverster-0.2.0-arm64.dmg">
   <img alt="Download for Mac" src="https://github.com/CS-4820-Library-Project/COUNTER-5.1-Report-Harvester/assets/124853347/6a750ede-05f5-4ef1-ab19-3a6619228529" width="280px"/>
 </a>
