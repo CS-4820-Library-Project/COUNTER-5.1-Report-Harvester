@@ -40,7 +40,7 @@
     "start": "cross-env NODE_ENV=production && electron-vite preview",
     "dev": "cross-env NODE_ENV=development && electron-vite dev -w",
     "build": "electron-vite build && npm run prisma:init",
-    "dist": "cross-env NODE_ENV=production npm run build && electron-builder -w",
+    "dist": "cross-env NODE_ENV=production npm run build && electron-builder -mwl",
     "pack": "cross-env NODE_ENV=production electron-builder --dir",
     "postinstall": "electron-builder install-app-deps",
     "test": "jest",

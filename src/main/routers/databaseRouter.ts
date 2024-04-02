@@ -42,10 +42,20 @@ const DatabaseRouter = () => {
       return await prismaReportService.writeSearchedReportsToTSV(
         title,
         issn,
-        isbn
+        isbn,
       );
     } catch (error) {
       console.error("Error searching report: ", error);
+      throw error;
+    }
+  });
+
+  ipcMain.handle("rebuild-database", async (_event) => {
+    try {
+      await prismaReportService.rebuildDatabase();
+      console.log("Database rebuild completed.");
+    } catch (error) {
+      console.error("Error rebuilding database: ", error);
       throw error;
     }
   });
