@@ -13,12 +13,12 @@ This project is still under development. Please use the main branch to test the 
 </a>
 
 ### Download in Mac
-<a target="_blank" href="https://github.com/CS-4820-Library-Project/COUNTER-5.1-Report-Harvester/releases/download/v0.1.0-alpha/COUNTER.Report.Haverster-0.1.0-arm64.dmg">
+<a target="_blank" href="https://github.com/CS-4820-Library-Project/COUNTER-5.1-Report-Harvester/releases/download/v0.2.0/COUNTER.Report.Haverster-0.2.0-arm64.dmg">
   <img alt="Download for Mac" src="https://github.com/CS-4820-Library-Project/COUNTER-5.1-Report-Harvester/assets/124853347/6a750ede-05f5-4ef1-ab19-3a6619228529" width="280px"/>
 </a>
 
 ### Download in Linux
-<a target="_blank" href="https://github.com/CS-4820-Library-Project/COUNTER-5.1-Report-Harvester/releases/download/v0.1.0-alpha/COUNTER.Report.Haverster-0.1.0.AppImage">
+<a target="_blank" href="https://github.com/CS-4820-Library-Project/COUNTER-5.1-Report-Harvester/releases/download/v0.2.0/COUNTER.Report.Haverster-0.2.0.AppImage">
   <img alt="Download for Linux" src="https://github.com/CS-4820-Library-Project/COUNTER-5.1-Report-Harvester/assets/124853347/53eddd68-e076-410f-bf76-a1d57756ba80" width="280px"/>
 </a>
 
