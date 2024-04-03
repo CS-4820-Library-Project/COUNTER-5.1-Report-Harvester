@@ -84,81 +84,81 @@ export class FetchService {
     const requestInterval = settings?.requestInterval || 1000;
     const requestTimeout = settings?.requestTimeout || 30000;
 
-    let allPromises: Promise<any>[] = [];
-
-    let supportedPromises: Promise<string[] | IFetchError | null>[] = [];
-
-    selectedVendors.map(async (vendor) => {
-      const promise = this.getSupportedReports(vendor);
-      supportedPromises.push(promise);
-
+    const allPromises = selectedVendors.map(async (vendor) => {
       const supported = await this.getSupportedReports(vendor);
 
-      if (!Array.isArray(supported))
-        return mainWindow.webContents.send("vendor-completed");
+      if (!Array.isArray(supported)) {
+        mainWindow.webContents.send("vendor-completed");
+        return [];
+      }
 
       const vendorReports = fetchReports.filter((report) =>
         supported.some((r) => r.toUpperCase() === report.id)
       );
 
-      console.log(vendor.name, ": ", supported);
-      console.log(vendor.name, "Reports: ", vendorReports);
-
       // If requests need to be throttled for this vendor, fetch reports sequentially
       if (vendor[dataVersion]?.requireTwoAttemptsPerReport) {
-        const promise = vendorReports.reduce(async (prevPromise, report) => {
-          await prevPromise;
-          await new Promise((resolve) => setTimeout(resolve, requestInterval));
-          await FetchService.fetchReport(
-            vendor,
-            report,
-            fromDate,
-            toDate,
-            version as CounterVersion,
-            requestTimeout,
-            logger
-          );
-        }, Promise.resolve());
-
-        allPromises.push(promise);
-
+        const results = await vendorReports.reduce(
+          async (prevPromise, report) => {
+            const results = await prevPromise;
+            await new Promise((resolve) =>
+              setTimeout(resolve, requestInterval)
+            );
+            const result = await FetchService.fetchReport(
+              vendor,
+              report,
+              fromDate,
+              toDate,
+              version as CounterVersion,
+              requestTimeout,
+              logger
+            );
+            return [...results, result];
+          },
+          Promise.resolve([] as FetchResult[])
+        );
         mainWindow.webContents.send("vendor-completed");
+        return results;
       }
 
       // If requests don't need to be throttled for this vendor, fetch reports concurrently
       else {
-        const vendorPromises: Promise<any>[] = [];
-
-        vendorReports.map(async (report) => {
-          const promise = FetchService.fetchReport(
-            vendor,
-            report,
-            fromDate,
-            toDate,
-            version as CounterVersion,
-            requestTimeout,
-            logger
-          );
-
-          vendorPromises.push(promise);
-        });
-
-        allPromises.push(Promise.all(vendorPromises));
-
-        Promise.all(vendorPromises).then(() =>
-          mainWindow.webContents.send("vendor-completed")
+        const results = await Promise.all(
+          vendorReports.map((report) =>
+            FetchService.fetchReport(
+              vendor,
+              report,
+              fromDate,
+              toDate,
+              version as CounterVersion,
+              requestTimeout,
+              logger
+            )
+          )
         );
+        mainWindow.webContents.send("vendor-completed");
+        return results;
       }
     });
-
-    await Promise.all(supportedPromises);
 
     // Wait for all promises to resolve
     const fetchResults = (
       await Promise.all(allPromises)
     ).flat() as FetchResult[];
 
-    // Process Results and summarize
+    return this.summarizeResults(fetchResults, logger);
+  }
+
+  /**
+   * Summarizes the results of fetching reports from vendors.
+   * @param fetchResults - The results of fetching reports from vendors.
+   * @param logger - The logger to use for logging.
+   * @returns The summarized results.
+   */
+  private static summarizeResults(
+    fetchResults: FetchResult[],
+    logger: LoggerService
+  ) {
     const result = fetchResults.reduce(
       (acc: FetchResults, { reportId, vendorName, success, custom }) => {
         const report = { reportId, success };
