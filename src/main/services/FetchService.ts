@@ -13,7 +13,7 @@ import { APIRequestSettingService } from "./APIRequestSettingService";
 import TSVService from "./TSVService";
 import { prismaReportService } from "./PrismaReportService";
 import { BrowserWindow } from "electron";
-import {allReportIds} from "src/constants/Reports_5";
+import {allReportIds} from "../../constants/Reports_5";
 
 export type FetchData = {
   fetchReports: Report[];
