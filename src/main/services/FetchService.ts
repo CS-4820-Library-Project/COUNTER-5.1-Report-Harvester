@@ -8,7 +8,11 @@ import { CounterVersion } from "../../renderer/src/const/CounterVersion";
 import { VendorData, VendorInfo, VendorRecord } from "src/types/vendors";
 import { LoggerService } from "./LoggerService";
 import { Report, Report_Attributes, Report_Filters } from "src/types/counter";
-import { FetchResults, SupportedAPIResponse } from "src/types/reports";
+import {
+  FetchResult,
+  FetchResults,
+  SupportedAPIResponse,
+} from "src/types/reports";
 import { APIRequestSettingService } from "./APIRequestSettingService";
 import TSVService from "./TSVService";
 import { prismaReportService } from "./PrismaReportService";
@@ -22,12 +26,6 @@ export type FetchData = {
   toDate: Date;
 };
 
-export type FetchResult = {
-  reportId: string;
-  custom: boolean;
-  vendorName: string;
-  success: boolean;
-};
 /** The main service for performing GET operations on vendors that use the SUSHI API */
 
 export class FetchService {
@@ -84,13 +82,7 @@ export class FetchService {
     const requestInterval = settings?.requestInterval || 1000;
     const requestTimeout = settings?.requestTimeout || 30000;
 
-    const allPromises = selectedVendors.map(async (vendor, vendorIndex) => {
-      console.log(
-        "Fetching Vendor",
-        vendorIndex + 1,
-        "of",
-        selectedVendors.length
-      );
+    const allPromises = selectedVendors.map(async (vendor) => {
       const supported = await this.getSupportedReports(vendor);
 
       if (!Array.isArray(supported)) {
@@ -119,7 +111,6 @@ export class FetchService {
               requestTimeout,
               logger
             );
-            console.log("Result", vendorIndex, " of ", selectedVendors.length);
             return [...results, result];
           },
           Promise.resolve([] as FetchResult[])
@@ -144,7 +135,6 @@ export class FetchService {
           )
         );
         mainWindow.webContents.send("vendor-completed");
-        console.log("Result", vendorIndex, " of ", selectedVendors.length);
         return results;
       }
     });
@@ -155,7 +145,6 @@ export class FetchService {
     ).flat() as FetchResult[];
 
     const summary = this.summarizeResults(fetchResults, logger);
-    console.log(summary);
     return summary;
   }
 
@@ -170,8 +159,11 @@ export class FetchService {
     logger: LoggerService
   ) {
     const result = fetchResults.reduce(
-      (acc: FetchResults, { reportId, vendorName, success, custom }) => {
-        const report = { reportId, success };
+      (
+        acc: FetchResults,
+        { reportId, vendorName, success, custom, error }: FetchResult
+      ) => {
+        const report = { reportId, success, error };
 
         // Determine if the vendor is 'main' or 'custom'
         const reportType = custom ? "custom" : "main";
@@ -231,7 +223,7 @@ export class FetchService {
 
     const isCustomReport = reportSettings.name.includes("Custom");
 
-    logger.log(`Started fetch for vendor with ID ${vendor.id}`);
+    logger.log(`Fetching ${vendor.id}`);
 
     try {
       const reportFromJsonFunc =
@@ -246,7 +238,7 @@ export class FetchService {
 
       logger.log(`Vendor has counter version ${counterVersion}`);
 
-      const reportUrl = `${vendorInfo.baseURL}/${reportSettings.id.toLowerCase()}?customer_id=${
+      let reportUrl = `${vendorInfo.baseURL}/${reportSettings.id.toLowerCase()}?customer_id=${
         vendorInfo.customerId
       }&requestor_id=${
         vendorInfo.requestorId
@@ -254,7 +246,10 @@ export class FetchService {
         startDate
       )}&end_date=${this.getDateAsString(endDate)}${this.getAPIKeySegment(
         vendorInfo
-      )}${this.convertFiltersToURLParams(reportSettings, counterVersion)}`;
+      )}`;
+
+      if (isCustomReport)
+        reportUrl += `${this.convertFiltersToURLParams(reportSettings, counterVersion)}`;
 
       logger.log(
         `Fetching from URL ${reportUrl}. Vendor requires ${vendorInfo.requireTwoAttemptsPerReport ? 2 : 1} fetch(es).`
@@ -314,10 +309,13 @@ export class FetchService {
 
       TSVService.writeTSVReport(tsvFilename, tsv, isCustomReport);
 
-      if (reportSettings.id.includes("TR"))
-        prismaReportService.saveFetchedReport(report);
+      // if (reportSettings.id.includes("TR"))
+      // prismaReportService.saveFetchedReport(report);
 
       fetchResult.success = true;
+      fetchResult.warning = report.Report_Header.Exceptions;
+
+      // console.log(report.Report_Header.Exceptions);
 
       return fetchResult;
     } catch (error) {
@@ -329,16 +327,34 @@ export class FetchService {
         error.hasOwnProperty("meaning")
       ) {
         const fetchError = error as IFetchError;
-        logger.log(
-          `ERROR ${fetchError.code} (${reportSettings.id} from ${vendor.name}): ${fetchError.message}`
-        );
+        const logMessage = `ERROR ${fetchError.code} (${reportSettings.id} from ${vendor.name}): ${fetchError.message}`;
+        logger.log(logMessage);
+        console.log(logMessage);
+
+        // Return a FetchResult with the error
+        return {
+          reportId: reportSettings.id,
+          custom: isCustomReport,
+          vendorName: vendor.name,
+          success: false,
+          error: fetchError,
+        };
       } else {
         // LOG GENERAL ERROR
-        const errorMessage = `Error fetching report ${reportSettings.id}: ${error}`;
-        // console.error(errorMessage);
+        const errorMessage = `${vendor.name}:Error fetching report ${reportSettings.id}: ${error}`;
         logger.log(errorMessage);
+
+        console.log(errorMessage);
+
+        // Return a FetchResult with the error
+        return {
+          reportId: reportSettings.id,
+          custom: isCustomReport,
+          vendorName: vendor.name,
+          success: false,
+          error: errorMessage,
+        };
       }
-      return fetchResult;
     }
   }
 

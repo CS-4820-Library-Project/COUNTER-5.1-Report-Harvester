@@ -1,4 +1,6 @@
+import { IFetchError } from "src/renderer/src/interface/IFetchError";
 import { Report_Id } from "./counter";
+import { string } from "yup";
 
 export type SupportedAPIResponse = {
   Path: string;
@@ -19,16 +21,23 @@ export type FetchData = {
 
 export type FetchResult = {
   reportId: string;
-  custom: true;
+  custom: boolean;
   vendorName: string;
   success: boolean;
+  error?: IFetchError | string;
+  warning?: IFetchError | string;
 };
 
 type VendorFetchSummary = {
   succeeded: number;
   vendors: {
     name: string;
-    reports: { reportId: string; success: boolean }[];
+    reports: {
+      reportId: string;
+      success: boolean;
+      error?: IFetchError | string;
+      warning?: IFetchError | string;
+    }[];
     totalSucceed: number;
   }[];
 };
