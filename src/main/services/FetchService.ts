@@ -8,10 +8,11 @@ import { CounterVersion } from "../../renderer/src/const/CounterVersion";
 import { VendorData, VendorInfo, VendorRecord } from "src/types/vendors";
 import { LoggerService } from "./LoggerService";
 import { Report, Report_Attributes, Report_Filters } from "src/types/counter";
-import { SupportedAPIResponse } from "src/types/reports";
+import { FetchResults, SupportedAPIResponse } from "src/types/reports";
 import { APIRequestSettingService } from "./APIRequestSettingService";
 import TSVService from "./TSVService";
 import { prismaReportService } from "./PrismaReportService";
+import { BrowserWindow } from "electron";
 
 export type FetchData = {
   fetchReports: Report[];
@@ -21,8 +22,9 @@ export type FetchData = {
   toDate: Date;
 };
 
-type FetchResult = {
+export type FetchResult = {
   reportId: string;
+  custom: boolean;
   vendorName: string;
   success: boolean;
 };
@@ -44,7 +46,6 @@ export class FetchService {
       `&requestor_id=${vendorInfo.requestorId}` +
       `${this.getAPIKeySegment(vendorInfo)}`;
 
-    console.log("URL", url);
     try {
       const response = await fetch(url);
       if (!response.ok)
@@ -54,19 +55,24 @@ export class FetchService {
 
       return Array.isArray(data) ? data.map((val) => val.Report_ID) : null;
     } catch (error) {
-      // console.error("Error fetching reports:", error);
+      console.error("Error fetching reports:", error);
       return null;
     }
   }
 
-  /** Fetches reports from a list of vendors. */
-  static async fetchReports({
-    fetchReports,
-    selectedVendors,
-    version,
-    fromDate,
-    toDate,
-  }: FetchData) {
+  /**
+   * Fetches reports from a list of vendors.
+   * @param fetchData - The data needed to fetch reports. As an Object include the following props
+   * @prop fetchReports - The list of reports to fetch.
+   * @prop selectedVendors - The list of vendors to fetch reports from.
+   * @prop version - The version of the COUNTER standard to use.
+   * @prop fromDate - The start date of the report.
+   * @prop toDate - The end date of the report.
+   */
+  static async fetchReports(
+    { fetchReports, selectedVendors, version, fromDate, toDate }: FetchData,
+    mainWindow: BrowserWindow
+  ) {
     const logger = new LoggerService();
 
     const dataVersion = version === "5.1" ? "data5_1" : "data5_0";
@@ -75,13 +81,12 @@ export class FetchService {
     const requestInterval = settings?.requestInterval || 1000;
     const requestTimeout = settings?.requestTimeout || 30000;
 
-    // Create an array to store all promises
     let allPromises: Promise<any>[] = [];
 
-    for (const vendor of selectedVendors) {
+    selectedVendors.map(async (vendor, vendorIndex) => {
       // If requests need to be throttled for this vendor, fetch reports sequentially
-      if (vendor[dataVersion]?.requireRequestsThrottled) {
-        let promise = fetchReports.reduce(async (prevPromise, report) => {
+      if (vendor[dataVersion]?.requireTwoAttemptsPerReport) {
+        const promise = fetchReports.reduce(async (prevPromise, report) => {
           await prevPromise;
           await new Promise((resolve) => setTimeout(resolve, requestInterval));
           await FetchService.fetchReport(
@@ -96,10 +101,17 @@ export class FetchService {
         }, Promise.resolve());
 
         allPromises.push(promise);
-      } else {
-        // If requests don't need to be throttled for this vendor, fetch reports concurrently
-        for (const report of fetchReports) {
-          let promise = FetchService.fetchReport(
+
+        console.log("Vendor completed", vendorIndex + 1);
+        mainWindow.webContents.send("vendor-completed");
+      }
+
+      // If requests don't need to be throttled for this vendor, fetch reports concurrently
+      else {
+        const vendorPromises: Promise<any>[] = [];
+
+        fetchReports.map(async (report) => {
+          const promise = FetchService.fetchReport(
             vendor,
             report,
             fromDate,
@@ -163,7 +175,7 @@ export class FetchService {
       }
     );
 
-    return fetchResults;
+    return result;
   }
 
   /** Performs an *HTTP GET* call on a specific route of a vendor's SUSHI API to harvest reports of a specified type. */
@@ -181,6 +193,7 @@ export class FetchService {
       reportId: reportSettings.id,
       vendorName: vendor.name,
       success: false,
+      custom: reportSettings.name.includes("Custom"),
     };
 
     if (!reportSettings.id || !vendor) return fetchResult;
@@ -288,7 +301,7 @@ export class FetchService {
       } else {
         // LOG GENERAL ERROR
         const errorMessage = `Error fetching report ${reportSettings.id}: ${error}`;
-        // console.error(errorMessage);
+        console.error(errorMessage);
         logger.log(errorMessage);
       }
       return fetchResult;

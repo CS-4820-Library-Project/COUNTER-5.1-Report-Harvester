@@ -24,6 +24,29 @@ const FetchReportsAPI = () => {
     getSupported: async (vendor: VendorRecord | VendorData) => {
       return await ipcRenderer.invoke("supported-reports", vendor);
     },
+
+    /**
+     * Cancels the fetch operation.
+     */
+    cancel: () => {
+      ipcRenderer.send("cancel-fetch");
+    },
+
+    /**
+     * Listens for the completion of the fetch operation for a vendor.
+     * @param {Function} callback - The callback function to be executed when the fetch operation is completed.
+     */
+    onVendorCompleted: (callback: () => void) => {
+      ipcRenderer.on("vendor-completed", callback);
+    },
+
+    /**
+     * Removes the listener for the completion of the fetch operation for a vendor.
+     * @param {Function} callback - The callback function to be removed.
+     */
+    removeVendorCompletedListeners: () => {
+      ipcRenderer.removeAllListeners("vendor-completed");
+    },
   });
 };
 

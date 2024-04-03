@@ -1,5 +1,5 @@
 import { Box, Typography, useTheme } from "@mui/material";
-import { FlexBetween, FlexCenter, FlexColumn } from "../../../components/flex";
+import { FlexCenter, FlexColumn } from "../../../components/flex";
 
 type Props = {
   checkpoint: number; // The current checkpoint the process has reached.
@@ -15,6 +15,7 @@ type Props = {
 
 const ProgressBar = ({ checkpoint, progress }: Props) => {
   const { palette } = useTheme();
+
   return (
     <FlexColumn width="100%" gap="15px">
       {/* Sequentially render checkpoints, indicating the task's progress through its stages. */}
@@ -48,16 +49,16 @@ type CheckPointProps = {
 };
 
 /**
- * The CheckPoint component represents an individual stage or step in the process. 
+ * The CheckPoint component represents an individual stage or step in the process.
  * It changes appearance based on whether the process has reached this stage, providing immediate visual feedback.
- * 
+ *
  * @prop tag: A numeric identifier for the checkpoint.
  * @prop status: The overall process status, used to visually differentiate completed from pending checkpoints.
  * @prop label: A descriptive label for the checkpoint, clarifying its role in the process.
  */
 const CheckPoint = ({ tag, status, label }: CheckPointProps) => {
   const { primary, background } = useTheme().palette;
-   // Determine styling based on whether the checkpoint is completed.
+  // Determine styling based on whether the checkpoint is completed.
   const color = status > tag ? primary.contrastText : background.contrastText;
   const bgcolor = status > tag ? primary.dark : background.light;
 

@@ -1,6 +1,6 @@
 import { Report_Id } from "./counter";
 
-type SupportedAPIResponse = {
+export type SupportedAPIResponse = {
   Path: string;
   Performance: [];
   Release: string;

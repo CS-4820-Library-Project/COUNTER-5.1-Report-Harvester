@@ -1,8 +1,6 @@
 import { Box, IconButton, Typography } from "@mui/material";
 import { FlexBetween } from "../flex";
 import { ArticleOutlined, FolderOutlined } from "@mui/icons-material";
-import { ipcRenderer, shell } from "electron";
-import os from "os";
 
 type ResultsHeaderProps = {
   message: string;
@@ -30,7 +28,7 @@ const ResultsHeader = ({
 }: ResultsHeaderProps) => {
   const openPath = () => {
     const path = directory || file || "";
-    window.localAPI.openPath(path);
+    window.settings.openPath(path);
   };
 
   const renderMessage = () => {
