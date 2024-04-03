@@ -8,7 +8,11 @@ import { CounterVersion } from "../../renderer/src/const/CounterVersion";
 import { VendorData, VendorInfo, VendorRecord } from "src/types/vendors";
 import { LoggerService } from "./LoggerService";
 import { Report, Report_Attributes, Report_Filters } from "src/types/counter";
-import { FetchResults, SupportedAPIResponse } from "src/types/reports";
+import {
+  FetchResult,
+  FetchResults,
+  SupportedAPIResponse,
+} from "src/types/reports";
 import { APIRequestSettingService } from "./APIRequestSettingService";
 import TSVService from "./TSVService";
 import { prismaReportService } from "./PrismaReportService";
@@ -22,12 +26,6 @@ export type FetchData = {
   toDate: Date;
 };
 
-export type FetchResult = {
-  reportId: string;
-  custom: boolean;
-  vendorName: string;
-  success: boolean;
-};
 /** The main service for performing GET operations on vendors that use the SUSHI API */
 
 export class FetchService {
@@ -48,14 +46,19 @@ export class FetchService {
 
     try {
       const response = await fetch(url);
+
       if (!response.ok)
         return this.getExistingFetchError(await response.json());
 
       const data = (await response.json()) as SupportedAPIResponse[];
 
-      return Array.isArray(data) ? data.map((val) => val.Report_ID) : null;
+      const reportIds = Array.isArray(data)
+        ? data.map((val) => val.Report_ID.toUpperCase())
+        : [];
+
+      return reportIds;
     } catch (error) {
-      console.error("Error fetching reports:", error);
+      // console.error("Error fetching reports:", error);
       return null;
     }
   }
@@ -81,54 +84,60 @@ export class FetchService {
     const requestInterval = settings?.requestInterval || 1000;
     const requestTimeout = settings?.requestTimeout || 30000;
 
-    let allPromises: Promise<any>[] = [];
+    const allPromises = selectedVendors.map(async (vendor) => {
+      const supported = await this.getSupportedReports(vendor);
 
-    selectedVendors.map(async (vendor, vendorIndex) => {
+      if (!Array.isArray(supported)) {
+        mainWindow.webContents.send("vendor-completed");
+        return [];
+      }
+
+      const vendorReports = fetchReports.filter((report) =>
+        supported.some((r) => r.toUpperCase() === report.id)
+      );
+
       // If requests need to be throttled for this vendor, fetch reports sequentially
       if (vendor[dataVersion]?.requireTwoAttemptsPerReport) {
-        const promise = fetchReports.reduce(async (prevPromise, report) => {
-          await prevPromise;
-          await new Promise((resolve) => setTimeout(resolve, requestInterval));
-          await FetchService.fetchReport(
-            vendor,
-            report,
-            fromDate,
-            toDate,
-            version as CounterVersion,
-            requestTimeout,
-            logger
-          );
-        }, Promise.resolve());
-
-        allPromises.push(promise);
-
-        console.log("Vendor completed", vendorIndex + 1);
+        const results = await vendorReports.reduce(
+          async (prevPromise, report) => {
+            const results = await prevPromise;
+            await new Promise((resolve) =>
+              setTimeout(resolve, requestInterval)
+            );
+            const result = await FetchService.fetchReport(
+              vendor,
+              report,
+              fromDate,
+              toDate,
+              version as CounterVersion,
+              requestTimeout,
+              logger
+            );
+            return [...results, result];
+          },
+          Promise.resolve([] as FetchResult[])
+        );
         mainWindow.webContents.send("vendor-completed");
+        return results;
       }
 
       // If requests don't need to be throttled for this vendor, fetch reports concurrently
       else {
-        const vendorPromises: Promise<any>[] = [];
-
-        fetchReports.map(async (report) => {
-          const promise = FetchService.fetchReport(
-            vendor,
-            report,
-            fromDate,
-            toDate,
-            version as CounterVersion,
-            requestTimeout,
-            logger
-          );
-
-          vendorPromises.push(promise);
-        });
-
-        allPromises.push(Promise.all(vendorPromises));
-
-        Promise.all(vendorPromises).then(() =>
-          mainWindow.webContents.send("vendor-completed")
+        const results = await Promise.all(
+          vendorReports.map((report) =>
+            FetchService.fetchReport(
+              vendor,
+              report,
+              fromDate,
+              toDate,
+              version as CounterVersion,
+              requestTimeout,
+              logger
+            )
+          )
         );
+        mainWindow.webContents.send("vendor-completed");
+        return results;
       }
     });
 
@@ -137,30 +146,46 @@ export class FetchService {
       await Promise.all(allPromises)
     ).flat() as FetchResult[];
 
-    // Process Results and summarize
+    const summary = this.summarizeResults(fetchResults, logger);
+    return summary;
+  }
+
+  /**
+   * Summarizes the results of fetching reports from vendors.
+   * @param fetchResults - The results of fetching reports from vendors.
+   * @param logger - The logger to use for logging.
+   * @returns The summarized results.
+   */
+  private static summarizeResults(
+    fetchResults: FetchResult[],
+    logger: LoggerService
+  ) {
     const result = fetchResults.reduce(
-      (acc: FetchResults, { reportId, vendorName, success, custom }) => {
-        const report = { reportId, success };
+      (
+        acc: FetchResults,
+        { reportId, vendorName, success, custom, error }: FetchResult
+      ) => {
+        const report = { reportId, success, error };
 
         // Determine if the vendor is 'main' or 'custom'
-        const vendorType = custom ? "custom" : "main";
+        const reportType = custom ? "custom" : "main";
 
-        const vendor = acc[vendorType].vendors.find(
+        const vendor = acc[reportType].vendors.find(
           (v) => v.name === vendorName
         );
         if (vendor) {
           vendor.reports.push(report);
           if (success) {
             vendor.totalSucceed += 1;
-            acc[vendorType].succeeded += 1;
+            acc[reportType].succeeded += 1;
           }
         } else {
-          acc[vendorType].vendors.push({
+          acc[reportType].vendors.push({
             name: vendorName,
             reports: [report],
             totalSucceed: success ? 1 : 0,
           });
-          if (success) acc[vendorType].succeeded += 1;
+          if (success) acc[reportType].succeeded += 1;
         }
 
         if (!success) acc.failed += 1;
@@ -200,7 +225,7 @@ export class FetchService {
 
     const isCustomReport = reportSettings.name.includes("Custom");
 
-    logger.log(`Started fetch for vendor with ID ${vendor.id}`);
+    logger.log(`Fetching ${vendor.id}`);
 
     try {
       const reportFromJsonFunc =
@@ -215,7 +240,7 @@ export class FetchService {
 
       logger.log(`Vendor has counter version ${counterVersion}`);
 
-      const reportUrl = `${vendorInfo.baseURL}/${reportSettings.id.toLowerCase()}?customer_id=${
+      let reportUrl = `${vendorInfo.baseURL}/${reportSettings.id.toLowerCase()}?customer_id=${
         vendorInfo.customerId
       }&requestor_id=${
         vendorInfo.requestorId
@@ -223,7 +248,10 @@ export class FetchService {
         startDate
       )}&end_date=${this.getDateAsString(endDate)}${this.getAPIKeySegment(
         vendorInfo
-      )}${this.convertFiltersToURLParams(reportSettings, counterVersion)}`;
+      )}`;
+
+      if (isCustomReport)
+        reportUrl += `${this.convertFiltersToURLParams(reportSettings, counterVersion)}`;
 
       logger.log(
         `Fetching from URL ${reportUrl}. Vendor requires ${vendorInfo.requireTwoAttemptsPerReport ? 2 : 1} fetch(es).`
@@ -283,10 +311,13 @@ export class FetchService {
 
       TSVService.writeTSVReport(tsvFilename, tsv, isCustomReport);
 
-      if (reportSettings.id.includes("TR"))
-        prismaReportService.saveFetchedReport(report);
+      // if (reportSettings.id.includes("TR"))
+      // prismaReportService.saveFetchedReport(report);
 
       fetchResult.success = true;
+      fetchResult.warning = report.Report_Header.Exceptions;
+
+      // console.log(report.Report_Header.Exceptions);
 
       return fetchResult;
     } catch (error) {
@@ -298,16 +329,34 @@ export class FetchService {
         error.hasOwnProperty("meaning")
       ) {
         const fetchError = error as IFetchError;
-        logger.log(
-          `ERROR ${fetchError.code} (${reportSettings.id} from ${vendor.name}): ${fetchError.message}`
-        );
+        const logMessage = `ERROR ${fetchError.code} (${reportSettings.id} from ${vendor.name}): ${fetchError.message}`;
+        logger.log(logMessage);
+        console.log(logMessage);
+
+        // Return a FetchResult with the error
+        return {
+          reportId: reportSettings.id,
+          custom: isCustomReport,
+          vendorName: vendor.name,
+          success: false,
+          error: fetchError,
+        };
       } else {
         // LOG GENERAL ERROR
-        const errorMessage = `Error fetching report ${reportSettings.id}: ${error}`;
-        console.error(errorMessage);
+        const errorMessage = `${vendor.name}:Error fetching report ${reportSettings.id}: ${error}`;
         logger.log(errorMessage);
+
+        console.log(errorMessage);
+
+        // Return a FetchResult with the error
+        return {
+          reportId: reportSettings.id,
+          custom: isCustomReport,
+          vendorName: vendor.name,
+          success: false,
+          error: errorMessage,
+        };
       }
-      return fetchResult;
     }
   }
 

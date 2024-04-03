@@ -8,14 +8,16 @@ type Props = {
   hint?: string;
   size?: "small" | "large";
   isSelected: boolean;
-  setSelected: (label: string, state: boolean) => void;
   isActive: boolean;
+  disabled?: boolean;
+  setSelected: (label: string, state: boolean) => void;
   setActiveTab: (label: string) => void;
 };
 
 const ToggleNav = ({
   label,
   hint,
+  disabled,
   setSelected,
   setActiveTab,
   isSelected,
@@ -91,18 +93,22 @@ const ToggleNav = ({
             e.stopPropagation();
             handleUnSelect();
           }}
+          disabled={disabled}
         >
           {isSelected ? <CheckCircle /> : <Circle />}
         </Button>
 
         {/* Right Side */}
-        <Button sx={rightSideStyle}>{label.replace(/_/g, " ")}</Button>
+        <Button disabled={disabled} sx={rightSideStyle}>
+          {label.replace(/_/g, " ")}
+        </Button>
       </FlexBetween>
     </TooltipBottom>
   ) : (
     <FlexBetween onClick={handleSelect} sx={pillStyle}>
       {/* Left side */}
       <Button
+        disabled={disabled}
         sx={leftSideStyle}
         onClick={(e) => {
           e.stopPropagation();
@@ -113,7 +119,9 @@ const ToggleNav = ({
       </Button>
 
       {/* Right Side */}
-      <Button sx={rightSideStyle}>{label.replace(/_/g, " ")}</Button>
+      <Button sx={rightSideStyle} disabled={disabled}>
+        {label.replace(/_/g, " ")}
+      </Button>
     </FlexBetween>
   );
 };

@@ -226,65 +226,68 @@ export class PrismaReportService {
           const trItem = rawItem as ITRIRReportItem;
           reportItemDetails.title = trItem.Title;
           reportItemDetails.publisher = trItem.Publisher;
-          trItem.Publisher_ID.map((id) => `${id.Type}:${id.Value}`).join(";");
-          trItem.Item_ID.map((id) => `${id.Type}:${id.Value}`).join(";");
+          trItem.Publisher_ID?.map((id) => `${id.Type}:${id.Value}`).join(";");
+          trItem.Item_ID?.map((id) => `${id.Type}:${id.Value}`).join(";");
           reportItemDetails.doi =
-            trItem.Item_ID.find((id) => id.Type === "DOI")?.Value || null;
+            trItem.Item_ID?.find((id) => id.Type === "DOI")?.Value || null;
           reportItemDetails.isbn =
-            trItem.Item_ID.find((id) => id.Type === "ISBN")?.Value || null;
+            trItem.Item_ID?.find((id) => id.Type === "ISBN")?.Value || null;
           reportItemDetails.print_issn =
-            trItem.Item_ID.find((id) => id.Type === "Print_ISSN")?.Value ||
+            trItem.Item_ID?.find((id) => id.Type === "Print_ISSN")?.Value ||
             null;
           reportItemDetails.online_issn =
-            trItem.Item_ID.find((id) => id.Type === "Online_ISSN")?.Value ||
+            trItem.Item_ID?.find((id) => id.Type === "Online_ISSN")?.Value ||
             null;
           reportItemDetails.uri =
-            trItem.Item_ID.find((id) => id.Type === "URI")?.Value || null;
+            trItem.Item_ID?.find((id) => id.Type === "URI")?.Value || null;
           reportItemDetails.data_type =
-            trItem.Item_ID.find((id) => id.Type === "Data_Type")?.Value || null;
+            trItem.Item_ID?.find((id) => id.Type === "Data_Type")?.Value ||
+            null;
         } else if (report.Report_Header.Report_ID.includes("IR")) {
           const irItem = rawItem as ITRIRReportItem;
 
           reportItemDetails.title = irItem.Title;
           reportItemDetails.publisher = irItem.Publisher;
 
-          irItem.Publisher_ID.map((id) => `${id.Type}:${id.Value}`).join(";");
-          irItem.Item_ID.map((id) => `${id.Type}:${id.Value}`).join(";");
+          irItem.Publisher_ID?.map((id) => `${id.Type}:${id.Value}`).join(";");
+          irItem.Item_ID?.map((id) => `${id.Type}:${id.Value}`).join(";");
 
           reportItemDetails.doi =
-            irItem.Item_ID.find((id) => id.Type === "DOI")?.Value || null;
+            irItem.Item_ID?.find((id) => id.Type === "DOI")?.Value || null;
           reportItemDetails.isbn =
-            irItem.Item_ID.find((id) => id.Type === "ISBN")?.Value || null;
+            irItem.Item_ID?.find((id) => id.Type === "ISBN")?.Value || null;
           reportItemDetails.print_issn =
-            irItem.Item_ID.find((id) => id.Type === "Print_ISSN")?.Value ||
+            irItem.Item_ID?.find((id) => id.Type === "Print_ISSN")?.Value ||
             null;
           reportItemDetails.online_issn =
-            irItem.Item_ID.find((id) => id.Type === "Online_ISSN")?.Value ||
+            irItem.Item_ID?.find((id) => id.Type === "Online_ISSN")?.Value ||
             null;
           reportItemDetails.uri =
-            irItem.Item_ID.find((id) => id.Type === "URI")?.Value || null;
+            irItem.Item_ID?.find((id) => id.Type === "URI")?.Value || null;
           reportItemDetails.data_type =
-            irItem.Item_ID.find((id) => id.Type === "Data_Type")?.Value || null;
+            irItem.Item_ID?.find((id) => id.Type === "Data_Type")?.Value ||
+            null;
         } else if (report.Report_Header.Report_ID.includes("DR")) {
           const drItem = rawItem as IDRReportItem;
           reportItemDetails.database = drItem.Database;
           reportItemDetails.publisher = drItem.Publisher;
-          drItem.Publisher_ID.map((id) => `${id.Type}:${id.Value}`).join(";");
-          drItem.Item_ID.map((id) => `${id.Type}:${id.Value}`).join(";");
+          drItem.Publisher_ID?.map((id) => `${id.Type}:${id.Value}`).join(";");
+          drItem.Item_ID?.map((id) => `${id.Type}:${id.Value}`).join(";");
           reportItemDetails.doi =
-            drItem.Item_ID.find((id) => id.Type === "DOI")?.Value || null;
+            drItem.Item_ID?.find((id) => id.Type === "DOI")?.Value || null;
           reportItemDetails.isbn =
-            drItem.Item_ID.find((id) => id.Type === "ISBN")?.Value || null;
+            drItem.Item_ID?.find((id) => id.Type === "ISBN")?.Value || null;
           reportItemDetails.print_issn =
-            drItem.Item_ID.find((id) => id.Type === "Print_ISSN")?.Value ||
+            drItem.Item_ID?.find((id) => id.Type === "Print_ISSN")?.Value ||
             null;
           reportItemDetails.online_issn =
-            drItem.Item_ID.find((id) => id.Type === "Online_ISSN")?.Value ||
+            drItem.Item_ID?.find((id) => id.Type === "Online_ISSN")?.Value ||
             null;
           reportItemDetails.uri =
-            drItem.Item_ID.find((id) => id.Type === "URI")?.Value || null;
+            drItem.Item_ID?.find((id) => id.Type === "URI")?.Value || null;
           reportItemDetails.data_type =
-            drItem.Item_ID.find((id) => id.Type === "Data_Type")?.Value || null;
+            drItem.Item_ID?.find((id) => id.Type === "Data_Type")?.Value ||
+            null;
         }
 
         const savedItem = await this.createReportItem(reportItemDetails);
@@ -355,7 +358,7 @@ export class PrismaReportService {
       });
 
       // TODO: Review this property (report)
-      return reportItems.map((item) => item.report);
+      return reportItems?.map((item) => item.report);
     } catch (error) {
       console.error("Error searching reports:", error);
       throw error;
@@ -378,7 +381,7 @@ export class PrismaReportService {
     tsv += `Institution_ID\t${report.institution_id}\n`;
 
     /* Report Filters */
-    const reportFilters = report.ReportFilter.map(
+    const reportFilters = report.ReportFilter?.map(
       (filter: any) => `${filter.filter_type}=${filter.value}`
     ).join(";");
     tsv += `Report_Filters\t${reportFilters}\n`;

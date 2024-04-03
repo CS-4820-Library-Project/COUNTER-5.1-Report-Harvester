@@ -1,4 +1,4 @@
-import { Report, Reports } from "../types/counter";
+import {Report, Report_Id, Reports} from "../types/counter";
 import { Access_Methods, Data_Types } from "./ReportMetadata5";
 
 // --------------------------- PR TEMPLATE - Platform Report TEMPLATE---------------------------
@@ -746,3 +746,26 @@ export const reports_5: Reports = {
     IR_M1,
   ],
 };
+
+export const allReportIds: Report_Id[] = [
+  "PR",
+  "DR",
+  "TR",
+  "IR",
+  "PR_P1",
+  "DR_D1",
+  "DR_D2",
+  "TR_B1",
+  "TR_B2",
+  "TR_B3",
+  "TR_J1",
+  "TR_J2",
+  "TR_J3",
+  "TR_J4",
+  "IR_A1",
+  "IR_M1",
+  "PR_Custom",
+  "DR_Custom",
+  "TR_Custom",
+  "IR_Custom",
+];

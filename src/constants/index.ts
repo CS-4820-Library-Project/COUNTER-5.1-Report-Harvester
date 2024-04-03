@@ -1,21 +1,3 @@
-import { AppSettings } from "src/types/settings";
-
-export const defaultSettings: AppSettings = {
-  isProtected: false,
-  darkMode: false,
-  directories: {
-    main: "./data/main_reports/",
-    custom: "./data/custom_reports/",
-    vendor: "./data/vendors.json",
-    db: "./prisma/dev.db",
-  },
-  request: {
-    requestInterval: 3000,
-    requestTimeout: 5000,
-    concurrentVendors: 5,
-  },
-};
-
 export const vendorHeaders: string[] = [
   "id",
   "usageCount",
@@ -58,3 +40,22 @@ export const dataVersions = {
   data5_0: "data5_0",
   data5_1: "data5_1",
 } as const;
+
+export const reportsIds = [
+  "TR",
+  "DR",
+  "IR",
+  "PR",
+  "TR_B1",
+  "TR_B2",
+  "TR_B3",
+  "TR_J1",
+  "TR_J2",
+  "TR_J3",
+  "TR_J4",
+  "IR_A1",
+  "IR_M1",
+  "DR_D1",
+  "DR_D2",
+  "PR_P1",
+];

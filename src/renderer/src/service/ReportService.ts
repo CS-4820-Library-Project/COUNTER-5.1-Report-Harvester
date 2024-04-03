@@ -30,7 +30,7 @@ export class ReportService {
       return ReportService.get51IRFromJSON(data); // direct call to self as `this` is lost in promise
 
     const reportId = data.Report_Header.Report_ID;
-    const reportItems = data.Report_Items.map((item: any) => {
+    const reportItems = data.Report_Items?.map((item: any) => {
       const performanceMap = new Map<string, IPerformance>();
 
       item.Attribute_Performance.forEach((attrPerf: any) => {
@@ -76,14 +76,14 @@ export class ReportService {
       if (reportId.includes("TR")) {
         const trItem = item as ITRIRReportItem;
         reportItem["Title"] = trItem.Title;
-        reportItem["Publisher_ID"] = Object.keys(trItem.Publisher_ID).map(
+        reportItem["Publisher_ID"] = Object.keys(trItem.Publisher_ID)?.map(
           (key) => ({
             Type: key,
             Value: trItem.Publisher_ID[key],
           })
         );
         reportItem["Publisher"] = trItem.Publisher;
-        reportItem["Item_ID"] = Object.keys(trItem.Item_ID).map((key) => ({
+        reportItem["Item_ID"] = Object.keys(trItem.Item_ID)?.map((key) => ({
           Type: key,
           Value: trItem.Item_ID[key],
         }));
@@ -98,13 +98,13 @@ export class ReportService {
         const drItem = item as IDRReportItem;
         reportItem["Database"] = drItem.Database;
         reportItem["Publisher"] = drItem.Publisher;
-        reportItem["Publisher_ID"] = Object.keys(drItem.Publisher_ID).map(
+        reportItem["Publisher_ID"] = Object.keys(drItem.Publisher_ID)?.map(
           (key) => ({
             Type: key,
             Value: drItem.Publisher_ID[key],
           })
         );
-        reportItem["Item_ID"] = Object.keys(drItem.Item_ID).map((key) => ({
+        reportItem["Item_ID"] = Object.keys(drItem.Item_ID)?.map((key) => ({
           Type: key,
           Value: drItem.Item_ID[key],
         }));
@@ -183,7 +183,7 @@ export class ReportService {
     tsv += `${THd.RELEASE}\t${header.Release}\n`;
     tsv += `${THd.INST_NAME}\t${header.Institution_Name}\n`;
 
-    const institutionIDs = header.Institution_ID.map(
+    const institutionIDs = header.Institution_ID?.map(
       (id) => `${id.Type}:${id.Value}`
     ).join(";");
 
@@ -198,7 +198,7 @@ export class ReportService {
     } else {
       const filtersArray = header.Report_Filters as IReportFilter[];
       const reportFilters = filtersArray
-        .map((filter) => `${filter.Name}=${filter.Value}`)
+        ?.map((filter) => `${filter.Name}=${filter.Value}`)
         .join(";");
       tsv += `${THd.REPORT_FILTERS}\t${reportFilters}\n`;
     }
@@ -254,14 +254,14 @@ export class ReportService {
         if (header.Report_ID.includes("TR")) {
           let trItem = item as ITRIRReportItem;
           rowData += `${trItem.Title}\t${trItem.Publisher}\t`;
-          const publisherIDs = trItem.Publisher_ID.map(
+          const publisherIDs = trItem.Publisher_ID?.map(
             (id) => `${id.Type}:${id.Value}`
           ).join(";");
           rowData += `${publisherIDs}\t${trItem.Platform}\t`;
 
           const itemIDs = trItem.Item_ID.reduce(
             (acc: { [key: string]: string }, id) => {
-              if (TRItemIdHeaders.map((h) => h as string).includes(id.Type)) {
+              if (TRItemIdHeaders?.map((h) => h as string).includes(id.Type)) {
                 acc[id.Type] = id.Value;
               }
               return acc;
@@ -379,11 +379,11 @@ export class ReportService {
       Report_ID: jsonHeader.Report_ID,
       Release: jsonHeader.Release,
       Institution_Name: jsonHeader.Institution_Name,
-      Institution_ID: Object.keys(jsonHeader.Institution_ID).map((key) => ({
+      Institution_ID: Object.keys(jsonHeader.Institution_ID)?.map((key) => ({
         Type: key,
         Value: jsonHeader.Institution_ID[key],
       })),
-      Report_Filters: Object.keys(jsonHeader.Report_Filters).map((key) => ({
+      Report_Filters: Object.keys(jsonHeader.Report_Filters)?.map((key) => ({
         Name: key,
         Value: jsonHeader.Report_Filters[key],
       })),
@@ -418,7 +418,7 @@ export class ReportService {
 
   static getSemicolonDelimitedString(member, jsonHeader): string {
     return Object.keys(jsonHeader[member])
-      .map((key) => {
+      ?.map((key) => {
         let result = `${key}=`;
         let memberValue = jsonHeader[member][key];
         if (Array.isArray(memberValue)) {

@@ -32,6 +32,7 @@ import { SideBadge } from "../../components/badge/SideBadge";
 import { reports_5_1 } from "../../../../constants/Reports_5_1";
 import { reports_5 } from "../../../../constants/Reports_5";
 import { FetchResults } from "../../../../types/reports";
+import { reportsIds } from "../../../../constants";
 
 /**
  * This is the "FetchReportsPage" component.
@@ -51,11 +52,11 @@ const FetchReportsPage = () => {
   const setNotification = useNotification();
   const isNonMobile = useMediaQuery("(min-width:1300px)");
 
-  // States for managing selected reports, query for searching, vendors, selected vendors, date range, and fetch status
-  const [selectedReports, setSelectedReports] = useState<Report[]>([]);
   const [version, setVersion] = useState<string>("5.0");
-
   const [reports, setReports] = useState(reports_5);
+  const [availableReports, setAvailableReports] =
+    useState<string[]>(reportsIds);
+  const [selectedReports, setSelectedReports] = useState<Report[]>([]);
 
   const [filtersPopUp, setFiltersPopUp] = useState(false);
   const [query, setQuery] = useState<string | null>(null);
@@ -128,6 +129,14 @@ const FetchReportsPage = () => {
     setSelectedReports([]);
     version === "5.1" ? setReports(reports_5_1) : setReports(reports_5);
   }, [version]);
+
+  useEffect(() => {
+    selectedVendors.length === 1
+      ? window.reports.getSupported(selectedVendors[0]).then((reports) => {
+          Array.isArray(reports) && setAvailableReports(reports);
+        })
+      : setAvailableReports(reportsIds);
+  }, [selectedVendors]);
 
   return (
     <Page>
@@ -228,6 +237,7 @@ const FetchReportsPage = () => {
           version={version as VendorVersions}
           setSelectedReports={setSelectedReports}
           selectedReports={selectedReports}
+          availableReports={availableReports}
         />
 
         {/* Fetch Tools */}
