@@ -240,7 +240,9 @@ export class FetchService {
         vendorInfo
       )}${this.convertFiltersToURLParams(reportSettings, counterVersion)}`;
 
-      logger.log(`Fetching from URL ${reportUrl}. Vendor requires ${vendorInfo.requireTwoAttemptsPerReport ? 2 : 1} fetch(es).`)
+      logger.log(
+          `Fetching from URL ${reportUrl}. Vendor requires ${vendorInfo.requireTwoAttemptsPerReport ? 2 : 1} fetch(es).`
+      );
 
       let attempts = vendorInfo.requireTwoAttemptsPerReport ? 2 : 1;
 
