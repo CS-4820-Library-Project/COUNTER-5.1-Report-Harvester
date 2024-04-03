@@ -334,8 +334,6 @@ class VendorService {
         //
       } else this.vendors = newVendors;
 
-      console.log("importing Vendors", this.vendors);
-
       this.storeVendors();
       return true;
     } catch (errors) {

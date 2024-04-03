@@ -36,7 +36,6 @@ export const writeFile = async (
     const currentPath = (process && process.cwd()) || "";
     const resolvedPath = path.resolve(currentPath, filePath);
     const dirPath = path.dirname(filePath);
-    console.log(dirPath, resolvedPath);
     await fs.promises.mkdir(dirPath, { recursive: true });
     await fs.promises.writeFile(resolvedPath, data);
     return true;

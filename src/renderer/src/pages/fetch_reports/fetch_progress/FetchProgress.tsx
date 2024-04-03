@@ -31,47 +31,48 @@ const FetchProgress = ({ close, text }: Props) => {
       gap="20px"
       width="30%"
       bgcolor={palette.background.light}
-      padding='5px'
-      borderRadius='25px'
+      padding="5px"
+      borderRadius="25px"
     >
       {/* Close button to exit the progress view */}
-      <FlexRowEnd width='100%'>
+      <FlexRowEnd width="100%">
         <IconButton onClick={close}>
-          <Close fontSize='large' />
+          <Close fontSize="large" />
         </IconButton>
       </FlexRowEnd>
 
       <FlexColumn width="100%" padding="20px" pt="0" mt="-20px" gap="20px">
         <div>
-          <CircularProgress/>
+          <CircularProgress />
         </div>
-        <div>
-          {text}
-        </div>
+        <div>{text}</div>
         {/* Conditional rendering based on the 'checkpoint' state */}
         {checkpoint > 3 && false && (
           <FlexColumn
-            width='100%'
-            borderRadius='20px'
-            padding='10px'
+            width="100%"
+            borderRadius="20px"
+            padding="10px"
             border={`1px solid ${palette.primary.main}`}
           >
             {/* Conditional content indicating the results of the fetch operation */}
 
             <ResultsHeader
-              message='standard reports were saved in **Main Reports** directory'
-              directory='/'
+              message="standard reports were saved in **Main Reports** directory"
+              directory="/"
             />
 
             <ResultsHeader
-              message='custom reports were saved in **Custom Reports** directory'
-              directory='/'
+              message="custom reports were saved in **Custom Reports** directory"
+              directory="/"
             />
 
             <ResultsHeader
-              message='reports failed. See log file for more details'
-              file='/'
-              color='error'
+              message={
+                fetchResults.failed +
+                " reports failed. See log file for more details"
+              }
+              file={fetchResults.log || "/"}
+              color="error"
             />
           </FlexColumn>
         )}

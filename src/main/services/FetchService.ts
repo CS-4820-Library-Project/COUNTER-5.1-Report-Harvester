@@ -108,18 +108,60 @@ export class FetchService {
             requestTimeout,
             logger
           );
-          allPromises.push(promise);
-        }
+
+          vendorPromises.push(promise);
+        });
+
+        allPromises.push(Promise.all(vendorPromises));
+
+        Promise.all(vendorPromises).then(() =>
+          mainWindow.webContents.send("vendor-completed")
+        );
       }
-    }
-    // Wait for all promises to resolve
-    let results = (await Promise.all(allPromises)) as FetchResult[];
-    const fetchResults = results.map((result) => {
-      if (result.success)
-        return `SUCCESS: Fetching ${result.reportId} from ${result.vendorName} succeeded`;
-      else
-        return `FAILED: Fetching ${result.reportId} from ${result.vendorName} failed`;
     });
+
+    // Wait for all promises to resolve
+    const fetchResults = (
+      await Promise.all(allPromises)
+    ).flat() as FetchResult[];
+
+    // Process Results and summarize
+    const result = fetchResults.reduce(
+      (acc: FetchResults, { reportId, vendorName, success, custom }) => {
+        const report = { reportId, success };
+
+        // Determine if the vendor is 'main' or 'custom'
+        const vendorType = custom ? "custom" : "main";
+
+        const vendor = acc[vendorType].vendors.find(
+          (v) => v.name === vendorName
+        );
+        if (vendor) {
+          vendor.reports.push(report);
+          if (success) {
+            vendor.totalSucceed += 1;
+            acc[vendorType].succeeded += 1;
+          }
+        } else {
+          acc[vendorType].vendors.push({
+            name: vendorName,
+            reports: [report],
+            totalSucceed: success ? 1 : 0,
+          });
+          if (success) acc[vendorType].succeeded += 1;
+        }
+
+        if (!success) acc.failed += 1;
+
+        return acc;
+      },
+      {
+        main: { succeeded: 0, vendors: [] },
+        custom: { succeeded: 0, vendors: [] },
+        failed: 0,
+        log: logger.writeLogsToFile(),
+      }
+    );
 
     return fetchResults;
   }
