@@ -49,10 +49,11 @@ export class FetchService {
 
     try {
       const response = await fetch(url);
+
       if (!response.ok)
         return this.getExistingFetchError(await response.json());
 
-      const data = (await response.json()) as SupportedAPIResponse[];
+      const data = await response.json(); // Had to be changed; previous implementation was causing 'Body is unusable' TypeError
 
       return Array.isArray(data) ? data.map((val) => val.Report_ID) : null;
     } catch (error) {
