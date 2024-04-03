@@ -51,7 +51,7 @@ const FetchProgress = ({ close, totalVendors, fetchResults }: Props) => {
     if (progress >= 1) setCheckpoint(1); // Connection Works
     if (progress >= 5) setCheckpoint(3); // Fetching Reports if working so far
     if (progress >= 50) setCheckpoint(4); // Some reports might be written
-    if (progress >= 99) setCheckpoint(5); // All reports are written
+    if (progress >= 98) setCheckpoint(5); // All reports are written
 
     // Cleanup
     return () => setCheckpoint(0);

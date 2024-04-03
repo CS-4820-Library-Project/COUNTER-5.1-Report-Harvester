@@ -50,12 +50,15 @@ export class FetchService {
       const response = await fetch(url);
       if (!response.ok)
         return this.getExistingFetchError(await response.json());
-
       const data = (await response.json()) as SupportedAPIResponse[];
 
-      return Array.isArray(data) ? data.map((val) => val.Report_ID) : null;
+      const reportIds = Array.isArray(data)
+        ? data.map((val) => val.Report_ID.toUpperCase())
+        : [];
+
+      return reportIds;
     } catch (error) {
-      console.error("Error fetching reports:", error);
+      // console.error("Error fetching reports:", error);
       return null;
     }
   }
@@ -83,10 +86,27 @@ export class FetchService {
 
     let allPromises: Promise<any>[] = [];
 
-    selectedVendors.map(async (vendor, vendorIndex) => {
+    let supportedPromises: Promise<string[] | IFetchError | null>[] = [];
+
+    selectedVendors.map(async (vendor) => {
+      const promise = this.getSupportedReports(vendor);
+      supportedPromises.push(promise);
+
+      const supported = await this.getSupportedReports(vendor);
+
+      if (!Array.isArray(supported))
+        return mainWindow.webContents.send("vendor-completed");
+
+      const vendorReports = fetchReports.filter((report) =>
+        supported.some((r) => r.toUpperCase() === report.id)
+      );
+
+      console.log(vendor.name, ": ", supported);
+      console.log(vendor.name, "Reports: ", vendorReports);
+
       // If requests need to be throttled for this vendor, fetch reports sequentially
       if (vendor[dataVersion]?.requireTwoAttemptsPerReport) {
-        const promise = fetchReports.reduce(async (prevPromise, report) => {
+        const promise = vendorReports.reduce(async (prevPromise, report) => {
           await prevPromise;
           await new Promise((resolve) => setTimeout(resolve, requestInterval));
           await FetchService.fetchReport(
@@ -102,7 +122,6 @@ export class FetchService {
 
         allPromises.push(promise);
 
-        console.log("Vendor completed", vendorIndex + 1);
         mainWindow.webContents.send("vendor-completed");
       }
 
@@ -110,7 +129,7 @@ export class FetchService {
       else {
         const vendorPromises: Promise<any>[] = [];
 
-        fetchReports.map(async (report) => {
+        vendorReports.map(async (report) => {
           const promise = FetchService.fetchReport(
             vendor,
             report,
@@ -131,6 +150,8 @@ export class FetchService {
         );
       }
     });
+
+    await Promise.all(supportedPromises);
 
     // Wait for all promises to resolve
     const fetchResults = (
@@ -304,7 +325,7 @@ export class FetchService {
       } else {
         // LOG GENERAL ERROR
         const errorMessage = `Error fetching report ${reportSettings.id}: ${error}`;
-        console.error(errorMessage);
+        // console.error(errorMessage);
         logger.log(errorMessage);
       }
       return fetchResult;

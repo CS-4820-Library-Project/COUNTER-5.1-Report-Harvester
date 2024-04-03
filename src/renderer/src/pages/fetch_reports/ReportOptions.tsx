@@ -35,10 +35,12 @@ type Props = {
   selectedReports: Report[];
   version: VendorVersions;
   reports: Reports;
+  availableReports: string[]; // When there is one Selected Vendor
 };
 
 const ReportOptions = ({
   setSelectedReports,
+  availableReports,
   selectedReports,
   version,
   reports,
@@ -373,6 +375,7 @@ const ReportOptions = ({
                 setSelected={handleSelectedReport}
                 isActive={activeReport?.id === report.id}
                 setActiveTab={handleActiveReport}
+                disabled={availableReports.includes(report.id)}
               />
             ) : (
               <Toggle
@@ -383,6 +386,7 @@ const ReportOptions = ({
                 isSelected={selectedReports.some(
                   (selectedReport) => selectedReport.id === report.id
                 )}
+                disabled={!availableReports.includes(report.id)}
                 onClick={() =>
                   handleSelectedReport(
                     report.id,
@@ -594,6 +598,7 @@ const ReportOptions = ({
                 hint={report.name}
                 label={report.id}
                 isSelected={isSelected}
+                disabled={!availableReports.includes(report.id)}
                 onClick={() => handleSelectedReport(report.id, !isSelected)}
               />
             );

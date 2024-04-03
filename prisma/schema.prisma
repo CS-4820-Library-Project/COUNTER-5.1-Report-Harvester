@@ -7,51 +7,9 @@ datasource db {
   url      = "file:./search.db"
 }
 
-model Vendor {
-  id               Int               @id @default(autoincrement())
-  name             String            @unique
-  usageCount       Int               @default(0)
-  VendorRecord_5_1 VendorRecord_5_1?
-  VendorRecord_5_0 VendorRecord_5_0?
-}
-
-model VendorRecord_5_1 {
-  id                         Int      @id @default(autoincrement())
-  vendorId                   Int      @unique
-  customerId                 String
-  requestorId                String?
-  baseURL                    String
-  apiKey                     String?
-  platform                   String
-  provider                   String
-  notes                      String
-  requireTwoAttempsPerReport String
-  requireIpChecking          String
-  requrieRequestsThrottled   String
-  createdAt                  DateTime @default(now())
-  updatedAt                  DateTime @updatedAt
-  vendor                     Vendor   @relation(fields: [vendorId], references: [id])
-}
-
-model VendorRecord_5_0 {
-  id          Int      @id @default(autoincrement())
-  vendorId    Int      @unique
-  customerId  String
-  requestorId String?
-  baseURL     String
-  apiKey      String?
-  platform    String
-  provider    String
-  nonSUSHI    Boolean
-  notes       String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  vendor      Vendor   @relation(fields: [vendorId], references: [id])
-}
-
 model Report {
   id               Int            @id @default(autoincrement())
-  report_id        String
+  report_id        String // TR
   report_name      String
   release          String
   institution_name String
@@ -59,6 +17,7 @@ model Report {
   created          String
   created_by       String
   ReportFilter     ReportFilter[]
+  // MISSING HEADERS (REPORTING PERIOD, METRIC_TYPES, REPORT_ATTRIBUTES, )
   ReportItem       ReportItem[]
 }
 
@@ -86,14 +45,16 @@ model ReportItem {
   uri            String?
   data_type      String?
   metric_type    String?
+  // INCLUDE ALL COLUMNS POSISIBLE FILL AS NULL IF NOT AVAILABLE IN REPORT
   ReportMetric   ReportMetric[]
 }
 
 model ReportMetric {
   id           Int        @id @default(autoincrement())
   reportItemId Int
-  reportItem   ReportItem @relation(fields: [reportItemId], references: [id])
-  period       String
+  period       String // YYYY-MM
   value        Int
   metricType   String
+  //
+  reportItem   ReportItem @relation(fields: [reportItemId], references: [id])
 }
