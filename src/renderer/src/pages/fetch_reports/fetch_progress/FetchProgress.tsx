@@ -115,11 +115,12 @@ const FetchProgress = ({ close, totalVendors, fetchResults }: Props) => {
 
             <ResultsHeader
               message={
-                fetchResults.failed +
-                " reports failed. See log file for more details"
+                (fetchResults.failed
+                  ? fetchResults.failed + " reports failed. "
+                  : "") + "See log file for more details"
               }
               file={fetchResults.log || "/"}
-              color="error"
+              color={fetchResults.failed ? "error" : "primary"}
             />
           </FlexColumn>
         )}

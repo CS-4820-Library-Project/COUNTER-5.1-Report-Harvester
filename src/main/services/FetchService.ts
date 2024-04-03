@@ -84,7 +84,13 @@ export class FetchService {
     const requestInterval = settings?.requestInterval || 1000;
     const requestTimeout = settings?.requestTimeout || 30000;
 
-    const allPromises = selectedVendors.map(async (vendor) => {
+    const allPromises = selectedVendors.map(async (vendor, vendorIndex) => {
+      console.log(
+        "Fetching Vendor",
+        vendorIndex + 1,
+        "of",
+        selectedVendors.length
+      );
       const supported = await this.getSupportedReports(vendor);
 
       if (!Array.isArray(supported)) {
@@ -113,6 +119,7 @@ export class FetchService {
               requestTimeout,
               logger
             );
+            console.log("Result", vendorIndex, " of ", selectedVendors.length);
             return [...results, result];
           },
           Promise.resolve([] as FetchResult[])
@@ -137,6 +144,7 @@ export class FetchService {
           )
         );
         mainWindow.webContents.send("vendor-completed");
+        console.log("Result", vendorIndex, " of ", selectedVendors.length);
         return results;
       }
     });
@@ -146,7 +154,9 @@ export class FetchService {
       await Promise.all(allPromises)
     ).flat() as FetchResult[];
 
-    return this.summarizeResults(fetchResults, logger);
+    const summary = this.summarizeResults(fetchResults, logger);
+    console.log(summary);
+    return summary;
   }
 
   /**
@@ -164,24 +174,24 @@ export class FetchService {
         const report = { reportId, success };
 
         // Determine if the vendor is 'main' or 'custom'
-        const vendorType = custom ? "custom" : "main";
+        const reportType = custom ? "custom" : "main";
 
-        const vendor = acc[vendorType].vendors.find(
+        const vendor = acc[reportType].vendors.find(
           (v) => v.name === vendorName
         );
         if (vendor) {
           vendor.reports.push(report);
           if (success) {
             vendor.totalSucceed += 1;
-            acc[vendorType].succeeded += 1;
+            acc[reportType].succeeded += 1;
           }
         } else {
-          acc[vendorType].vendors.push({
+          acc[reportType].vendors.push({
             name: vendorName,
             reports: [report],
             totalSucceed: success ? 1 : 0,
           });
-          if (success) acc[vendorType].succeeded += 1;
+          if (success) acc[reportType].succeeded += 1;
         }
 
         if (!success) acc.failed += 1;
