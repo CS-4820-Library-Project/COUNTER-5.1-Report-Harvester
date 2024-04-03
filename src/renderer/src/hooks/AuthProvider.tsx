@@ -27,8 +27,6 @@ export const AuthProvider = ({ children }: Props): JSX.Element => {
   useEffect(() => {
     const checkPasswordSet = async () => {
       const isProtected = await window.settings.isPasswordSet();
-      console.log(isProtected);
-
       isProtected ? setAuth(undefined) : setAuth({ password: "" });
     };
 

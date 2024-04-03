@@ -132,10 +132,12 @@ export class FetchService {
       }
     });
 
+    // Wait for all promises to resolve
     const fetchResults = (
       await Promise.all(allPromises)
     ).flat() as FetchResult[];
 
+    // Process Results and summarize
     const result = fetchResults.reduce(
       (acc: FetchResults, { reportId, vendorName, success, custom }) => {
         const report = { reportId, success };
@@ -169,6 +171,7 @@ export class FetchService {
         main: { succeeded: 0, vendors: [] },
         custom: { succeeded: 0, vendors: [] },
         failed: 0,
+        log: logger.writeLogsToFile(),
       }
     );
 

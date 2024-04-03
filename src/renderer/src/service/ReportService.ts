@@ -174,8 +174,6 @@ export class ReportService {
   /** Converts an `IReport` object into a string representing the data in TSV format. */
 
   static convertReportToTSV(report: IReport): string {
-    // console.log("Writing Report", report);
-
     let tsv = "";
 
     const header = report.Report_Header;

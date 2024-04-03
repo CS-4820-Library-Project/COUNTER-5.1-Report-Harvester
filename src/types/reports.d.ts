@@ -37,4 +37,5 @@ export type FetchResults = {
   main: VendorFetchSummary;
   custom: VendorFetchSummary;
   failed: number;
+  log: string;
 };
