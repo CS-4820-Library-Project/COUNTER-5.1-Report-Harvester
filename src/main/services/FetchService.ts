@@ -75,6 +75,13 @@ export class FetchService {
     const requestInterval = settings?.requestInterval || 1000;
     const requestTimeout = settings?.requestTimeout || 30000;
 
+    for (const reportSettings: Report of fetchReports) {
+      if (reportSettings.id === "TR" && !reportSettings.name.includes("Custom")) {
+        let newReportSettings = reportSettings;
+        newReportSettings.filters.YOP = "All";
+      }
+    }
+
     // Create an array to store all promises
     let allPromises: Promise<any>[] = [];
 
@@ -84,6 +91,21 @@ export class FetchService {
         let promise = fetchReports.reduce(async (prevPromise, report) => {
           await prevPromise;
           await new Promise((resolve) => setTimeout(resolve, requestInterval));
+
+          if (report.id === "TR" && !report.name.includes("Custom")) {
+            let newReportSettings = report;
+            newReportSettings.filters.YOP = "All";
+            await FetchService.fetchReport(
+                vendor,
+                newReportSettings,
+                fromDate,
+                toDate,
+                version as CounterVersion,
+                requestTimeout,
+                logger
+            );
+          }
+
           await FetchService.fetchReport(
             vendor,
             report,
@@ -93,6 +115,7 @@ export class FetchService {
             requestTimeout,
             logger
           );
+
         }, Promise.resolve());
 
         allPromises.push(promise);
@@ -170,9 +193,9 @@ export class FetchService {
         vendorInfo
       )}${this.convertFiltersToURLParams(reportSettings, counterVersion)}`;
 
-      logger.log(
-        `Fetching from URL ${reportUrl}. Vendor requires ${vendorInfo.requireTwoAttemptsPerReport ? 2 : 1} fetch(es).`
-      );
+      for (const obj of [console, logger]) {
+        obj.log(`Fetching from URL ${reportUrl}. Vendor requires ${vendorInfo.requireTwoAttemptsPerReport ? 2 : 1} fetch(es).`)
+      }
 
       let attempts = vendorInfo.requireTwoAttemptsPerReport ? 2 : 1;
 
@@ -234,9 +257,9 @@ export class FetchService {
     } catch (error) {
       // LOG COUNTER ERROR
       if (
-        typeof error === "object" &&
-        error !== null &&
-        "hasOwnProperty" in error &&
+        error &&
+        typeof error === "object" && //  Why are we checking that an object is an object?
+        "hasOwnProperty" in error && // `hasOwnProperty` is a method of all JavaScript Objects so this isn't necessary
         error.hasOwnProperty("meaning")
       ) {
         const fetchError = error as IFetchError;
