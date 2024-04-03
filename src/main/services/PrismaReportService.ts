@@ -13,10 +13,10 @@ import {
   IReport,
   ITRIRReportItem,
 } from "../../renderer/src/interface/IReport";
-import ReportService from "../../renderer/src/service/ReportService";
 import { DirectorySettingService } from "./DirectorySettingService";
 import { writeFile } from "../utils/files";
 import { exec } from "child_process";
+import { format } from "date-fns";
 import * as fs from "fs";
 
 const prisma = new PrismaClient();
@@ -51,7 +51,7 @@ export class PrismaReportService {
    * @throws If an error occurs while creating the report filter.
    */
   async createReportFilter(
-    data: Omit<ReportFilter, "id">,
+    data: Omit<ReportFilter, "id">
   ): Promise<ReportFilter> {
     try {
       return await prisma.reportFilter.create({
@@ -159,7 +159,7 @@ export class PrismaReportService {
    */
   async updateReportById(
     id: number,
-    data: Partial<Report>,
+    data: Partial<Report>
   ): Promise<Report | null> {
     try {
       return await prisma.report.update({
@@ -192,7 +192,6 @@ export class PrismaReportService {
 
   /**
    * This function is responsible for saving the fetched report into the database.
-   *
    * @param {Object} report - The report object that contains all the information about the report.
    * @returns {Promise<void>} - Aromise that resolves when all the report information has been saved into the database.
    */
@@ -211,6 +210,7 @@ export class PrismaReportService {
       for (const filter of report.Report_Header.Report_Filters) {
         await this.createReportFilter({
           reportId: savedReport.id,
+          // TODO: Review these property (Name, Value)
           filter_type: filter.Name,
           value: filter.Value,
         });
@@ -307,10 +307,17 @@ export class PrismaReportService {
     }
   }
 
+  /**
+   * This function is responsible for retrieving reports stored in database.
+   * @param title - The title of the report to search for.
+   * @param issn - The ISSN of the report to search for.
+   * @param isbn - The ISBN of the report to search for.
+   * @returns {Promise<Report[]>} - A promise that resolves to an array of reports that match the search criteria.
+   */
   async searchReport(
     title?: string,
     issn?: string,
-    isbn?: string,
+    isbn?: string
   ): Promise<Report[]> {
     try {
       let whereClause: Prisma.ReportItemWhereInput = {};
@@ -347,6 +354,7 @@ export class PrismaReportService {
         },
       });
 
+      // TODO: Review this property (report)
       return reportItems.map((item) => item.report);
     } catch (error) {
       console.error("Error searching reports:", error);
@@ -354,6 +362,11 @@ export class PrismaReportService {
     }
   }
 
+  /**
+   * Converts a JS report into a TSV string.
+   * @param report
+   * @returns tsv string.
+   */
   async convertReportToTSV(report: any): Promise<string> {
     let tsv = "";
 
@@ -366,7 +379,7 @@ export class PrismaReportService {
 
     /* Report Filters */
     const reportFilters = report.ReportFilter.map(
-      (filter: any) => `${filter.filter_type}=${filter.value}`,
+      (filter: any) => `${filter.filter_type}=${filter.value}`
     ).join(";");
     tsv += `Report_Filters\t${reportFilters}\n`;
 
@@ -389,6 +402,12 @@ export class PrismaReportService {
     return tsv;
   }
 
+  /**
+   * This function is responsible for writing the TSV file to the file system.
+   * @param tsv - The TSV content to write to the file.
+   * @param fileName - The name of the file to write the TSV content to.
+   * @returns {Promise<void>} - A promise that resolves when the TSV content has been written to the file.
+   */
   async writeTSVToFile(tsv: string, fileName: string): Promise<void> {
     const dirService = new DirectorySettingService();
     const filePath = dirService.getPath("search", `${fileName}.tsv`);
@@ -396,25 +415,55 @@ export class PrismaReportService {
     writeFile(filePath, tsv);
   }
 
+  /**
+   * This function is responsible for writing the searched reports to a TSV file.
+   * @param title - The title of the report to search for.
+   * @param issn - The ISSN of the report to search for.
+   * @param isbn - The ISBN of the report to search for.
+   * @returns {Promise<Report[]>} - A promise that resolves to an array of reports that match the search criteria.
+   */
   async writeSearchedReportsToTSV(
     title?: string,
     issn?: string,
-    isbn?: string,
+    isbn?: string
   ): Promise<Report[]> {
     const reports = await this.searchReport(title, issn, isbn);
+
+    console.log("Search Reports: \n", reports.length);
+
+    let total = 0;
 
     for (const report of reports) {
       if (report) {
         const tsv = this.convertReportToTSV(report);
         const vendorName = report.institution_id.split(":")[0];
-        const fileName = ReportService.generateTSVFilename(
-          vendorName,
-          report.report_id,
+
+        const fileName = this.generateSearchFilename(
+          title || issn || isbn || "",
+          vendorName
         );
         await this.writeTSVToFile(await tsv, fileName);
+        total++;
       }
     }
+
+    console.log("Total : ", total);
     return reports;
+  }
+
+  /**
+   * This function is responsible for generating a filename for the search results.
+   * @param query = The search query used to generate the filename.
+   * @param vendorName = The name of the vendor who provided the report.
+   * @returns {string} - The generated filename for the search results.
+   * @example generateSearchFilename("test query", "ACS") => "test_query_results:acs_20210810120000"
+   */
+  private generateSearchFilename(query: string, vendorName: string) {
+    let filename = query.replace(/ /g, "_") + "_";
+    filename += vendorName.toLowerCase() + "_";
+    filename += format(new Date(), "yyyyMMddHHmmss");
+
+    return filename;
   }
 
   // rebuilding database
@@ -445,7 +494,7 @@ export class PrismaReportService {
           } else {
             console.log("Prisma migrate output:", stdout);
           }
-        },
+        }
       );
     } catch (error) {
       console.error("Error while rebuilding the database:", error);
