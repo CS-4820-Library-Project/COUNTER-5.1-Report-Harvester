@@ -7,12 +7,13 @@ import {
 import { CounterVersion } from "../../renderer/src/const/CounterVersion";
 import { VendorData, VendorInfo, VendorRecord } from "src/types/vendors";
 import { LoggerService } from "./LoggerService";
-import { Report, Report_Attributes, Report_Filters } from "src/types/counter";
+import {Report, Report_Attributes, Report_Filters, Report_Id} from "src/types/counter";
 import { FetchResults, SupportedAPIResponse } from "src/types/reports";
 import { APIRequestSettingService } from "./APIRequestSettingService";
 import TSVService from "./TSVService";
 import { prismaReportService } from "./PrismaReportService";
 import { BrowserWindow } from "electron";
+import {allReportIds} from "../../constants/Reports_5";
 
 export type FetchData = {
   fetchReports: Report[];
@@ -48,10 +49,11 @@ export class FetchService {
 
     try {
       const response = await fetch(url);
+
       if (!response.ok)
         return this.getExistingFetchError(await response.json());
 
-      const data = (await response.json()) as SupportedAPIResponse[];
+      const data = await response.json(); // Had to be changed; previous implementation was causing 'Body is unusable' TypeError
 
       return Array.isArray(data) ? data.map((val) => val.Report_ID) : null;
     } catch (error) {
@@ -84,9 +86,16 @@ export class FetchService {
     let allPromises: Promise<any>[] = [];
 
     selectedVendors.map(async (vendor, vendorIndex) => {
+      let supportedReportsResult = await this.getSupportedReports(vendor);
+      if (!Array.isArray(supportedReportsResult)) supportedReportsResult = allReportIds;
+      const supportedReports = supportedReportsResult as string[];
+
       // If requests need to be throttled for this vendor, fetch reports sequentially
       if (vendor[dataVersion]?.requireTwoAttemptsPerReport) {
         const promise = fetchReports.reduce(async (prevPromise, report) => {
+
+          if (!supportedReports.includes(report.id)) return;
+
           await prevPromise;
           await new Promise((resolve) => setTimeout(resolve, requestInterval));
           await FetchService.fetchReport(
@@ -111,6 +120,9 @@ export class FetchService {
         const vendorPromises: Promise<any>[] = [];
 
         fetchReports.map(async (report) => {
+
+          if (!supportedReports.includes(report.id)) return;
+
           const promise = FetchService.fetchReport(
             vendor,
             report,
