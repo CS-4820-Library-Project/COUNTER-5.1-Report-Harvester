@@ -27,11 +27,11 @@ import FetchProgress from "./fetch_progress/FetchProgress";
 import { SortOptions, VendorRecord, VendorVersions } from "src/types/vendors";
 import FiltersPopUp from "../vendors/FiltersPopUp";
 import DualToggle from "../../components/buttons/DualToggle";
-import FetchReportsResult from "./fetch_progress/FetchReportsResult";
 import { useNotification } from "../../components/NotificationBadge";
 import { SideBadge } from "../../components/badge/SideBadge";
 import { reports_5_1 } from "../../../../constants/Reports_5_1";
 import { reports_5 } from "../../../../constants/Reports_5";
+import { FetchResults } from "../../../../types/reports";
 
 /**
  * This is the "FetchReportsPage" component.
@@ -62,7 +62,7 @@ const FetchReportsPage = () => {
   const [sortBy, setSortBy] = useState<SortOptions>("name");
 
   const [fetching, setFetching] = useState(false);
-  const [selectAll, setSelectAll] = useState(false);
+  const [selectAllVendors, setSelectAllVendors] = useState(false);
 
   const [selectedVendors, setSelectedVendors] = useState<VendorRecord[]>([]);
 
@@ -74,8 +74,7 @@ const FetchReportsPage = () => {
     new Date(currentYear, currentMonth - 1)
   );
 
-  const [progressMessage, setProgressMessage] = useState<string>("");
-  const [fetchResults, setFetchResults] = useState<string[]>([]);
+  const [fetchResults, setFetchResults] = useState<FetchResults>();
 
   const handleSelectedVendor = (vendor: VendorRecord | VendorRecord[]) => {
     if (Array.isArray(vendor)) {
@@ -109,9 +108,10 @@ const FetchReportsPage = () => {
     }
 
     setFetching(true);
+    all && setSelectedReports(reports.all);
 
     const fetchReports = all ? reports.all : selectedReports;
-    console.log(window.reports);
+
     const allResults = await window.reports.fetch({
       fetchReports,
       selectedVendors,
@@ -121,7 +121,6 @@ const FetchReportsPage = () => {
     });
 
     setFetchResults(allResults);
-    setFetching(false);
   };
 
   useEffect(() => {
@@ -143,23 +142,10 @@ const FetchReportsPage = () => {
             height="100%"
             bgcolor="rgba(0, 0, 0, 0.25)"
           >
-            <FetchProgress close={cancelFetch} text={progressMessage} />
-          </FlexCenter>
-        )}
-
-        {!fetching && fetchResults.length > 0 && (
-          <FlexCenter
-            position="absolute"
-            zIndex={9}
-            top="0"
-            left="0"
-            width="100%"
-            height="100%"
-            bgcolor="rgba(0, 0, 0, 0.25)"
-          >
-            <FetchReportsResult
-              close={() => setFetchResults([])}
-              messages={fetchResults}
+            <FetchProgress
+              close={cancelFetch}
+              totalVendors={selectedVendors.length}
+              fetchResults={fetchResults}
             />
           </FlexCenter>
         )}
@@ -189,14 +175,14 @@ const FetchReportsPage = () => {
               label="Select All"
               color="secondary"
               icon={<SelectAll fontSize="small" />}
-              onClick={() => setSelectAll(true)}
+              onClick={() => setSelectAllVendors(true)}
             />
             <ActionButton
               label="Deselect All"
               color="secondary"
               icon={<Deselect fontSize="small" />}
               onClick={() => {
-                setSelectAll(false);
+                setSelectAllVendors(false);
                 setSelectedVendors([]);
               }}
             />
@@ -225,7 +211,7 @@ const FetchReportsPage = () => {
         <VendorList
           query={query}
           sortBy={sortBy}
-          selectAll={selectAll}
+          selectAll={selectAllVendors}
           selected={selectedVendors}
           setSelected={handleSelectedVendor}
           version={version as VendorVersions}
