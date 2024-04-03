@@ -27,7 +27,6 @@ export class APIRequestSettingService {
 
     try {
       await writeFileAsync(settingsPath, data);
-      console.log("Successfully wrote settings to file");
     } catch (err) {
       console.error("There was an error writing the file", err);
       throw err;

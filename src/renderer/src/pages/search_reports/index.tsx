@@ -1,4 +1,4 @@
-import { useState } from "react";
+import {useEffect, useState} from "react";
 import { Typography, Box, useTheme, Button } from "@mui/material";
 import {
   FlexBetween,
@@ -25,6 +25,20 @@ const SearchReportsPage = () => {
   const [vendorsCount, setVendorsCount] = useState<number>(0); //TODO: Add vendors count if possible
   const [searchDuration, setSearchDuration] = useState<number>(0);
   const [searchValue, setSearchValue] = useState<string>("");
+
+  useEffect(() => {
+    function handleKeyDown(e) {
+      if (e.keyCode === 13) {
+        document.getElementById("hiddenButton")?.click(); // Implemented like this to avoid dealing with state issues
+      }
+    }
+
+    document.addEventListener("keydown", handleKeyDown);
+
+    return function cleanup() {
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, []);
 
   const handleButtonClick = (label: string) => {
     setActiveButton(label === activeButton ? null : label);
@@ -183,6 +197,12 @@ const SearchReportsPage = () => {
                 color="secondary"
                 onClick={handleSearchButtonClick}
               />
+              {/* Used to handle Enter key press, implemented in such a way to avoid issues with state */}
+              <button
+                  id="hiddenButton"
+                  style={{ display: "none" }}
+                  onClick={handleSearchButtonClick}
+              ></button>
             </Box>
           </Box>
 

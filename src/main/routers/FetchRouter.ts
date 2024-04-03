@@ -1,14 +1,14 @@
-import { ipcMain } from "electron";
+import { BrowserWindow, ipcMain } from "electron";
 import FetchService from "../services/FetchService";
 
-const FetchRouter = () => {
+const FetchRouter = (mainWindow: BrowserWindow) => {
   /**
    * Fetches reports from the FetchService.
    * @param {FetchData} fetchData - The data to be used to fetch reports.
    * @returns string[] - The promise object representing the result of the fetch operation
    */
-  ipcMain.handle("fetch-reports", async (_, args) => {
-    return await FetchService.fetchReports(args);
+  ipcMain.handle("fetch-reports", async (_, fetchData) => {
+    return await FetchService.fetchReports(fetchData, mainWindow);
   });
 
   /**

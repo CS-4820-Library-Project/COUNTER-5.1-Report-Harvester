@@ -1,4 +1,6 @@
 import ReportService from "../../renderer/src/service/ReportService";
+import { writeFile } from "../utils/files";
+import { DirectorySettingService } from "./DirectorySettingService";
 
 /**
  * A service for logging lines of text to a text file.
@@ -11,7 +13,7 @@ export class LoggerService {
    * @param line - The line of text to be logged.
    */
   public log(line: string): void {
-    // console.log(line);
+    // console.log("LOGGER SERVICE", line);
     this.currentLogs.push(line);
   }
 
@@ -21,8 +23,12 @@ export class LoggerService {
    */
   public writeLogsToFile(): string {
     const filename = this.generateFileName();
-    window.logger.writeLogToFile(this.currentLogs.join("\n"), filename);
-    return filename;
+    const dirService = new DirectorySettingService();
+
+    const logFilePath = dirService.getPath("logs", `${filename}.txt`);
+    writeFile(logFilePath, this.currentLogs.join("\n"));
+
+    return logFilePath;
   }
 
   /**

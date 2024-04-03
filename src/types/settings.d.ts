@@ -32,3 +32,7 @@ export type UserDirectories = {
   custom: string;
   logs: string;
 };
+
+export type Auth = {
+  password: string;
+};

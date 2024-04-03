@@ -92,9 +92,9 @@ export class DirectorySettingService {
 
   /**
    * Gets the full path of a file in the specified directory.
-   * @param dir - The directory name.
-   * @param filepath - The file path. One of "data", "vendors", "search", "main", "custom",
+   * @param dir - The directory name. One of "data", "vendors", "search", "main", "custom",
    * "logs", or "settings
+   * @param filepath - The file path.
    * @returns The full path of the file.
    * @example getPath("data", "myTextFile.txt") // Returns "/path/to/data/file.txt"
    */
