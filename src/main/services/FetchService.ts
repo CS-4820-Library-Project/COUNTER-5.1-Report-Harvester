@@ -92,12 +92,18 @@ export class FetchService {
           await prevPromise;
           await new Promise((resolve) => setTimeout(resolve, requestInterval));
 
+          let reports = [report]
+
           if (report.id === "TR" && !report.name.includes("Custom")) {
             let newReportSettings = report;
             newReportSettings.filters.YOP = "All";
+            reports.push(newReportSettings);
+          }
+
+          for (let r of reports) {
             await FetchService.fetchReport(
                 vendor,
-                newReportSettings,
+                r,
                 fromDate,
                 toDate,
                 version as CounterVersion,
@@ -105,16 +111,6 @@ export class FetchService {
                 logger
             );
           }
-
-          await FetchService.fetchReport(
-            vendor,
-            report,
-            fromDate,
-            toDate,
-            version as CounterVersion,
-            requestTimeout,
-            logger
-          );
 
         }, Promise.resolve());
 
