@@ -1,12 +1,16 @@
 {
   "name": "counter-harvester",
   "private": true,
-  "version": "0.2.0",
+  "version": "0.3.0",
   "main": "./out/main/main.js",
+  "author": {
+    "name": "UPEI ",
+    "email": "membelvadi@upei.ca"
+  },
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/UPEI-COUNTER-Harvester/Counter-5.1-Electron"
+    "url": "git+https://github.com/CS-4820-Library-Project/COUNTER-5.1-Report-Harvester.git"
   },
   "build": {
     "appId": "com.counter.reportharvester",
@@ -14,14 +18,57 @@
     "mac": {
       "icon": "public/app-logo.icns",
       "category": "public.app-category.business",
-      "type": "distribution"
+      "type": "distribution",
+      "identity": null,
+      "target": [
+        "dmg",
+        "pkg",
+        "mas",
+        "zip",
+        "7z",
+        "tar.xz",
+        "tar.lz",
+        "tar.gz",
+        "tar.bz2",
+        "dir"
+      ]
     },
     "win": {
-      "icon": "public/app-logo.ico"
+      "icon": "public/app-logo.ico",
+      "target": [
+        "nsis",
+        "msi",
+        "portable",
+        "appx",
+        "squirrel",
+        "7z",
+        "zip",
+        "tar.xz",
+        "tar.lz",
+        "tar.gz",
+        "tar.bz2",
+        "dir"
+      ]
     },
     "linux": {
       "icon": "public/app-logo.png",
-      "category": "Utility"
+      "category": "Utility",
+      "target": [
+        "deb",
+        "rpm",
+        "snap",
+        "AppImage",
+        "freebsd",
+        "pacman",
+        "p5p",
+        "7z",
+        "zip",
+        "tar.xz",
+        "tar.lz",
+        "tar.gz",
+        "tar.bz2",
+        "dir"
+      ]
     },
     "files": [
       "out/**/*",
@@ -40,8 +87,9 @@
     "start": "cross-env NODE_ENV=production && electron-vite preview",
     "dev": "cross-env NODE_ENV=development && electron-vite dev -w",
     "build": "electron-vite build && npm run prisma:init",
-    "dist:ml": "cross-env NODE_ENV=production npm run build && electron-builder -ml",
+    "dist:m": "cross-env NODE_ENV=production npm run build && electron-builder -m",
     "dist:w": "cross-env NODE_ENV=production npm run build && electron-builder -w",
+    "dist:l": "cross-env NODE_ENV=production npm run build && electron-builder -l",
     "pack": "cross-env NODE_ENV=production electron-builder --dir",
     "postinstall": "electron-builder install-app-deps",
     "test": "jest",
