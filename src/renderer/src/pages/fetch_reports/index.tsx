@@ -121,6 +121,7 @@ const FetchReportsPage = () => {
     });
 
     setFetchResults(allResults);
+    setSelectedReports([]);
   };
 
   useEffect(() => {

@@ -118,7 +118,7 @@ const FetchProgress = ({ close, totalVendors, fetchResults }: Props) => {
                 fetchResults.failed +
                 " reports failed. See log file for more details"
               }
-              file={directories?.logs || "/"}
+              file={fetchResults.log || "/"}
               color="error"
             />
           </FlexColumn>
