@@ -75,12 +75,17 @@ export class FetchService {
     const requestInterval = settings?.requestInterval || 1000;
     const requestTimeout = settings?.requestTimeout || 30000;
 
-    for (const reportSettings: Report of fetchReports) {
+    let newReports = [];
+
+    for (const reportSettings: Report of fetchReports) { // Double-fetch default TRs by adding YOP filter to second fetch
       if (reportSettings.id === "TR" && !reportSettings.name.includes("Custom")) {
         let newReportSettings = reportSettings;
         newReportSettings.filters.YOP = "All";
+        newReports.push(newReportSettings);
       }
     }
+
+    fetchReports = fetchReports.concat(newReports);
 
     // Create an array to store all promises
     let allPromises: Promise<any>[] = [];
@@ -92,25 +97,15 @@ export class FetchService {
           await prevPromise;
           await new Promise((resolve) => setTimeout(resolve, requestInterval));
 
-          let reports = [report]
-
-          if (report.id === "TR" && !report.name.includes("Custom")) {
-            let newReportSettings = report;
-            newReportSettings.filters.YOP = "All";
-            reports.push(newReportSettings);
-          }
-
-          for (let r of reports) {
-            await FetchService.fetchReport(
-                vendor,
-                r,
-                fromDate,
-                toDate,
-                version as CounterVersion,
-                requestTimeout,
-                logger
-            );
-          }
+          await FetchService.fetchReport(
+              vendor,
+              report,
+              fromDate,
+              toDate,
+              version as CounterVersion,
+              requestTimeout,
+              logger
+          );
 
         }, Promise.resolve());
 
