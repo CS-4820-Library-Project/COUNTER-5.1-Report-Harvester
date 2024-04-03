@@ -272,8 +272,11 @@ export class FetchService {
       let tsv = ReportService.convertReportToTSV(report);
 
       const tsvFilename = ReportService.generateTSVFilename(
+        counterVersion,
         vendor.name,
-        reportSettings.id
+        reportSettings.id,
+        startDate,
+        endDate
       );
 
       logger.log(`Writing TSV content to ${tsvFilename}.tsv`);

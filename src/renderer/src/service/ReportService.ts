@@ -12,6 +12,7 @@ import {
   TRItemIdHeaders,
   TSVHeaders as THd,
 } from "../const/TSVStrings";
+import { CounterVersion } from "../const/CounterVersion";
 
 /** The main service for cleansing, coercing, and analyzing Reports from SUSHI APIs. */
 
@@ -308,36 +309,51 @@ export class ReportService {
     return tsv;
   }
 
-  static generateTSVFilename(vendorName: string, reportType: string): string {
-    const monthNames = [
-      "Jan",
-      "Feb",
-      "Mar",
-      "Apr",
-      "May",
-      "Jun",
-      "Jul",
-      "Aug",
-      "Sep",
-      "Oct",
-      "Nov",
-      "Dec",
-    ];
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = monthNames[now.getMonth()];
-    const day = now.getDate();
-    const hours = this.padLeft(now.getHours().toString(), 2, "0");
-    const minutes = this.padLeft(now.getMinutes().toString(), 2, "0");
-    const seconds = this.padLeft(now.getSeconds().toString(), 2, "0");
+  /**
+   * Generates a filename for a TSV file based on the report's metadata.
+   * @param version The version of the COUNTER standard. 5.0 or 5.1.
+   * @param vendorName The name of the vendor.
+   * @param reportType The type of report.
+   * @param startDate The start date of the report.
+   * @param endDate The end date of the report.
+   * @returns The generated filename. of the form:
+   * year_data/VendorName/vendorName_ReportType_version__yyyymm-yyyymm
+   * @example: 2022/ProQuest/ProQuest_JR5_5_1_202201-202202.tsv
+   */
+  static generateTSVFilename(
+    version: CounterVersion,
+    vendorName: string,
+    reportType: string,
+    startDate: Date,
+    endDate: Date
+  ): string {
+    const year = startDate.getFullYear();
 
-    let filename = `${year}/${vendorName.replace(/ /g, "")}/${reportType}/`;
-    filename += `${this.padLeft(month.toString(), 2, "0")}_${this.padLeft(day.toString(), 2, "0")}-`;
-    filename += `${hours}h${minutes}m${seconds}`;
+    const startPeriod =
+      startDate.getFullYear() +
+      this.padLeft((startDate.getMonth() + 1).toString(), 2, "0");
+
+    const endPeriod =
+      endDate.getFullYear() +
+      this.padLeft((endDate.getMonth() + 1).toString(), 2, "0");
+
+    vendorName = vendorName.replace(/ /g, "-");
+    version = version.replace(".", "_") as CounterVersion;
+
+    let filename = `${year}/${vendorName}/`;
+    filename += `${vendorName}_${reportType}_${version}_${startPeriod}-${endPeriod}`;
 
     return filename;
   }
 
+  /**
+   * Pads a string with a specified character until it reaches a target length.
+   * @param str The string to pad.
+   * @param targetLength The target length of the string.
+   * @param padString The character to pad the string with.
+   * @returns The padded string.
+   * @example padLeft("123", 5, "0") => "00123"
+   */
   static padLeft(str: string, targetLength: number, padString = " "): string {
     while (str.length < targetLength) {
       str = padString + str;
@@ -345,6 +361,12 @@ export class ReportService {
     return str;
   }
 
+  /**
+   * Sums the values in an array of numbers.
+   * @param array The array of numbers to sum.
+   * @returns The sum of the numbers in the array.
+   * @example getSum([1, 2, 3]) => 6
+   */
   private static getSum(array: Array<number>) {
     let sum: number = 0;
     array.forEach((num) => (sum += num));
