@@ -1,6 +1,5 @@
 import fs from "fs";
 import path from "path";
-import { defaultSettings } from "../../constants";
 import { AppSettings } from "../../types/settings";
 
 /**
@@ -42,21 +41,5 @@ export const writeFile = async (
   } catch (error) {
     console.error(error);
     return false;
-  }
-};
-
-/**
- * Reads the settings from a file and returns the parsed settings object.
- * If the file does not exist, it creates a new file with default settings and returns the default settings object.
- * @param filePath - The path to the settings file.
- * @returns The settings object.
- */
-export const readSettings = (filePath: string): AppSettings => {
-  try {
-    const data = fs.readFileSync(filePath, "utf-8");
-    return JSON.parse(data);
-  } catch (error) {
-    writeFile(filePath, JSON.stringify(defaultSettings));
-    return defaultSettings;
   }
 };
