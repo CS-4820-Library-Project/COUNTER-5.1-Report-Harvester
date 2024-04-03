@@ -23,7 +23,7 @@ interface Option {
 const options: Option[] = [
   { title: "Security", settings: ["Set Up Root Password"] },
   { title: "Reports", settings: ["Change Report Saving Directories"] },
-  { title: "Advanced Settings", settings: ["Change API Request Settings"] },
+  { title: "Advanced Settings", settings: ["Change API Request Settings", "Rebuild Search Database"] },
 ];
 
 // Styled component for the main title of the settings page.
