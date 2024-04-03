@@ -46,8 +46,10 @@ export class FetchService {
 
     try {
       const response = await fetch(url);
+
       if (!response.ok)
         return this.getExistingFetchError(await response.json());
+
       const data = (await response.json()) as SupportedAPIResponse[];
 
       const reportIds = Array.isArray(data)
