@@ -36,7 +36,7 @@ function createWindow() {
 
   // Routers
   VendorRouter();
-  FetchRouter();
+  FetchRouter(mainWindow);
   SettingsRouter();
   tsvRouter();
   DatabaseRouter();
