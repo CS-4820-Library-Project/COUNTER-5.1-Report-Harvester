@@ -1,4 +1,4 @@
-import ReportService from "../../renderer/src/service/ReportService";
+import ReportService from "./ReportService";
 import { IFetchError } from "src/renderer/src/interface/IFetchError";
 import {
   SushiExceptionDictionary,
@@ -17,6 +17,7 @@ import { APIRequestSettingService } from "./APIRequestSettingService";
 import TSVService from "./TSVService";
 import { prismaReportService } from "./PrismaReportService";
 import { BrowserWindow } from "electron";
+import { IReport } from "src/renderer/src/interface/IReport";
 
 export type FetchData = {
   fetchReports: Report[];
@@ -46,11 +47,11 @@ export class FetchService {
 
     try {
       const response = await fetch(url);
+      const responseBody = await response.json();
 
-      if (!response.ok)
-        return this.getExistingFetchError(await response.json());
+      if (!response.ok) return this.getExistingFetchError(responseBody);
 
-      const data = (await response.json()) as SupportedAPIResponse[];
+      const data = responseBody as SupportedAPIResponse[];
 
       const reportIds = Array.isArray(data)
         ? data.map((val) => val.Report_ID.toUpperCase())
@@ -58,7 +59,6 @@ export class FetchService {
 
       return reportIds;
     } catch (error) {
-      // console.error("Error fetching reports:", error);
       return null;
     }
   }
@@ -220,25 +220,15 @@ export class FetchService {
       success: false,
       custom: reportSettings.name.includes("Custom"),
     };
-
     if (!reportSettings.id || !vendor) return fetchResult;
 
+    const logHeader = `${vendor.name}\t${reportSettings.id}\t`;
     const isCustomReport = reportSettings.name.includes("Custom");
 
-    logger.log(`Fetching ${vendor.id}`);
-
     try {
-      const reportFromJsonFunc =
-        counterVersion == CounterVersion.v5_0
-          ? ReportService.get50ReportFromJSON
-          : ReportService.get51ReportFromJson;
-
       const vendorInfo =
         counterVersion == CounterVersion.v5_0 ? vendor.data5_0 : vendor.data5_1;
-
       if (!vendorInfo) return fetchResult;
-
-      logger.log(`Vendor has counter version ${counterVersion}`);
 
       let reportUrl = `${vendorInfo.baseURL}/${reportSettings.id.toLowerCase()}?customer_id=${
         vendorInfo.customerId
@@ -253,8 +243,11 @@ export class FetchService {
       if (isCustomReport)
         reportUrl += `${this.convertFiltersToURLParams(reportSettings, counterVersion)}`;
 
+      // TODO: Improve Log
       logger.log(
-        `Fetching from URL ${reportUrl}. Vendor requires ${vendorInfo.requireTwoAttemptsPerReport ? 2 : 1} fetch(es).`
+        logHeader +
+          "\tFetching Sushi API\t" +
+          `Fetching from URL ${reportUrl}. Vendor requires ${vendorInfo.requireTwoAttemptsPerReport ? 2 : 1} fetch(es).`
       );
 
       let attempts = vendorInfo.requireTwoAttemptsPerReport ? 2 : 1;
@@ -281,21 +274,16 @@ export class FetchService {
           | IFetchError;
       }
 
-      logger.log(`Response received!`);
+      // Throw TSV Error Message or Returns Data
+      const data = await this.validateResponse(response);
 
-      if (response && "ok" in response && !response.ok)
-        throw this.getExistingFetchError(await response.json());
-
-      response = response as Response;
-      const data = await response.json();
-
-      logger.log(`Converting results from JSON to object`);
+      const reportFromJsonFunc =
+        counterVersion == CounterVersion.v5_0
+          ? ReportService.get50ReportFromJSON
+          : ReportService.get51ReportFromJson;
 
       let report = reportFromJsonFunc(data);
-
       if (!report) return fetchResult;
-
-      logger.log(`Converting object to TSV`);
 
       let tsv = ReportService.convertReportToTSV(report);
 
@@ -307,63 +295,84 @@ export class FetchService {
         endDate
       );
 
-      logger.log(`Writing TSV content to ${tsvFilename}.tsv`);
-
+      // TODO: THROWS MANY ERRORS
       TSVService.writeTSVReport(tsvFilename, tsv, isCustomReport);
 
-      // if (reportSettings.id.includes("TR"))
-      // prismaReportService.saveFetchedReport(report);
+      // TODO: DATABASE CRASHING
+      prismaReportService.saveFetchedReport(report);
 
       fetchResult.success = true;
       fetchResult.warning = report.Report_Header.Exceptions;
 
-      // console.log(report.Report_Header.Exceptions);
-
       return fetchResult;
     } catch (error) {
-      // LOG COUNTER ERROR
-      if (
-        typeof error === "object" &&
-        error !== null &&
-        "hasOwnProperty" in error &&
-        error.hasOwnProperty("meaning")
-      ) {
-        const fetchError = error as IFetchError;
-        const logMessage = `ERROR ${fetchError.code} (${reportSettings.id} from ${vendor.name}): ${fetchError.message}`;
-        logger.log(logMessage);
-        console.log(logMessage);
+      let errorMessage = logHeader + error;
 
-        // Return a FetchResult with the error
-        return {
-          reportId: reportSettings.id,
-          custom: isCustomReport,
-          vendorName: vendor.name,
-          success: false,
-          error: fetchError,
-        };
-      } else {
-        // LOG GENERAL ERROR
-        const errorMessage = `${vendor.name}:Error fetching report ${reportSettings.id}: ${error}`;
-        logger.log(errorMessage);
+      // LOG GENERAL ERROR
+      errorMessage += error;
 
-        console.log(errorMessage);
+      logger.log(errorMessage);
 
-        // Return a FetchResult with the error
-        return {
-          reportId: reportSettings.id,
-          custom: isCustomReport,
-          vendorName: vendor.name,
-          success: false,
-          error: errorMessage,
-        };
-      }
+      return {
+        reportId: reportSettings.id,
+        custom: isCustomReport,
+        vendorName: vendor.name,
+        success: false,
+        error: errorMessage,
+      };
     }
   }
 
-  /** Attempts to discover a fetch error in a fetch result, returning the error as an **IFetchError** object
-   * if one is found, and *null* otherwise. */
+  /**
+   * Validates a fetch response, throwing a tsv string error if the response is not valid.
+   * @param response - The response to validate.
+   */
+  private static async validateResponse(
+    response: Response | IFetchError | null
+  ) {
+    let fetchingError = "Fetching Reports\t";
+    let data;
 
+    if (response && "ok" in response && !response.ok) {
+      // Handle JSON error
+      if (response.headers.get("content-type")?.includes("application/json")) {
+        data = await response.json();
+        const counterError = this.getExistingFetchError(data);
+        if (counterError)
+          fetchingError +=
+            "Exception " + counterError.code + " - " + counterError.message;
+        else fetchingError += "Unknown error:" + JSON.stringify(data);
+      }
+      // HTTP Error
+      else
+        fetchingError += `Network Error: HTTP ${response.status} - ${response.statusText}`;
+      throw fetchingError;
+    }
+
+    if (!response) throw (fetchingError += "No response received");
+
+    try {
+      response = response as Response;
+      return (await response.json()) as IReport;
+    } catch (error) {
+      throw (
+        fetchingError +
+        "Invalid Report Data JSON Format ( " +
+        JSON.stringify(response) +
+        " ):\n" +
+        error
+      );
+    }
+  }
+
+  /**
+   * Attempts to discover a fetch error in a fetch result, returning the error as an **IFetchError** object
+   * if one is found, and *null* otherwise.
+   * @param data - The data to search for a fetch error. Must JSON Data
+   */
   private static getExistingFetchError(data: any): IFetchError | null {
+    if (Array.isArray(data)) data = data[0];
+
     if ("Code" in data) {
       const meaning = SushiExceptionDictionary[data.Code];
       return {
@@ -376,6 +385,12 @@ export class FetchService {
     return null;
   }
 
+  /**
+   * Converts the filters and attributes of a report to URL parameters.
+   * @param reportSettings - The report settings to convert to URL parameters.
+   * @param counterVersion - The version of the COUNTER standard to use.
+   * @returns The URL parameters.
+   */
   private static convertFiltersToURLParams(
     reportSettings: Report,
     counterVersion: CounterVersion = CounterVersion.v5_0

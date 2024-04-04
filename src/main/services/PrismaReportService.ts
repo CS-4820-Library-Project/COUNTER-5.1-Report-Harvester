@@ -305,8 +305,9 @@ export class PrismaReportService {
         }
       }
     } catch (error) {
-      console.log("There was an error while saving reports:", error);
-      throw new Error("Failed to save report.");
+      const errorMessage = "\tStoring Reports in Database\t";
+      // console.error(errorMessage, error);
+      throw errorMessage + "Failed Storing in Database";
     }
   }
 
