@@ -35,4 +35,10 @@ export interface IFetchReportsAPI {
    * @param {Function} callback - The callback function to be removed.
    */
   removeVendorCompletedListeners: () => void;
+
+  /**
+   * Exports the fetch results.
+   * @param {FetchResults} fetchResults - The fetch results to be exported.
+   */
+  exportFetchResults: (fetchResults: FetchResults) => void;
 }

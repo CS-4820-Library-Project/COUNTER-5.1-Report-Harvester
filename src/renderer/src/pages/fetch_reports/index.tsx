@@ -106,6 +106,11 @@ const FetchReportsPage = () => {
         type: "warning",
         message,
       });
+    } else if (selectedReports.length < 1 && !all) {
+      return setNotification({
+        type: "warning",
+        message: "Please select at least one report type.",
+      });
     }
 
     setFetching(true);

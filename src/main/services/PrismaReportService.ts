@@ -32,10 +32,31 @@ export class PrismaReportService {
    * @returns A promise that resolves to the created report.
    * @throws If an error occurs while creating the report.
    */
-  async createReport(data: Omit<Report, "id">): Promise<Report> {
+  async createReport(
+    // data
+    {
+      report_id,
+      report_name,
+      release,
+      institution_name,
+      institution_id,
+      created,
+      created_by,
+    }: Omit<Report, "id">
+  ): Promise<Report> {
     try {
+      // console.log("STORING report", data);
+      // return {} as Report;
       return await prisma.report.create({
-        data,
+        data: {
+          report_id,
+          report_name,
+          release,
+          institution_name,
+          institution_id,
+          created,
+          created_by,
+        },
       });
     } catch (error) {
       console.error("Error creating report:", error);
@@ -196,32 +217,43 @@ export class PrismaReportService {
    * @returns {Promise<void>} - Aromise that resolves when all the report information has been saved into the database.
    */
   async saveFetchedReport(report: IReport): Promise<void> {
+    const reportHeader = report.Report_Header;
+    const reportItems = report.Report_Items;
+
     try {
+      // if (!reportHeader || !reportItems) throw "Invalid report object";
+
+      const institution_id = Array.isArray(reportHeader.Institution_ID)
+        ? reportHeader.Institution_ID[0].Value
+        : reportHeader.Institution_ID;
+
+      if (!institution_id) throw "Institution ID not found";
+
       const savedReport = await this.createReport({
-        report_id: report.Report_Header.Report_ID,
-        report_name: report.Report_Header.Report_Name,
-        release: report.Report_Header.Release,
-        institution_name: report.Report_Header.Institution_Name || "undefined",
-        institution_id: report.Report_Header.Institution_ID[0].Value,
-        created: report.Report_Header.Created,
-        created_by: report.Report_Header.Created_By,
+        report_id: reportHeader.Report_ID,
+        report_name: reportHeader.Report_Name,
+        release: reportHeader.Release,
+        institution_name: reportHeader.Institution_Name || "undefined",
+        institution_id,
+        created: reportHeader.Created,
+        created_by: reportHeader.Created_By,
       });
 
       for (const filter of report.Report_Header.Report_Filters) {
+        if (typeof filter === "string") return;
         await this.createReportFilter({
           reportId: savedReport.id,
-          // TODO: Review these property (Name, Value)
           filter_type: filter.Name,
           value: filter.Value,
         });
       }
-
-      for (const rawItem of report.Report_Items) {
+      for (const rawItem of reportItems) {
         const reportItemDetails: any = {
           reportId: savedReport.id,
           platform: rawItem.Platform,
         };
 
+        // Create TR REPORT
         if (report.Report_Header.Report_ID.includes("TR")) {
           const trItem = rawItem as ITRIRReportItem;
           reportItemDetails.title = trItem.Title;
@@ -243,15 +275,15 @@ export class PrismaReportService {
           reportItemDetails.data_type =
             trItem.Item_ID?.find((id) => id.Type === "Data_Type")?.Value ||
             null;
-        } else if (report.Report_Header.Report_ID.includes("IR")) {
-          const irItem = rawItem as ITRIRReportItem;
+        }
 
+        // Create IR REPORT
+        else if (report.Report_Header.Report_ID.includes("IR")) {
+          const irItem = rawItem as ITRIRReportItem;
           reportItemDetails.title = irItem.Title;
           reportItemDetails.publisher = irItem.Publisher;
-
           irItem.Publisher_ID?.map((id) => `${id.Type}:${id.Value}`).join(";");
           irItem.Item_ID?.map((id) => `${id.Type}:${id.Value}`).join(";");
-
           reportItemDetails.doi =
             irItem.Item_ID?.find((id) => id.Type === "DOI")?.Value || null;
           reportItemDetails.isbn =
@@ -267,7 +299,10 @@ export class PrismaReportService {
           reportItemDetails.data_type =
             irItem.Item_ID?.find((id) => id.Type === "Data_Type")?.Value ||
             null;
-        } else if (report.Report_Header.Report_ID.includes("DR")) {
+        }
+
+        // Create DR REPORT
+        else if (report.Report_Header.Report_ID.includes("DR")) {
           const drItem = rawItem as IDRReportItem;
           reportItemDetails.database = drItem.Database;
           reportItemDetails.publisher = drItem.Publisher;
@@ -290,23 +325,33 @@ export class PrismaReportService {
             null;
         }
 
-        const savedItem = await this.createReportItem(reportItemDetails);
+        // TODO: Gets Bugs
+        console.log("Saving Report Item", reportItemDetails);
+        // const savedItem = await this.createReportItem(reportItemDetails);
 
-        for (const performance of rawItem.Performance) {
-          const periodString = `${performance.Period.Begin_Date} - ${performance.Period.End_Date}`;
-          for (const instance of performance.Instance) {
-            await this.createReportMetric({
-              reportItemId: savedItem.id,
-              period: periodString,
-              value: instance.Count,
-              metricType: instance.Metric_Type,
-            });
-          }
-        }
+        // TODO: Gets Bugs
+        // console.log("Saving Report Metric", rawItem.Performance);
+        //   for (const performance of rawItem.Performance) {
+        //     const periodString = `${performance.Period.Begin_Date} - ${performance.Period.End_Date}`;
+        //     for (const instance of performance.Instance) {
+        //       await this.createReportMetric({
+        //         reportItemId: savedItem.id,
+        //         period: periodString,
+        //         value: instance.Count,
+        //         metricType: instance.Metric_Type,
+        //       });
+        //     }
+        //   }
       }
     } catch (error) {
-      console.log("There was an error while saving reports:", error);
-      throw new Error("Failed to save report.");
+      const errorMessage = "Storing Reports in Database\t";
+      console.error(errorMessage, error);
+      throw errorMessage + "Report Couldn't be saved " + typeof error ===
+        "string"
+        ? error
+        : "";
+      // +
+      // JSON.stringify(reportHeader)
     }
   }
 
@@ -341,7 +386,7 @@ export class PrismaReportService {
       }
 
       // Get the report items that match our where clause
-      const reportItems: ReportItem[] = await prisma.reportItem.findMany({
+      const reportItems = await prisma.reportItem.findMany({
         where: whereClause,
         include: {
           report: {
@@ -357,7 +402,6 @@ export class PrismaReportService {
         },
       });
 
-      // TODO: Review this property (report)
       return reportItems?.map((item) => item.report);
     } catch (error) {
       console.error("Error searching reports:", error);

@@ -1,4 +1,4 @@
-import ReportService from "../../renderer/src/service/ReportService";
+import ReportService from "./ReportService";
 import { writeFile } from "../utils/files";
 import { DirectorySettingService } from "./DirectorySettingService";
 
@@ -25,7 +25,7 @@ export class LoggerService {
     const filename = this.generateFileName();
     const dirService = new DirectorySettingService();
 
-    const logFilePath = dirService.getPath("logs", `${filename}.txt`);
+    const logFilePath = dirService.getPath("logs", `${filename}.tsv`);
     writeFile(logFilePath, this.currentLogs.join("\n"));
 
     return logFilePath;
