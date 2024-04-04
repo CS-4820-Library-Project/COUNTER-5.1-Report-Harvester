@@ -21,6 +21,7 @@ import { IReport } from "src/renderer/src/interface/IReport";
 import { DirectorySettingService } from "./DirectorySettingService";
 import { writeFile } from "../utils/files";
 
+//
 export type FetchData = {
   fetchReports: Report[];
   selectedVendors: VendorRecord[];
