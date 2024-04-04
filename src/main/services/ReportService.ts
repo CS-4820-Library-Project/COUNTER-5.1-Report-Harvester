@@ -121,7 +121,7 @@ export class ReportService {
         Report_Items: reportItems,
       } as IReport;
     } catch (error) {
-      const logHeader = `\tProcessing Report Data\t`;
+      const logHeader = `Processing Report Data\t`;
       console.log(logHeader + error);
       throw logHeader + error;
     }
@@ -320,9 +320,9 @@ export class ReportService {
 
       return tsv;
     } catch (error) {
-      let logMessage = `\tConverting Report to TSV\t`;
+      let logMessage = `Converting Report to TSV\t`;
       logMessage += error;
-      console.log(logMessage);
+      // console.log(logMessage);
       throw logMessage;
     }
   }
@@ -364,7 +364,7 @@ export class ReportService {
 
       return filename;
     } catch (error) {
-      let logMessage = `\tGenerating TSV Filename\t`;
+      let logMessage = `Generating TSV Filename\t`;
       throw logMessage + error;
     }
   }

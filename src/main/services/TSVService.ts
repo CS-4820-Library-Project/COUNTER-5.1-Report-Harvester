@@ -22,7 +22,7 @@ class TSVService {
       await writeFile(reportPath, content);
       return true;
     } catch (error) {
-      const errorMessage = "\tWritting TSV to File\t";
+      const errorMessage = "Writting TSV to File\t";
       // console.error(errorMessage, error);
       throw errorMessage + "Failed Writing TSV to File. Not Directory Found.";
     }

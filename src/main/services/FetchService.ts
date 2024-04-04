@@ -203,8 +203,17 @@ export class FetchService {
     return result;
   }
 
-  /** Performs an *HTTP GET* call on a specific route of a vendor's SUSHI API to harvest reports of a specified type. */
-
+  /**
+   * Performs an *HTTP GET* call on a specific route of a vendor's SUSHI API to harvest reports of a specified type.
+   * @param vendor - The vendor to fetch reports from.
+   * @param reportSettings - The settings of the report to fetch.
+   * @param startDate - The start date of the report.
+   * @param endDate - The end date of the report.
+   * @param counterVersion - The version of the COUNTER standard to use.
+   * @param requestTimeout - The timeout for the request.
+   * @param logger - The logger to use for logging.
+   * @returns The result of the fetch operation.
+   */
   private static async fetchReport(
     vendor: VendorRecord,
     reportSettings: Report,
@@ -246,8 +255,8 @@ export class FetchService {
       // TODO: Improve Log
       logger.log(
         logHeader +
-          "\tFetching Sushi API\t" +
-          `Fetching from URL ${reportUrl}. Vendor requires ${vendorInfo.requireTwoAttemptsPerReport ? 2 : 1} fetch(es).`
+          "Fetching Sushi API\t" +
+          `URL: ${reportUrl}. Vendor requires ${vendorInfo.requireTwoAttemptsPerReport ? 2 : 1} fetch(es).`
       );
 
       let attempts = vendorInfo.requireTwoAttemptsPerReport ? 2 : 1;
@@ -299,7 +308,8 @@ export class FetchService {
       TSVService.writeTSVReport(tsvFilename, tsv, isCustomReport);
 
       // TODO: DATABASE CRASHING
-      prismaReportService.saveFetchedReport(report);
+      // if (reportSettings.id === "TR")
+      //   prismaReportService.saveFetchedReport(report);
 
       fetchResult.success = true;
       fetchResult.warning = report.Report_Header.Exceptions;
@@ -307,9 +317,9 @@ export class FetchService {
       return fetchResult;
     } catch (error) {
       let errorMessage = logHeader + error;
-
-      // LOG GENERAL ERROR
       errorMessage += error;
+
+      console.log(errorMessage);
 
       logger.log(errorMessage);
 
@@ -353,14 +363,15 @@ export class FetchService {
 
     try {
       response = response as Response;
-      return (await response.json()) as IReport;
+      const report = (await response.json()) as IReport;
+      return report;
     } catch (error) {
+      // console.log(error);
       throw (
         fetchingError +
         "Invalid Report Data JSON Format ( " +
         JSON.stringify(response) +
-        " ):\n" +
-        error
+        " ):\n"
       );
     }
   }
