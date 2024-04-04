@@ -160,12 +160,12 @@ export class FetchService {
             );
 
             // TODO: Remove console log
-            console.log(
-              "\nThrottling requests for",
-              vendor.name,
-              "... With Interval",
-              requestInterval
-            );
+            // console.log(
+            //   "\nThrottling requests for",
+            //   vendor.name,
+            //   "... With Interval",
+            //   requestInterval
+            // );
 
             const result = await FetchService.fetchReport(
               vendor,
