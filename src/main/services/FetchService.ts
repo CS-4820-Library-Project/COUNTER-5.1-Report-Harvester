@@ -1,4 +1,4 @@
-import ReportService from "../../renderer/src/service/ReportService";
+import ReportService from "./ReportService";
 import { IFetchError } from "src/renderer/src/interface/IFetchError";
 import {
   SushiExceptionDictionary,
@@ -17,6 +17,7 @@ import { APIRequestSettingService } from "./APIRequestSettingService";
 import TSVService from "./TSVService";
 import { prismaReportService } from "./PrismaReportService";
 import { BrowserWindow } from "electron";
+import { IReport } from "src/renderer/src/interface/IReport";
 
 export type FetchData = {
   fetchReports: Report[];
@@ -29,6 +30,59 @@ export type FetchData = {
 /** The main service for performing GET operations on vendors that use the SUSHI API */
 
 export class FetchService {
+  /**
+   * Summarizes the results of fetching reports from vendors.
+   * @param fetchResults - The results of fetching reports from vendors.
+   * @param logger - The logger to use for logging.
+   * @returns The summarized results.
+   */
+  private static summarizeResults(
+    fetchResults: FetchResult[],
+    logger: LoggerService
+  ): FetchResults {
+    const result = fetchResults.reduce(
+      (
+        acc: FetchResults,
+        { reportId, vendorName, success, custom, error }: FetchResult
+      ) => {
+        const report = { reportId, success, error };
+
+        // Determine if the vendor is 'main' or 'custom'
+        const reportType = custom ? "custom" : "main";
+
+        const vendor = acc[reportType].vendors.find(
+          (v) => v.name === vendorName
+        );
+        if (vendor) {
+          vendor.reports.push(report);
+          if (success) {
+            vendor.totalSucceed += 1;
+            acc[reportType].succeeded += 1;
+          }
+        } else {
+          acc[reportType].vendors.push({
+            name: vendorName,
+            reports: [report],
+            totalSucceed: success ? 1 : 0,
+          });
+          if (success) acc[reportType].succeeded += 1;
+        }
+
+        if (!success) acc.failed += 1;
+
+        return acc;
+      },
+      {
+        main: { succeeded: 0, vendors: [] },
+        custom: { succeeded: 0, vendors: [] },
+        failed: 0,
+        log: logger.writeLogsToFile(),
+      }
+    );
+
+    return result;
+  }
+
   /** Performs an *HTTP GET* call on the root of a vendor's SUSHI API to discover all the different types of reports
    *  they can supply.
    *  @param vendor - The vendor to fetch reports from.
@@ -46,11 +100,11 @@ export class FetchService {
 
     try {
       const response = await fetch(url);
+      const responseBody = await response.json();
 
-      if (!response.ok)
-        return this.getExistingFetchError(await response.json());
+      if (!response.ok) return this.getExistingFetchError(responseBody);
 
-      const data = (await response.json()) as SupportedAPIResponse[];
+      const data = responseBody as SupportedAPIResponse[];
 
       const reportIds = Array.isArray(data)
         ? data.map((val) => val.Report_ID.toUpperCase())
@@ -97,13 +151,22 @@ export class FetchService {
       );
 
       // If requests need to be throttled for this vendor, fetch reports sequentially
-      if (vendor[dataVersion]?.requireTwoAttemptsPerReport) {
+      if (vendor[dataVersion]?.requireRequestsThrottled) {
         const results = await vendorReports.reduce(
           async (prevPromise, report) => {
             const results = await prevPromise;
             await new Promise((resolve) =>
               setTimeout(resolve, requestInterval)
             );
+
+            // TODO: Remove console log
+            console.log(
+              "\nThrottling requests for",
+              vendor.name,
+              "... With Interval",
+              requestInterval
+            );
+
             const result = await FetchService.fetchReport(
               vendor,
               report,
@@ -146,65 +209,23 @@ export class FetchService {
       await Promise.all(allPromises)
     ).flat() as FetchResult[];
 
+    console.log(fetchResults);
+
     const summary = this.summarizeResults(fetchResults, logger);
     return summary;
   }
 
   /**
-   * Summarizes the results of fetching reports from vendors.
-   * @param fetchResults - The results of fetching reports from vendors.
+   * Performs an *HTTP GET* call on a specific route of a vendor's SUSHI API to harvest reports of a specified type.
+   * @param vendor - The vendor to fetch reports from.
+   * @param reportSettings - The settings of the report to fetch.
+   * @param startDate - The start date of the report.
+   * @param endDate - The end date of the report.
+   * @param counterVersion - The version of the COUNTER standard to use.
+   * @param requestTimeout - The timeout for the request.
    * @param logger - The logger to use for logging.
-   * @returns The summarized results.
+   * @returns The result of the fetch operation.
    */
-  private static summarizeResults(
-    fetchResults: FetchResult[],
-    logger: LoggerService
-  ) {
-    const result = fetchResults.reduce(
-      (
-        acc: FetchResults,
-        { reportId, vendorName, success, custom, error }: FetchResult
-      ) => {
-        const report = { reportId, success, error };
-
-        // Determine if the vendor is 'main' or 'custom'
-        const reportType = custom ? "custom" : "main";
-
-        const vendor = acc[reportType].vendors.find(
-          (v) => v.name === vendorName
-        );
-        if (vendor) {
-          vendor.reports.push(report);
-          if (success) {
-            vendor.totalSucceed += 1;
-            acc[reportType].succeeded += 1;
-          }
-        } else {
-          acc[reportType].vendors.push({
-            name: vendorName,
-            reports: [report],
-            totalSucceed: success ? 1 : 0,
-          });
-          if (success) acc[reportType].succeeded += 1;
-        }
-
-        if (!success) acc.failed += 1;
-
-        return acc;
-      },
-      {
-        main: { succeeded: 0, vendors: [] },
-        custom: { succeeded: 0, vendors: [] },
-        failed: 0,
-        log: logger.writeLogsToFile(),
-      }
-    );
-
-    return result;
-  }
-
-  /** Performs an *HTTP GET* call on a specific route of a vendor's SUSHI API to harvest reports of a specified type. */
-
   private static async fetchReport(
     vendor: VendorRecord,
     reportSettings: Report,
@@ -220,25 +241,17 @@ export class FetchService {
       success: false,
       custom: reportSettings.name.includes("Custom"),
     };
-
     if (!reportSettings.id || !vendor) return fetchResult;
 
+    const now = new Date().toLocaleString();
+
+    const logHeader = now + `\t${vendor.name}\t${reportSettings.id}\t`;
     const isCustomReport = reportSettings.name.includes("Custom");
 
-    logger.log(`Fetching ${vendor.id}`);
-
     try {
-      const reportFromJsonFunc =
-        counterVersion == CounterVersion.v5_0
-          ? ReportService.get50ReportFromJSON
-          : ReportService.get51ReportFromJson;
-
       const vendorInfo =
         counterVersion == CounterVersion.v5_0 ? vendor.data5_0 : vendor.data5_1;
-
       if (!vendorInfo) return fetchResult;
-
-      logger.log(`Vendor has counter version ${counterVersion}`);
 
       let reportUrl = `${vendorInfo.baseURL}/${reportSettings.id.toLowerCase()}?customer_id=${
         vendorInfo.customerId
@@ -253,49 +266,29 @@ export class FetchService {
       if (isCustomReport)
         reportUrl += `${this.convertFiltersToURLParams(reportSettings, counterVersion)}`;
 
+      // TODO: Improve Log
       logger.log(
-        `Fetching from URL ${reportUrl}. Vendor requires ${vendorInfo.requireTwoAttemptsPerReport ? 2 : 1} fetch(es).`
+        logHeader +
+          "Fetching Sushi API from URL\t" +
+          `${reportUrl}\tVendor requires ${vendorInfo.requireTwoAttemptsPerReport ? 2 : 1} fetch(es).\n`
       );
 
-      let attempts = vendorInfo.requireTwoAttemptsPerReport ? 2 : 1;
+      const response = await this.fetchWithAttempts(
+        vendorInfo,
+        reportUrl,
+        requestTimeout
+      );
 
-      let response = null;
+      // Throw TSV Error Message or Returns Data
+      const data = await this.validateResponse(response, fetchResult);
 
-      for (let i = 0; i < attempts; i++) {
-        const responsePromise = fetch(reportUrl);
-        const timeoutPromise = new Promise((_, reject) => {
-          setTimeout(
-            () =>
-              reject({
-                code: -1,
-                severity: "Minor",
-                message: "Request timeout exceeded",
-                meaning: "Adjust your request timeout settings to be longer",
-              } as IFetchError),
-            requestTimeout * 1000
-          );
-        });
-
-        response = (await Promise.race([responsePromise, timeoutPromise])) as
-          | Response
-          | IFetchError;
-      }
-
-      logger.log(`Response received!`);
-
-      if (response && "ok" in response && !response.ok)
-        throw this.getExistingFetchError(await response.json());
-
-      response = response as Response;
-      const data = await response.json();
-
-      logger.log(`Converting results from JSON to object`);
+      const reportFromJsonFunc =
+        counterVersion == CounterVersion.v5_0
+          ? ReportService.get50ReportFromJSON
+          : ReportService.get51ReportFromJson;
 
       let report = reportFromJsonFunc(data);
-
       if (!report) return fetchResult;
-
-      logger.log(`Converting object to TSV`);
 
       let tsv = ReportService.convertReportToTSV(report);
 
@@ -307,63 +300,154 @@ export class FetchService {
         endDate
       );
 
-      logger.log(`Writing TSV content to ${tsvFilename}.tsv`);
-
+      // TODO: THROWS MANY ERRORS
       TSVService.writeTSVReport(tsvFilename, tsv, isCustomReport);
 
-      // if (reportSettings.id.includes("TR"))
-      // prismaReportService.saveFetchedReport(report);
+      // TODO: DATABASE CRASHING
+      // if (reportSettings.id === "TR")
+      //   prismaReportService.saveFetchedReport(report);
 
       fetchResult.success = true;
       fetchResult.warning = report.Report_Header.Exceptions;
 
-      // console.log(report.Report_Header.Exceptions);
-
       return fetchResult;
     } catch (error) {
-      // LOG COUNTER ERROR
-      if (
-        typeof error === "object" &&
-        error !== null &&
-        "hasOwnProperty" in error &&
-        error.hasOwnProperty("meaning")
-      ) {
-        const fetchError = error as IFetchError;
-        const logMessage = `ERROR ${fetchError.code} (${reportSettings.id} from ${vendor.name}): ${fetchError.message}`;
-        logger.log(logMessage);
-        console.log(logMessage);
+      let errorMessage = logHeader + error;
+      errorMessage += error;
 
-        // Return a FetchResult with the error
-        return {
-          reportId: reportSettings.id,
-          custom: isCustomReport,
-          vendorName: vendor.name,
-          success: false,
-          error: fetchError,
-        };
-      } else {
-        // LOG GENERAL ERROR
-        const errorMessage = `${vendor.name}:Error fetching report ${reportSettings.id}: ${error}`;
-        logger.log(errorMessage);
+      console.log(errorMessage);
 
-        console.log(errorMessage);
+      logger.log(errorMessage);
 
-        // Return a FetchResult with the error
-        return {
-          reportId: reportSettings.id,
-          custom: isCustomReport,
-          vendorName: vendor.name,
-          success: false,
-          error: errorMessage,
-        };
-      }
+      return {
+        reportId: reportSettings.id,
+        custom: isCustomReport,
+        vendorName: vendor.name,
+        success: false,
+        error: fetchResult.error ? fetchResult.error : (error as IFetchError),
+      };
     }
   }
 
-  /** Attempts to discover a fetch error in a fetch result, returning the error as an **IFetchError** object
-   * if one is found, and *null* otherwise. */
+  /**
+   * Fetches a report from a vendor with multiple attempts.
+   * @param vendorInfo - The vendor to fetch the report from.
+   * @param reportUrl - The URL of the report to fetch.
+   * @param requestTimeout - The timeout for the request.
+   * @returns The response of the fetch operation.
+   * @throws An error if the fetch operation fails.
+   */
+  private static async fetchWithAttempts(
+    vendorInfo: VendorInfo,
+    reportUrl: string,
+    requestTimeout: number
+  ) {
+    let attempts = vendorInfo.requireTwoAttemptsPerReport ? 2 : 1;
 
+    let response = null;
+
+    for (let i = 0; i < attempts; i++) {
+      // TODO: Remove Console Log
+      if (attempts > 1)
+        console.log(
+          vendorInfo.baseURL + " Attempt ",
+          i + 1,
+          " TimeOut ",
+          requestTimeout,
+          new Date().toISOString()
+        );
+
+      const responsePromise = fetch(reportUrl);
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(
+          () =>
+            reject({
+              code: -1,
+              severity: "Minor",
+              message:
+                "Request timeout exceeded - No response received in " +
+                requestTimeout +
+                " seconds.",
+              meaning: "Adjust your request timeout settings to be longer",
+            } as IFetchError),
+          requestTimeout * 1000
+        );
+      });
+
+      response = (await Promise.race([responsePromise, timeoutPromise])) as
+        | Response
+        | IFetchError;
+
+      if (
+        response instanceof Response &&
+        response.status === 429 &&
+        i < attempts - 1
+      ) {
+        // TODO: Remove Console Log
+        console.log("Rate limit exceeded, waiting for 3 seconds...");
+        await new Promise((resolve) => setTimeout(resolve, 3000));
+      }
+    }
+
+    return response;
+  }
+
+  /**
+   * Validates a fetch response, throwing a tsv string error if the response is not valid.
+   * And attaches the COUNTER Error if any to the fetch result.
+   * @param response - The response to validate.
+   */
+  private static async validateResponse(
+    response: Response | IFetchError | null,
+    fetchResult: FetchResult
+  ) {
+    let fetchingError = "Fetching Reports\t";
+    let data;
+
+    if (response && "ok" in response && !response.ok) {
+      // Handle JSON error
+      if (response.headers.get("content-type")?.includes("application/json")) {
+        data = await response.json();
+        const counterError = this.getExistingFetchError(data);
+        if (counterError) {
+          fetchResult.error = counterError;
+          fetchingError +=
+            "Exception " + counterError.code + " - " + counterError.message;
+        }
+        // Ramdom Responses from API - usually { message: "Internal Server Error" }
+        else fetchingError += "Unknown error:" + JSON.stringify(data);
+      }
+      // HTTP Error
+      else
+        fetchingError += `Network Error: HTTP ${response.status} - ${response.statusText}`;
+      throw fetchingError;
+    }
+
+    if (!response) throw (fetchingError += "No response received");
+
+    try {
+      response = response as Response;
+      const report = (await response.json()) as IReport;
+      return report;
+    } catch (error) {
+      // console.log(error);
+      throw (
+        fetchingError +
+        "Invalid Report Data JSON Format ( " +
+        JSON.stringify(response) +
+        " ):\n"
+      );
+    }
+  }
+
+  /**
+   * Attempts to discover a fetch error in a fetch result, returning the error as an **IFetchError** object
+   * if one is found, and *null* otherwise.
+   * @param data - The data to search for a fetch error. Must JSON Data
+   */
   private static getExistingFetchError(data: any): IFetchError | null {
+    if (Array.isArray(data)) data = data[0];
+
     if ("Code" in data) {
       const meaning = SushiExceptionDictionary[data.Code];
       return {
@@ -376,6 +460,12 @@ export class FetchService {
     return null;
   }
 
+  /**
+   * Converts the filters and attributes of a report to URL parameters.
+   * @param reportSettings - The report settings to convert to URL parameters.
+   * @param counterVersion - The version of the COUNTER standard to use.
+   * @returns The URL parameters.
+   */
   private static convertFiltersToURLParams(
     reportSettings: Report,
     counterVersion: CounterVersion = CounterVersion.v5_0
