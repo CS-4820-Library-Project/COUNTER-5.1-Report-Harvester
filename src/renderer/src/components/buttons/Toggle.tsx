@@ -48,7 +48,7 @@ const Toggle = ({
   return (
     <TooltipBottom hint={hint}>
       <ButtonStyled
-        isSelected={isSelected}
+        isSelected={!disabled ? isSelected : false}
         size={size}
         onClick={onClick}
         disabled={disabled}
