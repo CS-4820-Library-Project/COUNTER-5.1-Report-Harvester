@@ -1,5 +1,4 @@
 import ReportService from "./ReportService";
-import ReportService from "./ReportService";
 import { IFetchError } from "src/renderer/src/interface/IFetchError";
 import {
   SushiExceptionDictionary,
@@ -224,13 +223,6 @@ export class FetchService {
    * @param endDate - The end date of the report.
    * @param counterVersion - The version of the COUNTER standard to use.
    * @param requestTimeout - The timeout for the request.
-   * Performs an *HTTP GET* call on a specific route of a vendor's SUSHI API to harvest reports of a specified type.
-   * @param vendor - The vendor to fetch reports from.
-   * @param reportSettings - The settings of the report to fetch.
-   * @param startDate - The start date of the report.
-   * @param endDate - The end date of the report.
-   * @param counterVersion - The version of the COUNTER standard to use.
-   * @param requestTimeout - The timeout for the request.
    * @param logger - The logger to use for logging.
    * @returns The result of the fetch operation.
    */
@@ -300,16 +292,15 @@ export class FetchService {
 
       let tsv = ReportService.convertReportToTSV(report);
 
-      // const tsvFilename = ReportService.generateTSVFilename(
-      //   counterVersion,
-      //   vendor.name,
-      //   reportSettings.id,
-      //   startDate,
-      //   endDate
-      // );
+      const tsvFilename = ReportService.generateTSVFilename(
+        counterVersion,
+        vendor.name,
+        reportSettings.id,
+        startDate,
+        endDate
+      );
 
-      // TODO: THROWS MANY ERRORS
-      // TSVService.writeTSVReport(tsvFilename, tsv, isCustomReport);
+      TSVService.writeTSVReport(tsvFilename, tsv, isCustomReport);
 
       // TODO: DATABASE CRASHING
       // if (reportSettings.id === "TR")
