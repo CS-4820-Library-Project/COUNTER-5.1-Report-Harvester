@@ -13,6 +13,11 @@ import {
   FetchResults,
   SupportedAPIResponse,
 } from "src/types/reports";
+import {
+  FetchResult,
+  FetchResults,
+  SupportedAPIResponse,
+} from "src/types/reports";
 import { APIRequestSettingService } from "./APIRequestSettingService";
 import TSVService from "./TSVService";
 import { prismaReportService } from "./PrismaReportService";
@@ -59,6 +64,7 @@ export class FetchService {
 
       return reportIds;
     } catch (error) {
+      // console.error("Error fetching reports:", error);
       return null;
     }
   }
