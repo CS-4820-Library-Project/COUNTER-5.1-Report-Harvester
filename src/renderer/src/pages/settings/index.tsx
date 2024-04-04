@@ -5,7 +5,7 @@ import ChangeRequestSettings from "./ChangeRequestSettings";
 import SetUpPasswordView from "./SetUpPassword";
 import Page from "../../components/page/Page";
 import PageColumn from "../../components/page/PageColumn";
-import RebuildSearchDatabase from "./DatabaseSettings";
+import ReportDatabaseSettings from "./ReportDatabaseSettings";
 
 /**
  * This is the "SettingsPage" component.
@@ -50,8 +50,8 @@ const SettingsPage: React.FC = () => {
           <ChangeRequestSettings />
         )}
 
-        {selectedOption === "Rebuild Search Database" && (
-          <RebuildSearchDatabase />
+        {selectedOption === "Report Database Settings" && (
+          <ReportDatabaseSettings />
         )}
       </PageColumn>
     </Page>
