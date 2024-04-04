@@ -18,6 +18,8 @@ import TSVService from "./TSVService";
 import { prismaReportService } from "./PrismaReportService";
 import { BrowserWindow } from "electron";
 import { IReport } from "src/renderer/src/interface/IReport";
+import { DirectorySettingService } from "./DirectorySettingService";
+import { writeFile } from "../utils/files";
 
 export type FetchData = {
   fetchReports: Report[];
@@ -30,6 +32,68 @@ export type FetchData = {
 /** The main service for performing GET operations on vendors that use the SUSHI API */
 
 export class FetchService {
+  static async exportResults(results: FetchResults) {
+    const dirService = new DirectorySettingService();
+
+    const resultSummary =
+      results.custom.vendors.length > 0 ? results.custom : results.main;
+
+    const now = new Date().toISOString();
+
+    let tsv: string[] = ["Results Summary"];
+    tsv.push("Total Succeeded\t" + resultSummary.succeeded);
+    tsv.push("Total Failed\t" + results.failed);
+    tsv.push("Timestamp\tVendor\tReporID\tStatus\tMessage");
+
+    for (const vendor of resultSummary.vendors) {
+      const reports = vendor.reports;
+      for (const report of reports) {
+        const status = report.success
+          ? "Success"
+          : report.errors.length > 0
+            ? "Error"
+            : "Warning";
+
+        let messages =
+          status === "Success"
+            ? "Report Stored Successfully"
+            : status === "Warning"
+              ? "Report Saved With Exceptions:\n"
+              : "Error Occcured While Fetching Report:\n";
+
+        if (!report.success) {
+          // Add Errors
+          report.errors.forEach((error) => {
+            if (!error) return;
+            else if (typeof error === "string")
+              messages += error.replace(/\t/g, "-") + "\n";
+            else
+              messages +=
+                "Exception " + error.code + ":" + error.message + "\n";
+          });
+
+          // Add Warnigns
+          report.warnings.forEach((warning) => {
+            if (!warning) return;
+            else if (typeof warning === "string")
+              messages += warning.replace(/\t/g, "-") + "\n";
+            else
+              messages +=
+                "Exception " + warning.code + ":" + warning.message + "\n";
+          });
+        }
+
+        tsv.push(
+          [now, vendor.name, report.reportId, status, messages].join("\t")
+        );
+      }
+    }
+
+    let path = await dirService.chooseDirectory();
+    path += "/FetchResults-" + now + ".tsv";
+    writeFile(path, tsv.join("\n"));
+    dirService.openPath(path);
+  }
   /**
    * Summarizes the results of fetching reports from vendors.
    * @param fetchResults - The results of fetching reports from vendors.
@@ -209,8 +273,6 @@ export class FetchService {
       (result) => (result.status === "fulfilled" ? result.value : [])
     );
 
-    console.log(fetchResults);
-
     const summary = this.summarizeResults(fetchResults, logger);
     return summary;
   }
@@ -308,7 +370,7 @@ export class FetchService {
 
       // TODO: DATABASE CRASHING
       // if (reportSettings.id === "TR")
-      //   prismaReportService.saveFetchedReport(report);
+      await prismaReportService.saveFetchedReport(report);
 
       fetchResult.success = true;
       fetchResult.timestamp = new Date().toISOString();
@@ -320,7 +382,7 @@ export class FetchService {
       let errorMessage = logHeader + error;
       errorMessage += error;
 
-      console.log(errorMessage);
+      // console.log(errorMessage);
 
       logger.log(errorMessage);
 
