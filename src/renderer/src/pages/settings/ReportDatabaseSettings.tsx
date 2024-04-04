@@ -11,7 +11,7 @@ import React from 'react';
 import { Box, Button, Divider, Typography, useTheme } from "@mui/material";
 import { styled } from "@mui/system";
 import RefreshOutlinedIcon from "@mui/icons-material/RefreshOutlined";
-import SaveIcon from "@mui/icons-material/Save";
+import ArrowUpwardOutlined from "@mui/icons-material/ArrowUpwardOutlined"; 
 
 const handleRebuildButtonClicked = () => {};
 const handleExportButtonClicked = () => {};
@@ -98,7 +98,7 @@ const ReportDatabaseSettings: React.FC = () => {
       </Description>
       <DirectoryBox>
         <CustomButton
-          startIcon={<SaveIcon />}
+          startIcon={<ArrowUpwardOutlined />}
           onClick={handleExportButtonClicked}
           variant="contained"
           color="secondary"
