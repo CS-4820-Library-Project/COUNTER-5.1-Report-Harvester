@@ -1,4 +1,5 @@
 import ReportService from "./ReportService";
+import ReportService from "./ReportService";
 import { IFetchError } from "src/renderer/src/interface/IFetchError";
 import {
   SushiExceptionDictionary,
@@ -216,6 +217,13 @@ export class FetchService {
   }
 
   /**
+   * Performs an *HTTP GET* call on a specific route of a vendor's SUSHI API to harvest reports of a specified type.
+   * @param vendor - The vendor to fetch reports from.
+   * @param reportSettings - The settings of the report to fetch.
+   * @param startDate - The start date of the report.
+   * @param endDate - The end date of the report.
+   * @param counterVersion - The version of the COUNTER standard to use.
+   * @param requestTimeout - The timeout for the request.
    * Performs an *HTTP GET* call on a specific route of a vendor's SUSHI API to harvest reports of a specified type.
    * @param vendor - The vendor to fetch reports from.
    * @param reportSettings - The settings of the report to fetch.
@@ -455,6 +463,8 @@ export class FetchService {
    * @param data - The data to search for a fetch error. Must JSON Data
    */
   private static getExistingFetchError(data: any): IFetchError | null {
+    if (Array.isArray(data)) data = data[0];
+
     if (Array.isArray(data)) data = data[0];
 
     if ("Code" in data) {
