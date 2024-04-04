@@ -104,7 +104,8 @@ export class ReportService {
 
           reportItem["Title"] = irItem.Title;
 
-          console.log(irItem.Item_ID);
+          console.log(irItem.Title);
+          // console.log(irItem.Item_ID);
 
           reportItem["Item_ID"] = [
             {

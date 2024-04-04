@@ -371,7 +371,7 @@ export class FetchService {
 
       // TODO: DATABASE CRASHING
       // if (reportSettings.id === "TR")
-      await prismaReportService.saveFetchedReport(report);
+      // await prismaReportService.saveFetchedReport(report);
 
       fetchResult.success = true;
       fetchResult.timestamp = new Date().toISOString();
@@ -418,14 +418,14 @@ export class FetchService {
 
     for (let i = 0; i < attempts; i++) {
       // TODO: Remove Console Log
-      if (attempts > 1)
-        console.log(
-          vendorInfo.baseURL + " Attempt ",
-          i + 1,
-          " TimeOut ",
-          requestTimeout,
-          new Date().toISOString()
-        );
+      // if (attempts > 1)
+      //   console.log(
+      //     vendorInfo.baseURL + " Attempt ",
+      //     i + 1,
+      //     " TimeOut ",
+      //     requestTimeout,
+      //     new Date().toISOString()
+      //   );
 
       const responsePromise = fetch(reportUrl);
       const timeoutPromise = new Promise((_, reject) => {
@@ -454,7 +454,7 @@ export class FetchService {
         i < attempts - 1
       ) {
         // TODO: Remove Console Log
-        console.log("Rate limit exceeded, waiting for 3 seconds...");
+        // console.log("Rate limit exceeded, waiting for 3 seconds...");
         await new Promise((resolve) => setTimeout(resolve, 3000));
       }
     }
@@ -519,13 +519,13 @@ export class FetchService {
   private static getExistingFetchError(data: any): IFetchError | null {
     if (Array.isArray(data)) data = data[0];
 
-    if ("Code" in data) {
+    if ("Code" in data || "code" in data) {
       const meaning = SushiExceptionDictionary[data.Code];
       return {
-        code: data.Code,
+        code: data.Code ?? data.code,
         meaning: meaning ?? SushiGeneralWarningMeaning,
-        message: data.Message,
-        severity: data.Severity,
+        message: data.Message ?? data.message,
+        severity: data.Severity ?? data.severity,
       } as IFetchError;
     }
     return null;

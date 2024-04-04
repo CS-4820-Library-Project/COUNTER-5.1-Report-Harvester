@@ -326,7 +326,7 @@ export class PrismaReportService {
         }
 
         // TODO: Gets Bugs
-        console.log("Saving Report Item", reportItemDetails);
+        // console.log("Saving Report Item", reportItemDetails);
         // const savedItem = await this.createReportItem(reportItemDetails);
 
         // TODO: Gets Bugs
