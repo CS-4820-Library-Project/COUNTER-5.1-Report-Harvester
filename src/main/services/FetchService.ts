@@ -1,4 +1,5 @@
 import ReportService from "./ReportService";
+import ReportService from "./ReportService";
 import { IFetchError } from "src/renderer/src/interface/IFetchError";
 import {
   SushiExceptionDictionary,
@@ -160,12 +161,12 @@ export class FetchService {
             );
 
             // TODO: Remove console log
-            console.log(
-              "\nThrottling requests for",
-              vendor.name,
-              "... With Interval",
-              requestInterval
-            );
+            // console.log(
+            //   "\nThrottling requests for",
+            //   vendor.name,
+            //   "... With Interval",
+            //   requestInterval
+            // );
 
             const result = await FetchService.fetchReport(
               vendor,
@@ -209,13 +210,20 @@ export class FetchService {
       await Promise.all(allPromises)
     ).flat() as FetchResult[];
 
-    console.log(fetchResults);
+    // console.log(fetchResults);
 
     const summary = this.summarizeResults(fetchResults, logger);
     return summary;
   }
 
   /**
+   * Performs an *HTTP GET* call on a specific route of a vendor's SUSHI API to harvest reports of a specified type.
+   * @param vendor - The vendor to fetch reports from.
+   * @param reportSettings - The settings of the report to fetch.
+   * @param startDate - The start date of the report.
+   * @param endDate - The end date of the report.
+   * @param counterVersion - The version of the COUNTER standard to use.
+   * @param requestTimeout - The timeout for the request.
    * Performs an *HTTP GET* call on a specific route of a vendor's SUSHI API to harvest reports of a specified type.
    * @param vendor - The vendor to fetch reports from.
    * @param reportSettings - The settings of the report to fetch.
@@ -292,16 +300,16 @@ export class FetchService {
 
       let tsv = ReportService.convertReportToTSV(report);
 
-      const tsvFilename = ReportService.generateTSVFilename(
-        counterVersion,
-        vendor.name,
-        reportSettings.id,
-        startDate,
-        endDate
-      );
+      // const tsvFilename = ReportService.generateTSVFilename(
+      //   counterVersion,
+      //   vendor.name,
+      //   reportSettings.id,
+      //   startDate,
+      //   endDate
+      // );
 
       // TODO: THROWS MANY ERRORS
-      TSVService.writeTSVReport(tsvFilename, tsv, isCustomReport);
+      // TSVService.writeTSVReport(tsvFilename, tsv, isCustomReport);
 
       // TODO: DATABASE CRASHING
       // if (reportSettings.id === "TR")
@@ -348,14 +356,14 @@ export class FetchService {
 
     for (let i = 0; i < attempts; i++) {
       // TODO: Remove Console Log
-      if (attempts > 1)
-        console.log(
-          vendorInfo.baseURL + " Attempt ",
-          i + 1,
-          " TimeOut ",
-          requestTimeout,
-          new Date().toISOString()
-        );
+      // if (attempts > 1)
+      //   console.log(
+      //     vendorInfo.baseURL + " Attempt ",
+      //     i + 1,
+      //     " TimeOut ",
+      //     requestTimeout,
+      //     new Date().toISOString()
+      //   );
 
       const responsePromise = fetch(reportUrl);
       const timeoutPromise = new Promise((_, reject) => {
@@ -374,9 +382,10 @@ export class FetchService {
         );
       });
 
-      response = (await Promise.race([responsePromise, timeoutPromise])) as
-        | Response
-        | IFetchError;
+      response = (await Promise.race([
+        responsePromise,
+        timeoutPromise,
+      ])) as Response;
 
       if (
         response instanceof Response &&
@@ -384,7 +393,7 @@ export class FetchService {
         i < attempts - 1
       ) {
         // TODO: Remove Console Log
-        console.log("Rate limit exceeded, waiting for 3 seconds...");
+        // console.log("Rate limit exceeded, waiting for 3 seconds...");
         await new Promise((resolve) => setTimeout(resolve, 3000));
       }
     }
@@ -398,45 +407,53 @@ export class FetchService {
    * @param response - The response to validate.
    */
   private static async validateResponse(
-    response: Response | IFetchError | null,
+    response: Response | null,
     fetchResult: FetchResult
   ) {
     let fetchingError = "Fetching Reports\t";
+    if (!response) throw (fetchingError += "No response received");
+
+    response = response as Response;
     let data;
 
-    if (response && "ok" in response && !response.ok) {
-      // Handle JSON error
-      if (response.headers.get("content-type")?.includes("application/json")) {
+    // Handle JSON RESPONSE
+    if (response.headers.get("content-type")?.includes("application/json")) {
+      try {
         data = await response.json();
         const counterError = this.getExistingFetchError(data);
+
+        // Get Counter Error If not Report Data
         if (counterError) {
           fetchResult.error = counterError;
           fetchingError +=
-            "Exception " + counterError.code + " - " + counterError.message;
+            "Exception " +
+            counterError.code +
+            " - " +
+            counterError.message +
+            "\t";
+          throw fetchingError;
+
+          // Handle Other Data Sent
+        } else {
+          // Hopefully the data is a report
+          if (response.ok) return data as IReport;
+          // Ramdom Responses from API - usually { message: "Internal Server Error" } with a 200 status
+          else fetchingError += "Unknown error:" + JSON.stringify(data);
         }
-        // Ramdom Responses from API - usually { message: "Internal Server Error" }
-        else fetchingError += "Unknown error:" + JSON.stringify(data);
+
+        // Handle Invalid JSON RESPONSE FORMAT
+      } catch (error) {
+        throw (
+          fetchingError +
+          "Invalid JSON Format ( " +
+          JSON.stringify(response) +
+          " ):\n"
+        );
       }
-      // HTTP Error
-      else
-        fetchingError += `Network Error: HTTP ${response.status} - ${response.statusText}`;
-      throw fetchingError;
     }
-
-    if (!response) throw (fetchingError += "No response received");
-
-    try {
-      response = response as Response;
-      const report = (await response.json()) as IReport;
-      return report;
-    } catch (error) {
-      // console.log(error);
-      throw (
-        fetchingError +
-        "Invalid Report Data JSON Format ( " +
-        JSON.stringify(response) +
-        " ):\n"
-      );
+    // Handle HTTP RESPONSE
+    else {
+      fetchingError += `Network Error: HTTP ${response.status} - ${response.statusText}`;
     }
   }
 
@@ -446,6 +463,8 @@ export class FetchService {
    * @param data - The data to search for a fetch error. Must JSON Data
    */
   private static getExistingFetchError(data: any): IFetchError | null {
+    if (Array.isArray(data)) data = data[0];
+
     if (Array.isArray(data)) data = data[0];
 
     if ("Code" in data) {
