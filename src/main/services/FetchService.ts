@@ -43,9 +43,9 @@ export class FetchService {
     const result = fetchResults.reduce(
       (
         acc: FetchResults,
-        { reportId, vendorName, success, custom, error }: FetchResult
+        { reportId, vendorName, success, custom, errors, warnings }: FetchResult
       ) => {
-        const report = { reportId, success, error };
+        const report = { reportId, success, errors, warnings };
 
         // Determine if the vendor is 'main' or 'custom'
         const reportType = custom ? "custom" : "main";
@@ -205,9 +205,9 @@ export class FetchService {
     });
 
     // Wait for all promises to resolve
-    const fetchResults = (
-      await Promise.all(allPromises)
-    ).flat() as FetchResult[];
+    const fetchResults = (await Promise.allSettled(allPromises)).flatMap(
+      (result) => (result.status === "fulfilled" ? result.value : [])
+    );
 
     console.log(fetchResults);
 
@@ -236,10 +236,13 @@ export class FetchService {
     logger = new LoggerService()
   ): Promise<FetchResult> {
     let fetchResult: FetchResult = {
+      timestamp: new Date().toISOString(),
       reportId: reportSettings.id,
       vendorName: vendor.name,
       success: false,
       custom: reportSettings.name.includes("Custom"),
+      errors: [],
+      warnings: [],
     };
     if (!reportSettings.id || !vendor) return fetchResult;
 
@@ -308,7 +311,9 @@ export class FetchService {
       //   prismaReportService.saveFetchedReport(report);
 
       fetchResult.success = true;
-      fetchResult.warning = report.Report_Header.Exceptions;
+      fetchResult.timestamp = new Date().toISOString();
+      if (report.Report_Header.Exceptions)
+        fetchResult.warnings = [report.Report_Header.Exceptions];
 
       return fetchResult;
     } catch (error) {
@@ -322,9 +327,11 @@ export class FetchService {
       return {
         reportId: reportSettings.id,
         custom: isCustomReport,
+        timestamp: new Date().toISOString(),
         vendorName: vendor.name,
         success: false,
-        error: fetchResult.error ? fetchResult.error : (error as IFetchError),
+        errors: [...fetchResult.errors, error as IFetchError],
+        warnings: fetchResult.warnings,
       };
     }
   }
@@ -402,42 +409,43 @@ export class FetchService {
     fetchResult: FetchResult
   ) {
     let fetchingError = "Fetching Reports\t";
-    let data;
-
-    if (response && "ok" in response && !response.ok) {
-      // Handle JSON error
-      if (response.headers.get("content-type")?.includes("application/json")) {
-        data = await response.json();
-        const counterError = this.getExistingFetchError(data);
-        if (counterError) {
-          fetchResult.error = counterError;
-          fetchingError +=
-            "Exception " + counterError.code + " - " + counterError.message;
-        }
-        // Ramdom Responses from API - usually { message: "Internal Server Error" }
-        else fetchingError += "Unknown error:" + JSON.stringify(data);
-      }
-      // HTTP Error
-      else
-        fetchingError += `Network Error: HTTP ${response.status} - ${response.statusText}`;
-      throw fetchingError;
-    }
-
     if (!response) throw (fetchingError += "No response received");
 
-    try {
-      response = response as Response;
-      const report = (await response.json()) as IReport;
-      return report;
-    } catch (error) {
-      // console.log(error);
-      throw (
-        fetchingError +
-        "Invalid Report Data JSON Format ( " +
-        JSON.stringify(response) +
-        " ):\n"
-      );
+    response = response as Response;
+    let data;
+
+    // Handle JSON RESPONSE
+    if (response.headers.get("content-type")?.includes("application/json")) {
+      data = await response.json().catch(() => {
+        fetchingError +=
+          "Invalid JSON Format ( " + JSON.stringify(response) + " ):\n";
+
+        throw fetchingError;
+      });
+
+      const counterError = this.getExistingFetchError(data);
+      // Get Counter Error If not Report Data
+      if (counterError) {
+        fetchResult.errors = [...fetchResult.errors, counterError];
+        fetchingError +=
+          "Exception " +
+          counterError.code +
+          " - " +
+          counterError.message +
+          "\t";
+        throw fetchingError;
+
+        // Handle Other Data Sent
+      } else {
+        // Hopefully the data is a report
+        if (response.ok) return data as IReport;
+        // Ramdom Responses from API - usually { message: "Internal Server Error" } with a 200 status
+        else fetchingError += "Unknown error:" + JSON.stringify(data);
+      }
     }
+    // Handle HTTP RESPONSE
+    else
+      fetchingError += `Network Error: HTTP ${response.status} - ${response.statusText}`;
   }
 
   /**
