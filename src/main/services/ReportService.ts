@@ -28,7 +28,6 @@ export class ReportService {
 
   static get51ReportFromJson(data: any): IReport | null {
     try {
-      console.log(data);
       if (data.Report_Header.Report_ID.includes("IR"))
         return ReportService.get51IRFromJSON(data); // direct call to self as `this` is lost in promise
 
