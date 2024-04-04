@@ -18,7 +18,10 @@ import TSVService from "./TSVService";
 import { prismaReportService } from "./PrismaReportService";
 import { BrowserWindow } from "electron";
 import { IReport } from "src/renderer/src/interface/IReport";
+import { DirectorySettingService } from "./DirectorySettingService";
+import { writeFile } from "../utils/files";
 
+//
 export type FetchData = {
   fetchReports: Report[];
   selectedVendors: VendorRecord[];
@@ -30,6 +33,68 @@ export type FetchData = {
 /** The main service for performing GET operations on vendors that use the SUSHI API */
 
 export class FetchService {
+  static async exportResults(results: FetchResults) {
+    const dirService = new DirectorySettingService();
+
+    const resultSummary =
+      results.custom.vendors.length > 0 ? results.custom : results.main;
+
+    const now = new Date().toISOString();
+
+    let tsv: string[] = ["Results Summary"];
+    tsv.push("Total Succeeded\t" + resultSummary.succeeded);
+    tsv.push("Total Failed\t" + results.failed);
+    tsv.push("Timestamp\tVendor\tReporID\tStatus\tMessage");
+
+    for (const vendor of resultSummary.vendors) {
+      const reports = vendor.reports;
+      for (const report of reports) {
+        const status = report.success
+          ? "Success"
+          : report.errors.length > 0
+            ? "Error"
+            : "Warning";
+
+        let messages =
+          status === "Success"
+            ? "Report Stored Successfully"
+            : status === "Warning"
+              ? "Report Saved With Exceptions:\n"
+              : "Error Occcured While Fetching Report:\n";
+
+        if (!report.success) {
+          // Add Errors
+          report.errors.forEach((error) => {
+            if (!error) return;
+            else if (typeof error === "string")
+              messages += error.replace(/\t/g, "-") + "\n";
+            else
+              messages +=
+                "Exception " + error.code + ":" + error.message + "\n";
+          });
+
+          // Add Warnigns
+          report.warnings.forEach((warning) => {
+            if (!warning) return;
+            else if (typeof warning === "string")
+              messages += warning.replace(/\t/g, "-") + "\n";
+            else
+              messages +=
+                "Exception " + warning.code + ":" + warning.message + "\n";
+          });
+        }
+
+        tsv.push(
+          [now, vendor.name, report.reportId, status, messages].join("\t")
+        );
+      }
+    }
+
+    let path = await dirService.chooseDirectory();
+    path += "/FetchResults-" + now + ".tsv";
+    writeFile(path, tsv.join("\n"));
+    dirService.openPath(path);
+  }
   /**
    * Summarizes the results of fetching reports from vendors.
    * @param fetchResults - The results of fetching reports from vendors.
@@ -43,9 +108,9 @@ export class FetchService {
     const result = fetchResults.reduce(
       (
         acc: FetchResults,
-        { reportId, vendorName, success, custom, error }: FetchResult
+        { reportId, vendorName, success, custom, errors, warnings }: FetchResult
       ) => {
-        const report = { reportId, success, error };
+        const report = { reportId, success, errors, warnings };
 
         // Determine if the vendor is 'main' or 'custom'
         const reportType = custom ? "custom" : "main";
@@ -160,12 +225,12 @@ export class FetchService {
             );
 
             // TODO: Remove console log
-            console.log(
-              "\nThrottling requests for",
-              vendor.name,
-              "... With Interval",
-              requestInterval
-            );
+            // console.log(
+            //   "\nThrottling requests for",
+            //   vendor.name,
+            //   "... With Interval",
+            //   requestInterval
+            // );
 
             const result = await FetchService.fetchReport(
               vendor,
@@ -205,11 +270,9 @@ export class FetchService {
     });
 
     // Wait for all promises to resolve
-    const fetchResults = (
-      await Promise.all(allPromises)
-    ).flat() as FetchResult[];
-
-    console.log(fetchResults);
+    const fetchResults = (await Promise.allSettled(allPromises)).flatMap(
+      (result) => (result.status === "fulfilled" ? result.value : [])
+    );
 
     const summary = this.summarizeResults(fetchResults, logger);
     return summary;
@@ -236,10 +299,13 @@ export class FetchService {
     logger = new LoggerService()
   ): Promise<FetchResult> {
     let fetchResult: FetchResult = {
+      timestamp: new Date().toISOString(),
       reportId: reportSettings.id,
       vendorName: vendor.name,
       success: false,
       custom: reportSettings.name.includes("Custom"),
+      errors: [],
+      warnings: [],
     };
     if (!reportSettings.id || !vendor) return fetchResult;
 
@@ -305,26 +371,30 @@ export class FetchService {
 
       // TODO: DATABASE CRASHING
       // if (reportSettings.id === "TR")
-      //   prismaReportService.saveFetchedReport(report);
+      await prismaReportService.saveFetchedReport(report);
 
       fetchResult.success = true;
-      fetchResult.warning = report.Report_Header.Exceptions;
+      fetchResult.timestamp = new Date().toISOString();
+      if (report.Report_Header.Exceptions)
+        fetchResult.warnings = [report.Report_Header.Exceptions];
 
       return fetchResult;
     } catch (error) {
       let errorMessage = logHeader + error;
       errorMessage += error;
 
-      console.log(errorMessage);
+      // console.log(errorMessage);
 
       logger.log(errorMessage);
 
       return {
         reportId: reportSettings.id,
         custom: isCustomReport,
+        timestamp: new Date().toISOString(),
         vendorName: vendor.name,
         success: false,
-        error: fetchResult.error ? fetchResult.error : (error as IFetchError),
+        errors: [...fetchResult.errors, error as IFetchError],
+        warnings: fetchResult.warnings,
       };
     }
   }
@@ -402,42 +472,43 @@ export class FetchService {
     fetchResult: FetchResult
   ) {
     let fetchingError = "Fetching Reports\t";
-    let data;
-
-    if (response && "ok" in response && !response.ok) {
-      // Handle JSON error
-      if (response.headers.get("content-type")?.includes("application/json")) {
-        data = await response.json();
-        const counterError = this.getExistingFetchError(data);
-        if (counterError) {
-          fetchResult.error = counterError;
-          fetchingError +=
-            "Exception " + counterError.code + " - " + counterError.message;
-        }
-        // Ramdom Responses from API - usually { message: "Internal Server Error" }
-        else fetchingError += "Unknown error:" + JSON.stringify(data);
-      }
-      // HTTP Error
-      else
-        fetchingError += `Network Error: HTTP ${response.status} - ${response.statusText}`;
-      throw fetchingError;
-    }
-
     if (!response) throw (fetchingError += "No response received");
 
-    try {
-      response = response as Response;
-      const report = (await response.json()) as IReport;
-      return report;
-    } catch (error) {
-      // console.log(error);
-      throw (
-        fetchingError +
-        "Invalid Report Data JSON Format ( " +
-        JSON.stringify(response) +
-        " ):\n"
-      );
+    response = response as Response;
+    let data;
+
+    // Handle JSON RESPONSE
+    if (response.headers.get("content-type")?.includes("application/json")) {
+      data = await response.json().catch(() => {
+        fetchingError +=
+          "Invalid JSON Format ( " + JSON.stringify(response) + " ):\n";
+
+        throw fetchingError;
+      });
+
+      const counterError = this.getExistingFetchError(data);
+      // Get Counter Error If not Report Data
+      if (counterError) {
+        fetchResult.errors = [...fetchResult.errors, counterError];
+        fetchingError +=
+          "Exception " +
+          counterError.code +
+          " - " +
+          counterError.message +
+          "\t";
+        throw fetchingError;
+
+        // Handle Other Data Sent
+      } else {
+        // Hopefully the data is a report
+        if (response.ok) return data as IReport;
+        // Ramdom Responses from API - usually { message: "Internal Server Error" } with a 200 status
+        else fetchingError += "Unknown error:" + JSON.stringify(data);
+      }
     }
+    // Handle HTTP RESPONSE
+    else
+      fetchingError += `Network Error: HTTP ${response.status} - ${response.statusText}`;
   }
 
   /**

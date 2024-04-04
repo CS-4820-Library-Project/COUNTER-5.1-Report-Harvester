@@ -1,5 +1,6 @@
 import { contextBridge, ipcRenderer } from "electron";
 import { FetchData } from "src/main/services/FetchService";
+import { FetchResults } from "src/types/reports";
 import { VendorData, VendorRecord } from "src/types/vendors";
 
 const FetchReportsAPI = () => {
@@ -23,6 +24,14 @@ const FetchReportsAPI = () => {
      */
     getSupported: async (vendor: VendorRecord | VendorData) => {
       return await ipcRenderer.invoke("supported-reports", vendor);
+    },
+
+    /**
+     * Exports the fetch results.
+     * @param {FetchResults} fetchResults - The fetch results to be exported.
+     */
+    exportFetchResults: (fetchResults: FetchResults) => {
+      ipcRenderer.send("export-fetch-results", fetchResults);
     },
 
     /**
