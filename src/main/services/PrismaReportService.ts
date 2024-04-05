@@ -243,11 +243,26 @@ export class PrismaReportService {
           platform: rawItem.Platform,
         };
 
-        if (report.Report_Header.Report_ID.includes("TR")) {
+        if (report.Report_Header.Report_ID.includes("PR")) {
+          //TODO: Add PR Report Item
+          const prItem = rawItem as unknown as IReport;
+          console.log("prItem:", prItem);
+
+          // console.log(rawItem);
+          // console.log(rawItem.Performance);
+        } else if (report.Report_Header.Report_ID.includes("TR")) {
+          // console.log(rawItem);
+          // console.log(rawItem.Performance);
           const trItem = rawItem as ITRIRReportItem;
+          console.log("trItem:", trItem);
           reportItemDetails.title = trItem.Title;
           reportItemDetails.publisher = trItem.Publisher;
           trItem.Publisher_ID.map((id) => `${id.Type}:${id.Value}`).join(";");
+
+          reportItemDetails.proprietary_id =
+            trItem.Publisher_ID.find((id) => id.Type === "Proprietary")
+              ?.Value || null;
+
           trItem.Item_ID.map((id) => `${id.Type}:${id.Value}`).join(";");
           reportItemDetails.doi =
             trItem.Item_ID.find((id) => id.Type === "DOI")?.Value || null;
@@ -258,6 +273,9 @@ export class PrismaReportService {
             null;
           reportItemDetails.online_issn =
             trItem.Item_ID.find((id) => id.Type === "Online_ISSN")?.Value ||
+            null;
+          reportItemDetails.proprietary_id =
+            trItem.Item_ID.find((id) => id.Type === "Proprietary")?.Value ||
             null;
           reportItemDetails.uri =
             trItem.Item_ID.find((id) => id.Type === "URI")?.Value || null;
