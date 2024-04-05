@@ -551,9 +551,7 @@ export class PrismaReportService {
   }
 
   static async exportDatabase(exportPath: string) {
-    const dbFile = process.env.DATABASE_FILE || "../../../prisma/search.db";
-
-    console.log(dbFile)
+    const dbFile = path.join(__dirname, process.env.DATABASE_FILE || "../../prisma/search.db");
 
     if (fs.existsSync(dbFile)) {
       try {
