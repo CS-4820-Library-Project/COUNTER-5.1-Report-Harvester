@@ -19,25 +19,24 @@ export type FetchData = {
   toDate: Date;
 };
 
-export type FetchResult = {
+export type ReportResult = {
   reportId: string;
+  success: boolean;
+  errors: (IFetchError | string | undefined)[];
+  warnings: (IFetchError | string | undefined)[];
+};
+
+export type FetchResult = {
+  timestamp: string;
   custom: boolean;
   vendorName: string;
-  success: boolean;
-  error?: IFetchError | string;
-  warning?: IFetchError | string;
-};
+} & ReportResult;
 
 type VendorFetchSummary = {
   succeeded: number;
   vendors: {
     name: string;
-    reports: {
-      reportId: string;
-      success: boolean;
-      error?: IFetchError | string;
-      warning?: IFetchError | string;
-    }[];
+    reports: ReportResult[];
     totalSucceed: number;
   }[];
 };

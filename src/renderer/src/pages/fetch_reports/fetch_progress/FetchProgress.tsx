@@ -2,10 +2,11 @@ import { Close } from "@mui/icons-material";
 import ProgressBar from "./ProgressBar";
 import { useEffect, useState } from "react";
 import { FlexColumn, FlexRowEnd } from "../../../components/flex";
-import { IconButton, useTheme } from "@mui/material";
+import { Button, IconButton, useTheme } from "@mui/material";
 import ResultsHeader from "../../../components/text/ResultsHeader";
 import { FetchResults } from "../../../../../types/reports";
 import { UserDirectories } from "src/types/settings";
+import { useNotification } from "../../../components/NotificationBadge";
 
 type Props = {
   close: () => void;
@@ -25,6 +26,7 @@ type Props = {
 
 const FetchProgress = ({ close, totalVendors, fetchResults }: Props) => {
   const { palette } = useTheme();
+  const setNotification = useNotification();
 
   const [directories, setDirectories] = useState<UserDirectories>();
 
@@ -34,6 +36,20 @@ const FetchProgress = ({ close, totalVendors, fetchResults }: Props) => {
   const getDirectories = async () => {
     const directories = await window.settings.getDirectories();
     setDirectories(directories);
+  };
+
+  const openFetchResults = () => {
+    if (!fetchResults)
+      return setNotification({
+        type: "warning",
+        message: "No fetch results available.",
+      });
+    window.reports.exportFetchResults(fetchResults);
+
+    setNotification({
+      type: "info",
+      message: "Fetch results opened in default text editor.",
+    });
   };
 
   useEffect(() => {
@@ -122,6 +138,10 @@ const FetchProgress = ({ close, totalVendors, fetchResults }: Props) => {
               file={fetchResults.log || "/"}
               color={fetchResults.failed ? "error" : "primary"}
             />
+
+            <Button variant="text" onClick={openFetchResults}>
+              Export Fetch Results
+            </Button>
           </FlexColumn>
         )}
       </FlexColumn>
