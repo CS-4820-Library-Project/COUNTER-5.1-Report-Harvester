@@ -9,7 +9,7 @@ datasource db {
 
 model Report {
   id               Int            @id @default(autoincrement())
-  report_id        String // TR
+  report_id        String
   report_name      String
   release          String
   institution_name String
@@ -30,9 +30,9 @@ model ReportFilter {
 }
 
 model ReportItem {
-  id             Int            @id @default(autoincrement())
+  id             Int     @id @default(autoincrement())
   reportId       Int
-  report         Report         @relation(fields: [reportId], references: [id])
+  report         Report  @relation(fields: [reportId], references: [id])
   title          String?
   publisher      String?
   publisher_id   String?
@@ -46,7 +46,9 @@ model ReportItem {
   data_type      String?
   metric_type    String?
   // INCLUDE ALL COLUMNS POSISIBLE FILL AS NULL IF NOT AVAILABLE IN REPORT
-  ReportMetric   ReportMetric[]
+  // MISSING METRICS for each report type see counter types file to see all columns for each version
+
+  ReportMetric ReportMetric[]
 }
 
 model ReportMetric {
@@ -55,6 +57,5 @@ model ReportMetric {
   period       String // YYYY-MM
   value        Int
   metricType   String
-  //
   reportItem   ReportItem @relation(fields: [reportItemId], references: [id])
 }

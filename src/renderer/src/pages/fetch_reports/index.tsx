@@ -72,7 +72,7 @@ const FetchReportsPage = () => {
 
   const [fromDate, setFromDate] = useState<Date>(new Date(currentYear, 0));
   const [toDate, setToDate] = useState<Date>(
-    new Date(currentYear, currentMonth - 1)
+    new Date(currentYear, currentMonth - 1),
   );
 
   const [fetchResults, setFetchResults] = useState<FetchResults>();
@@ -105,6 +105,11 @@ const FetchReportsPage = () => {
       return setNotification({
         type: "warning",
         message,
+      });
+    } else if (selectedReports.length < 1 && !all) {
+      return setNotification({
+        type: "warning",
+        message: "Please select at least one report type.",
       });
     }
 

@@ -34,11 +34,12 @@ const ToggleNav = ({
     borderRadius: "0",
     textTransform: "none" as const,
     color: isSelected ? primary.contrastText : background.contrastText,
-    backgroundColor: isSelected
-      ? isActive
-        ? primary.hover
-        : primary.main
-      : background.main,
+    backgroundColor:
+      isSelected && !disabled
+        ? isActive
+          ? primary.hover
+          : primary.main
+        : background.main,
     "&:hover": {
       bgcolor: isSelected ? primary.hover : background.hover,
     },
@@ -47,11 +48,12 @@ const ToggleNav = ({
   const leftSideStyle = {
     borderRadius: "0",
     color: isSelected ? primary.contrastText : background.light,
-    backgroundColor: isSelected
-      ? isActive
-        ? primary.hover
-        : primary.main
-      : background.main,
+    backgroundColor:
+      isSelected && !disabled
+        ? isActive
+          ? primary.hover
+          : primary.main
+        : background.main,
     padding: size === "small" ? ("5px" as const) : ("10px" as const),
     minWidth: "max-content" as const,
     height: "100%" as const,
