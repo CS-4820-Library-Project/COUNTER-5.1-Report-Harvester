@@ -72,7 +72,7 @@ const FetchReportsPage = () => {
 
   const [fromDate, setFromDate] = useState<Date>(new Date(currentYear, 0));
   const [toDate, setToDate] = useState<Date>(
-    new Date(currentYear, currentMonth - 1)
+    new Date(currentYear, currentMonth - 1),
   );
 
   const [fetchResults, setFetchResults] = useState<FetchResults>();

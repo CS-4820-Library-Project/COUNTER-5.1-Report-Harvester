@@ -57,6 +57,5 @@ model ReportMetric {
   period       String // YYYY-MM
   value        Int
   metricType   String
-  //
   reportItem   ReportItem @relation(fields: [reportItemId], references: [id])
 }

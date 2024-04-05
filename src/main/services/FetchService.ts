@@ -73,7 +73,7 @@ export class FetchService {
                 "Exception " + error.code + ":" + error.message + "\n";
           });
 
-          // Add Warnigns
+          // Add Warnings
           report.warnings.forEach((warning) => {
             if (!warning) return;
             else if (typeof warning === "string")
@@ -85,15 +85,15 @@ export class FetchService {
         }
 
         tsv.push(
-          [now, vendor.name, report.reportId, status, messages].join("\t")
+          [now, vendor.name, report.reportId, status, messages].join("\t"),
         );
       }
     }
 
     let path = await dirService.chooseDirectory();
     path += "/FetchResults-" + now + ".tsv";
-    writeFile(path, tsv.join("\n"));
-    dirService.openPath(path);
+    await writeFile(path, tsv.join("\n"));
+    await dirService.openPath(path);
   }
   /**
    * Summarizes the results of fetching reports from vendors.
@@ -103,12 +103,19 @@ export class FetchService {
    */
   private static summarizeResults(
     fetchResults: FetchResult[],
-    logger: LoggerService
+    logger: LoggerService,
   ): FetchResults {
     const result = fetchResults.reduce(
       (
         acc: FetchResults,
-        { reportId, vendorName, success, custom, errors, warnings }: FetchResult
+        {
+          reportId,
+          vendorName,
+          success,
+          custom,
+          errors,
+          warnings,
+        }: FetchResult,
       ) => {
         const report = { reportId, success, errors, warnings };
 
@@ -116,7 +123,7 @@ export class FetchService {
         const reportType = custom ? "custom" : "main";
 
         const vendor = acc[reportType].vendors.find(
-          (v) => v.name === vendorName
+          (v) => v.name === vendorName,
         );
         if (vendor) {
           vendor.reports.push(report);
@@ -142,7 +149,7 @@ export class FetchService {
         custom: { succeeded: 0, vendors: [] },
         failed: 0,
         log: logger.writeLogsToFile(),
-      }
+      },
     );
 
     return result;
@@ -153,7 +160,7 @@ export class FetchService {
    *  @param vendor - The vendor to fetch reports from.
    */
   static async getSupportedReports(
-    vendor: VendorRecord | VendorData
+    vendor: VendorRecord | VendorData,
   ): Promise<string[] | IFetchError | null> {
     const vendorInfo = vendor.data5_0 ?? vendor.data5_1;
     if (!vendorInfo) return [];
@@ -193,7 +200,7 @@ export class FetchService {
    */
   static async fetchReports(
     { fetchReports, selectedVendors, version, fromDate, toDate }: FetchData,
-    mainWindow: BrowserWindow
+    mainWindow: BrowserWindow,
   ) {
     const logger = new LoggerService();
 
@@ -212,7 +219,7 @@ export class FetchService {
       }
 
       const vendorReports = fetchReports.filter((report) =>
-        supported.some((r) => r.toUpperCase() === report.id)
+        supported.some((r) => r.toUpperCase() === report.id),
       );
 
       // If requests need to be throttled for this vendor, fetch reports sequentially
@@ -221,7 +228,7 @@ export class FetchService {
           async (prevPromise, report) => {
             const results = await prevPromise;
             await new Promise((resolve) =>
-              setTimeout(resolve, requestInterval)
+              setTimeout(resolve, requestInterval),
             );
 
             // TODO: Remove console log
@@ -239,11 +246,11 @@ export class FetchService {
               toDate,
               version as CounterVersion,
               requestTimeout,
-              logger
+              logger,
             );
             return [...results, result];
           },
-          Promise.resolve([] as FetchResult[])
+          Promise.resolve([] as FetchResult[]),
         );
         mainWindow.webContents.send("vendor-completed");
         return results;
@@ -260,9 +267,9 @@ export class FetchService {
               toDate,
               version as CounterVersion,
               requestTimeout,
-              logger
-            )
-          )
+              logger,
+            ),
+          ),
         );
         mainWindow.webContents.send("vendor-completed");
         return results;
@@ -271,7 +278,7 @@ export class FetchService {
 
     // Wait for all promises to resolve
     const fetchResults = (await Promise.allSettled(allPromises)).flatMap(
-      (result) => (result.status === "fulfilled" ? result.value : [])
+      (result) => (result.status === "fulfilled" ? result.value : []),
     );
 
     const summary = this.summarizeResults(fetchResults, logger);
@@ -296,7 +303,7 @@ export class FetchService {
     endDate: Date,
     counterVersion: CounterVersion,
     requestTimeout: number,
-    logger = new LoggerService()
+    logger = new LoggerService(),
   ): Promise<FetchResult> {
     let fetchResult: FetchResult = {
       timestamp: new Date().toISOString(),
@@ -324,9 +331,9 @@ export class FetchService {
       }&requestor_id=${
         vendorInfo.requestorId
       }&begin_date=${this.getDateAsString(
-        startDate
+        startDate,
       )}&end_date=${this.getDateAsString(endDate)}${this.getAPIKeySegment(
-        vendorInfo
+        vendorInfo,
       )}`;
 
       if (isCustomReport)
@@ -336,13 +343,13 @@ export class FetchService {
       logger.log(
         logHeader +
           "Fetching Sushi API from URL\t" +
-          `${reportUrl}\tVendor requires ${vendorInfo.requireTwoAttemptsPerReport ? 2 : 1} fetch(es).\n`
+          `${reportUrl}\tVendor requires ${vendorInfo.requireTwoAttemptsPerReport ? 2 : 1} fetch(es).\n`,
       );
 
       const response = await this.fetchWithAttempts(
         vendorInfo,
         reportUrl,
-        requestTimeout
+        requestTimeout,
       );
 
       // Throw TSV Error Message or Returns Data
@@ -363,15 +370,16 @@ export class FetchService {
         vendor.name,
         reportSettings.id,
         startDate,
-        endDate
+        endDate,
       );
 
       // TODO: THROWS MANY ERRORS
-      TSVService.writeTSVReport(tsvFilename, tsv, isCustomReport);
+      await TSVService.writeTSVReport(tsvFilename, tsv, isCustomReport);
 
       // TODO: DATABASE CRASHING
       // if (reportSettings.id === "TR")
       await prismaReportService.saveFetchedReport(report);
+      // console.log("report: ", report);
 
       fetchResult.success = true;
       fetchResult.timestamp = new Date().toISOString();
@@ -410,7 +418,7 @@ export class FetchService {
   private static async fetchWithAttempts(
     vendorInfo: VendorInfo,
     reportUrl: string,
-    requestTimeout: number
+    requestTimeout: number,
   ) {
     let attempts = vendorInfo.requireTwoAttemptsPerReport ? 2 : 1;
 
@@ -424,7 +432,7 @@ export class FetchService {
           i + 1,
           " TimeOut ",
           requestTimeout,
-          new Date().toISOString()
+          new Date().toISOString(),
         );
 
       const responsePromise = fetch(reportUrl);
@@ -440,7 +448,7 @@ export class FetchService {
                 " seconds.",
               meaning: "Adjust your request timeout settings to be longer",
             } as IFetchError),
-          requestTimeout * 1000
+          requestTimeout * 1000,
         );
       });
 
@@ -469,7 +477,7 @@ export class FetchService {
    */
   private static async validateResponse(
     response: Response | IFetchError | null,
-    fetchResult: FetchResult
+    fetchResult: FetchResult,
   ) {
     let fetchingError = "Fetching Reports\t";
     if (!response) throw (fetchingError += "No response received");
@@ -539,7 +547,7 @@ export class FetchService {
    */
   private static convertFiltersToURLParams(
     reportSettings: Report,
-    counterVersion: CounterVersion = CounterVersion.v5_0
+    counterVersion: CounterVersion = CounterVersion.v5_0,
   ) {
     const filters = reportSettings.filters;
     const attributes = reportSettings.attributes;
