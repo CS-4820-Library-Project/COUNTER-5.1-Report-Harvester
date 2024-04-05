@@ -1,6 +1,7 @@
 // dataBaseRouter.ts
 import { ipcMain } from "electron";
-import { prismaReportService } from "../services/PrismaReportService";
+import {PrismaReportService, prismaReportService} from "../services/PrismaReportService";
+import {DirectorySettingService} from "../services/DirectorySettingService";
 
 /**
  * Handles database-related IPC events.
@@ -58,6 +59,18 @@ const DatabaseRouter = () => {
     } catch (error) {
       console.error("Error rebuilding database: ", error);
       throw error;
+    }
+  });
+
+  ipcMain.handle("export-database", async (_event) => {
+    try {
+      const path = await DirectorySettingService.getDirectoryFromUser();
+      if (path && path != "") {
+        await PrismaReportService.exportDatabase(path);
+      }
+    } catch (e) {
+      console.log(`Error exporting database: ${e}`)
+      throw e;
     }
   });
 };
