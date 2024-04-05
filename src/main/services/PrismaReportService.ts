@@ -260,8 +260,8 @@ export class PrismaReportService {
           trItem.Publisher_ID.map((id) => `${id.Type}:${id.Value}`).join(";");
 
           reportItemDetails.proprietary_id =
-            trItem.Publisher_ID.find((id) => id.Type === "Proprietary")
-              ?.Value || null;
+            trItem.Item_ID.find((id) => id.Type === "Proprietary")?.Value ||
+            null;
 
           trItem.Item_ID.map((id) => `${id.Type}:${id.Value}`).join(";");
           reportItemDetails.doi =
