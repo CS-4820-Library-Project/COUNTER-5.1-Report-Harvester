@@ -3,25 +3,29 @@ import {
   IInstitutionId,
   IPerformance,
   IReport,
-  IReportFilter,
   IReportHeader,
   IReportItem,
   ITRIRReportItem,
 } from "../../renderer/src/interface/IReport";
-import {
-  ReportIDTSVHeaderDict,
-  TRItemIdHeaders,
-  TSVHeaders as THd,
-} from "../../renderer/src/const/TSVStrings";
-import { CounterVersion } from "../../renderer/src/const/CounterVersion";
+import {ReportIDTSVHeaderDict, TRItemIdHeaders, TSVHeaders as THd,} from "../../renderer/src/const/TSVStrings";
+import {CounterVersion} from "../../renderer/src/const/CounterVersion";
+import {json} from "express";
+import {Count} from "@prisma/client/runtime/library";
 
 /** The main service for cleansing, coercing, and analyzing Reports from SUSHI APIs. */
 
 export class ReportService {
+
   /** Converts a 5.0 report from JSON into an **IReport** object. */
 
   static get50ReportFromJSON(data: any): IReport | null {
-    return data as IReport;
+    if (!(data && data.Report_Header && data.Report_Items)) {
+      return null;
+    }
+    return {
+      Report_Header: ReportService.getHeaderObjectFromJSON(data.Report_Header),
+      Report_Items: data.Report_Items
+    } as IReport;
   }
 
   /** Converts a 5.1 report from JSON into an **IReport** object. */
@@ -239,26 +243,18 @@ export class ReportService {
 
       tsv += `${THd.INST_ID}\t${institutionIdString}\n`;
 
-      // Parse 5.1 specific headers
-
-      if (header.Release == "5.1") {
-        tsv += `${THd.METRIC_TYPES}\t${header.Metric_Types}\n`;
-        tsv += `${THd.REPORT_FILTERS}\t${header.Report_Filters ?? "undefined"}\n`;
-        tsv += `${THd.REPORT_ATTRIBUTES}\t${header.Report_Attributes ?? "undefined"}\n`;
-        tsv += `${THd.EXCEPTIONS}\t${header.Exceptions ?? "undefined"}\n`;
-        tsv += `${THd.REPORTING_PERIOD}\t${header.Reporting_Period ?? "undefined"}\n`;
-      } else {
-        const filtersArray = header.Report_Filters as IReportFilter[];
-        const reportFilters = filtersArray
-          ?.map((filter) => `${filter.Name}=${filter.Value}`)
-          .join(";");
-        tsv += `${THd.REPORT_FILTERS}\t${reportFilters}\n`;
+      for (const headerRow of [
+        THd.METRIC_TYPES,
+        THd.REPORT_FILTERS,
+        THd.REPORT_ATTRIBUTES,
+        THd.EXCEPTIONS,
+        THd.REPORTING_PERIOD]) {
+        tsv += `${headerRow.toString()}\t${header[headerRow] ?? ""}\n`;
       }
 
       tsv += `${THd.CREATED}\t${header.Created}\n`;
       tsv += `${THd.CREATED_BY}\t${header.Created_By}\n`;
-      if (header.Release == "5.1")
-        tsv += `${THd.REGISTRY_RECORD}\t${header.Registry_Record ?? ""}\n`;
+      tsv += `${THd.REGISTRY_RECORD}\t${header.Registry_Record ?? ""}\n`;
       tsv += "\n";
       tsv += ReportIDTSVHeaderDict[header.Report_ID.substring(0, 2)] ?? "";
 
@@ -476,50 +472,42 @@ export class ReportService {
   }
 
   static getHeaderObjectFromJSON(jsonHeader: any): IReportHeader {
-    let header = {
+    return {
       Report_Name: jsonHeader.Report_Name,
       Report_ID: jsonHeader.Report_ID,
       Release: jsonHeader.Release,
+      Report_Filters: ReportService.getSemicolonDelimitedString("Report_Filters", jsonHeader),
+      Metric_Types: ReportService.getSemicolonDelimitedString("Metric_Types", jsonHeader),
+      Report_Attributes: ReportService.getSemicolonDelimitedString("Report_Attributes", jsonHeader),
+      Exceptions: ReportService.getSemicolonDelimitedString("Exceptions", jsonHeader),
+      Reporting_Period: ReportService.getSemicolonDelimitedString("Reporting_Period", jsonHeader),
       Institution_Name: jsonHeader.Institution_Name,
-      Institution_ID: Object.keys(jsonHeader.Institution_ID)?.map((key) => ({
+      Institution_ID: jsonHeader.Release == '5' ? jsonHeader.Institution_ID : Object.keys(jsonHeader.Institution_ID)?.map((key) => ({
         Type: key,
         Value: jsonHeader.Institution_ID[key],
       })),
-      Report_Filters: Object.keys(jsonHeader.Report_Filters)?.map((key) => ({
-        Name: key,
-        Value: jsonHeader.Report_Filters[key],
-      })),
       Created: jsonHeader.Created,
       Created_By: jsonHeader.Created_By,
+      Registry_Record: jsonHeader.Registry_Record ?? ""
     } as IReportHeader;
-
-    if (header.Release == "5.1") {
-      for (let member of [
-        "Report_Filters",
-        "Metric_Types",
-        "Report_Attributes",
-        "Exceptions",
-        "Reporting_Period",
-      ]) {
-        if (jsonHeader[member]) {
-          console.log(`${member}: ${jsonHeader[member]}`);
-          header[member as keyof IReportHeader] =
-            ReportService.getSemicolonDelimitedString(member, jsonHeader);
-        }
-      }
-
-      if (jsonHeader.Registry_Record) {
-        header["Registry_Record"] = jsonHeader.Registry_Record;
-      }
-    }
-
-    return header;
   }
 
   static getSemicolonDelimitedString(
     member: string,
     jsonHeader: { [key: string]: any }
   ): string {
+    if (!jsonHeader[member]) return "";
+
+    if (jsonHeader.Release == '5') {
+      return jsonHeader[member].map(filter => {
+        if (Array.isArray(filter.Value)) {
+          return `${filter.Name}=${(filter.Value as string[]).join('|')}`;
+        } else {
+          return `${filter.Name}=${filter.Value}`;
+        }
+      }).join(';');
+    }
+
     return Object.keys(jsonHeader[member])
       ?.map((key) => {
         let result = `${key}=`;
