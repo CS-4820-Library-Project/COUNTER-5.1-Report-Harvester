@@ -1,0 +1,6 @@
+{
+  "requestInterval": 2,
+  "requestTimeout": 2,
+  "concurrentReports": 0,
+  "concurrentVendors": 0
+}
