@@ -555,7 +555,6 @@ export class PrismaReportService {
 
     console.log(dbFile)
 
-    // If the database file exists, proceed with export
     if (fs.existsSync(dbFile)) {
       try {
         const currentDate: Date = new Date();
