@@ -19,7 +19,8 @@ import { SortOptions, VendorRecord } from "src/types/vendors";
 import FiltersPopUp from "./FiltersPopUp";
 import ImportPopUp from "../../components/popups/ImportPopUp";
 import ExportPopUp from "../../components/popups/ExportPopUp";
-
+import HelpOutline from "@mui/icons-material/HelpOutline";
+import HelpMessages from "../../data/HelpMessages";
 /**
  * This is the "VendorsPage" component of the application.
  *
@@ -76,7 +77,12 @@ const VendorsPage = () => {
   const closeExportPopup = () => setOpenExportDialog(false);
 
   const openFilters = () => setFiltersPopUp(!filtersPopUp);
-
+  const handleHelpClick = () => {
+    const helpContent = HelpMessages.vendorsPage.Help.url;
+    if (helpContent) {
+      window.open(helpContent, "_blank"); // Opens the URL in a new tab
+    }
+  };
   return (
     <Page>
       <PageColumn component="main" width="50%">
@@ -153,7 +159,16 @@ const VendorsPage = () => {
           }}
         />
       </PageColumn>
-
+      <div
+        style={{ position: "fixed", top: 0, right: "0.8rem", padding: "1rem" }}
+      >
+        <ActionButton
+          label="Help"
+          color="background"
+          icon={<HelpOutline />}
+          onClick={handleHelpClick}
+        />
+      </div>
       {/*  */}
 
       <ImportPopUp

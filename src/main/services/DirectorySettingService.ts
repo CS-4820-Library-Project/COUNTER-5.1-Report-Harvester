@@ -210,4 +210,23 @@ export class DirectorySettingService {
       return false;
     }
   }
+
+  public static async getDirectoryFromUser(): Promise<string> {
+    let selectedPath: string = "";
+
+    try {
+      const result: Electron.OpenDialogReturnValue =
+          await dialog.showOpenDialog({
+            title: "Select a folder to export the SQLite database to",
+            properties: ["openDirectory", ],
+          });
+
+      if (!result.canceled && result.filePaths.length > 0) {
+        selectedPath = result.filePaths[0];
+      }
+    } catch (error) {
+      console.error("Failed to open directory:", error);
+    }
+    return selectedPath;
+  }
 }
