@@ -551,26 +551,30 @@ export class PrismaReportService {
   }
 
   static async exportDatabase(exportPath: string) {
-    const dbFile = path.join(__dirname, process.env.DATABASE_FILE || "../../prisma/search.db");
+    const dbFile = process.env.DATABASE_FILE || "../../prisma/search.db";
 
-    if (fs.existsSync(dbFile)) {
+    const dbPath = path.join(__dirname, dbFile);
+
+    if (fs.existsSync(dbPath)) {
       try {
         const currentDate: Date = new Date();
-        const formattedDate: string = format(currentDate, 'dd-MM-yyyy');
+        const formattedDate: string = format(currentDate, "dd-MM-yyyy");
 
-        const exportFilePath = path.join(exportPath, `CH_SearchDB_Export_${formattedDate}.db`);
+        const exportFilePath = path.join(
+          exportPath,
+          `CH_SearchDB_Export_${formattedDate}.db`
+        );
 
-        fs.copyFileSync(dbFile, exportFilePath);
+        fs.copyFileSync(dbPath, exportFilePath);
 
         console.log(`Database exported successfully to: ${exportFilePath}`);
       } catch (error) {
         console.error("Error while exporting the database file:", error);
       }
     } else {
-      console.error("Database file does not exist.");
+      console.error("Database file does not exist. ", dbPath);
     }
   }
 }
-
 
 export const prismaReportService = new PrismaReportService();
