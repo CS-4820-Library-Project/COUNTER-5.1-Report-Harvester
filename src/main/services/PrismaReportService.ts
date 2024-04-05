@@ -217,9 +217,6 @@ export class PrismaReportService {
    * @returns {Promise<void>} - A promise that resolves when all the report information has been saved into the database.
    */
   async saveFetchedReport(report: IReport): Promise<void> {
-    const reportHeader = report.Report_Header;
-    const reportItems = report.Report_Items;
-
     try {
       const savedReport = await this.createReport({
         report_id: report.Report_Header.Report_ID,
@@ -326,14 +323,8 @@ export class PrismaReportService {
         }
       }
     } catch (error) {
-      const errorMessage = "Storing Reports in Database\t";
-      console.error(errorMessage, error);
-      throw errorMessage + "Report Couldn't be saved " + typeof error ===
-        "string"
-        ? error
-        : "";
-      // +
-      // JSON.stringify(reportHeader)
+      console.log("There was an error while saving reports:", error);
+      throw new Error("Failed to save report.");
     }
   }
 
