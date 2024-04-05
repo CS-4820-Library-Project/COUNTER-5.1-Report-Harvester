@@ -13,6 +13,7 @@ import Strong from "../../components/text/Strong";
 import { useNotification } from "../../components/NotificationBadge";
 import Page from "../../components/page/Page";
 import PageColumn from "../../components/page/PageColumn";
+import {ImportExportOutlined} from "@mui/icons-material";
 
 const SearchReportsPage = () => {
   const theme = useTheme();
@@ -119,6 +120,10 @@ const SearchReportsPage = () => {
     window.settings.openPath(searchPath);
   };
 
+  const handleExportDatabaseClick = async () => {
+    await window.database.exportDatabase();
+  };
+
   return (
     <Page>
       <PageColumn width="100%" gap="70px">
@@ -126,12 +131,21 @@ const SearchReportsPage = () => {
           <Typography variant="h1" color="primary">
             Search Reports in Database
           </Typography>
-          <ActionButton
-            label="Help"
-            color="secondary"
-            icon={<HelpOutlineIcon fontSize="small" />}
-            onClick={handleHelpClick} // Updated onClick handler
+          <div>
+            <ActionButton
+                label="Export Database"
+                color="primary"
+                icon={<ImportExportOutlined fontSize="small" />}
+                onClick={handleExportDatabaseClick} // Updated onClick handler
+                style={{marginRight:'20px'}}
+            />
+            <ActionButton
+              label="Help"
+              color="secondary"
+              icon={<HelpOutlineIcon fontSize="small" />}
+              onClick={handleHelpClick} // Updated onClick handler
           />
+          </div>
         </FlexBetween>
 
         <FlexColumnStart

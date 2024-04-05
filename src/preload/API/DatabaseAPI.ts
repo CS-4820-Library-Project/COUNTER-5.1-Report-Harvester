@@ -38,6 +38,14 @@ const DatabaseAPI = () => {
     rebuildDatabase: (): Promise<void> => {
       return ipcRenderer.invoke("rebuild-database");
     },
+
+    /**
+     * Exports the search database SQLite file to a directory of the user's choosing.
+     * @returns {Promise<void>} A promise that resolves when the database has been copied successfully.
+     */
+    exportDatabase: (): Promise<void> => {
+      return ipcRenderer.invoke("export-database");
+    },
   });
 };
 
