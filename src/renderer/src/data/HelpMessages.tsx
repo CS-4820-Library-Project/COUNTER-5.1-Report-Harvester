@@ -11,11 +11,7 @@ const HelpMessages = {
     delete: `This action is permanent. By deleting a vendor you cannot recover it
     from the app. You have to import or add the vendor again.`,
   },
-  searchReportsPage: {
-    Help: {
-      message: "You can search the Vendor Reports here.",
-    },
-  },
+
   settings: {
     //
     password: {
@@ -58,6 +54,26 @@ const HelpMessages = {
       search: `In this directory, the app will save your search results from your
       database query reports.`,
       vendorFile: `In this directory, the app will save your vendor file reports.`,
+    },
+  },
+  vendorsPage: {
+    Help: {
+      url: "https://github.com/CS-4820-Library-Project/COUNTER-5.1-Report-Harvester/blob/main/README.md",
+    },
+  },
+  fetchReportsPage: {
+    Help: {
+      url: "https://github.com/CS-4820-Library-Project/COUNTER-5.1-Report-Harvester/blob/main/README.md",
+    },
+  },
+  settingsPage: {
+    Help: {
+      url: "https://github.com/CS-4820-Library-Project/COUNTER-5.1-Report-Harvester/blob/main/README.md",
+    },
+  },
+  searchReportsPage: {
+    Help: {
+      url: "https://github.com/CS-4820-Library-Project/COUNTER-5.1-Report-Harvester/blob/main/README.md",
     },
   },
 };

@@ -1,4 +1,4 @@
-import {useEffect, useState} from "react";
+import { useEffect, useState } from "react";
 import { Typography, Box, useTheme, Button } from "@mui/material";
 import {
   FlexBetween,
@@ -58,7 +58,7 @@ const SearchReportsPage = () => {
       const results = await window.database.writeSearchedReportsToTSV(
         activeButton === "Title" ? searchValue : "",
         activeButton === "ISSN" ? searchValue : "",
-        activeButton === "ISBN" ? searchValue : "",
+        activeButton === "ISBN" ? searchValue : ""
       );
 
       if (results.length > 0) {
@@ -109,16 +109,16 @@ const SearchReportsPage = () => {
       transition: "background-color 0.3s",
     }) as const;
 
-  const handleHelpClick = () => {
-    const helpContent = HelpMessages.searchReportsPage.Help.message;
-    helpContent && alert(helpContent);
-  };
-
   const handleOpenResults = async () => {
     const searchPath = await window.settings.getDirectory("search");
     window.settings.openPath(searchPath);
   };
-
+  const handleHelpClick = () => {
+    const helpContent = HelpMessages.searchReportsPage.Help.url;
+    if (helpContent) {
+      window.open(helpContent, "_blank"); // Opens the URL in a new tab
+    }
+  };
   return (
     <Page>
       <PageColumn width="100%" gap="70px">
@@ -128,7 +128,7 @@ const SearchReportsPage = () => {
           </Typography>
           <ActionButton
             label="Help"
-            color="secondary"
+            color="background"
             icon={<HelpOutlineIcon fontSize="small" />}
             onClick={handleHelpClick} // Updated onClick handler
           />
@@ -199,9 +199,9 @@ const SearchReportsPage = () => {
               />
               {/* Used to handle Enter key press, implemented in such a way to avoid issues with state */}
               <button
-                  id="hiddenButton"
-                  style={{ display: "none" }}
-                  onClick={handleSearchButtonClick}
+                id="hiddenButton"
+                style={{ display: "none" }}
+                onClick={handleSearchButtonClick}
               ></button>
             </Box>
           </Box>
