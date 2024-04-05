@@ -16,7 +16,7 @@ export interface IReportHeader {
   Release: string;
   Institution_ID: IInstitutionId[] | string;
   Metric_Types?: string;
-  Report_Filters: string | IReportFilter[];
+  Report_Filters?: string | IReportFilter[];
   Report_Attributes?: string;
   Exceptions?: string;
   Reporting_Period?: string;
