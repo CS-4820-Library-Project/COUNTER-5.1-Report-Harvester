@@ -223,7 +223,10 @@ export class PrismaReportService {
         report_name: report.Report_Header.Report_Name,
         release: report.Report_Header.Release,
         institution_name: report.Report_Header.Institution_Name || "undefined",
-        institution_id: report.Report_Header.Institution_ID[0].Value,
+        institution_id:
+          report.Report_Header.Institution_ID[0].Type +
+          ":" +
+          report.Report_Header.Institution_ID[0].Value,
         created: report.Report_Header.Created,
         created_by: report.Report_Header.Created_By,
       });
@@ -243,16 +246,7 @@ export class PrismaReportService {
           platform: rawItem.Platform,
         };
 
-        if (report.Report_Header.Report_ID.includes("PR")) {
-          //TODO: Add PR Report Item
-          const prItem = rawItem as unknown as IReport;
-          console.log("prItem:", prItem);
-
-          // console.log(rawItem);
-          // console.log(rawItem.Performance);
-        } else if (report.Report_Header.Report_ID.includes("TR")) {
-          // console.log(rawItem);
-          // console.log(rawItem.Performance);
+        if (report.Report_Header.Report_ID.includes("TR")) {
           const trItem = rawItem as ITRIRReportItem;
           console.log("trItem:", trItem);
           reportItemDetails.title = trItem.Title;
