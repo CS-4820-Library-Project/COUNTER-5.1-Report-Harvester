@@ -43,7 +43,7 @@ export class PrismaReportService {
       institution_id,
       created,
       created_by,
-    }: Omit<Report, "id">,
+    }: Omit<Report, "id">
   ): Promise<Report> {
     try {
       // console.log("STORING report", data);
@@ -73,7 +73,7 @@ export class PrismaReportService {
    * @throws If an error occurs while creating the report filter.
    */
   async createReportFilter(
-    data: Omit<ReportFilter, "id">,
+    data: Omit<ReportFilter, "id">
   ): Promise<ReportFilter> {
     try {
       return await prisma.reportFilter.create({
@@ -181,7 +181,7 @@ export class PrismaReportService {
    */
   async updateReportById(
     id: number,
-    data: Partial<Report>,
+    data: Partial<Report>
   ): Promise<Report | null> {
     try {
       return await prisma.report.update({
@@ -351,7 +351,7 @@ export class PrismaReportService {
   async searchReport(
     title?: string,
     issn?: string,
-    isbn?: string,
+    isbn?: string
   ): Promise<Report[]> {
     try {
       let whereClause: Prisma.ReportItemWhereInput = {};
@@ -412,7 +412,7 @@ export class PrismaReportService {
 
     /* Report Filters */
     const reportFilters = report.ReportFilter?.map(
-      (filter: any) => `${filter.filter_type}=${filter.value}`,
+      (filter: any) => `${filter.filter_type}=${filter.value}`
     ).join(";");
     tsv += `Report_Filters\t${reportFilters}\n`;
 
@@ -458,7 +458,7 @@ export class PrismaReportService {
   async writeSearchedReportsToTSV(
     title?: string,
     issn?: string,
-    isbn?: string,
+    isbn?: string
   ): Promise<Report[]> {
     const reports = await this.searchReport(title, issn, isbn);
 
@@ -473,7 +473,7 @@ export class PrismaReportService {
 
         const fileName = this.generateSearchFilename(
           title || issn || isbn || "",
-          vendorName,
+          vendorName
         );
         await this.writeTSVToFile(await tsv, fileName);
         total++;
@@ -527,7 +527,7 @@ export class PrismaReportService {
           } else {
             console.log("Prisma migrate output:", stdout);
           }
-        },
+        }
       );
     } catch (error) {
       console.error("Error while rebuilding the database:", error);
