@@ -104,9 +104,6 @@ export class ReportService {
 
           reportItem["Title"] = irItem.Title;
 
-          console.log(irItem.Title);
-          // console.log(irItem.Item_ID);
-
           reportItem["Item_ID"] = [
             {
               Type: "DOI",
@@ -214,13 +211,17 @@ export class ReportService {
     } as IReport;
   }
 
-  /** Converts an `IReport` object into a string representing the data in TSV format. */
-
+  /**
+   * Converts an `IReport` object into a string representing the data in TSV format.
+   * @throws An string error message if the conversion fails.
+   */
   static convertReportToTSV(report: IReport): string {
     let tsv = "";
 
     try {
       // PARSE REPORT HEADERS
+
+      console.log(JSON.stringify(report.Report_Header));
       const header = report.Report_Header;
       if (!header)
         throw (
@@ -244,10 +245,10 @@ export class ReportService {
 
       if (header.Release == "5.1") {
         tsv += `${THd.METRIC_TYPES}\t${header.Metric_Types}\n`;
-        tsv += `${THd.REPORT_FILTERS}\t${header.Report_Filters ?? "undefined"}\n`;
-        tsv += `${THd.REPORT_ATTRIBUTES}\t${header.Report_Attributes ?? "undefined"}\n`;
-        tsv += `${THd.EXCEPTIONS}\t${header.Exceptions ?? "undefined"}\n`;
-        tsv += `${THd.REPORTING_PERIOD}\t${header.Reporting_Period ?? "undefined"}\n`;
+        tsv += `${THd.REPORT_FILTERS}\t${header.Report_Filters}\n`;
+        tsv += `${THd.REPORT_ATTRIBUTES}\t${header.Report_Attributes}\n`;
+        tsv += `${THd.EXCEPTIONS}\t${header.Exceptions}\n`;
+        tsv += `${THd.REPORTING_PERIOD}\t${header.Reporting_Period}\n`;
       } else {
         const filtersArray = header.Report_Filters as IReportFilter[];
         const reportFilters = filtersArray
@@ -332,7 +333,6 @@ export class ReportService {
 
             let rowData = ``;
 
-            // TODO: CHECK ERRORS
             if (header.Report_ID.includes("TR")) {
               let trItem = item as ITRIRReportItem;
               rowData += `${trItem.Title}\t${trItem.Publisher}\t`;

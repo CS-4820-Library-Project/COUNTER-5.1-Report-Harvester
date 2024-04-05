@@ -59,28 +59,28 @@ export class FetchService {
           status === "Success"
             ? "Report Stored Successfully"
             : status === "Warning"
-              ? "Report Saved With Exceptions:\n"
-              : "Error Occcured While Fetching Report:\n";
+              ? "Report Saved With Exceptions: "
+              : "Error Occcured While Fetching Report: ";
 
         if (!report.success) {
           // Add Errors
           report.errors.forEach((error) => {
             if (!error) return;
             else if (typeof error === "string")
-              messages += error.replace(/\t/g, "-") + "\n";
+              messages += error.replace(/\t/g, "-") + "; ";
             else
               messages +=
-                "Exception " + error.code + ":" + error.message + "\n";
+                "Exception " + error.code + ":" + error.message + "; ";
           });
 
           // Add Warnigns
           report.warnings.forEach((warning) => {
             if (!warning) return;
             else if (typeof warning === "string")
-              messages += warning.replace(/\t/g, "-") + "\n";
+              messages += warning.replace(/\t/g, "-") + "; ";
             else
               messages +=
-                "Exception " + warning.code + ":" + warning.message + "\n";
+                "Exception " + warning.code + ":" + warning.message + "; ";
           });
         }
 
