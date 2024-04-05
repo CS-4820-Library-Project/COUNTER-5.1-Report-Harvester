@@ -34,16 +34,16 @@ export class PrismaReportService {
    * @throws If an error occurs while creating the report.
    */
   async createReport(
-    // data
-    {
-      report_id,
-      report_name,
-      release,
-      institution_name,
-      institution_id,
-      created,
-      created_by,
-    }: Omit<Report, "id">,
+      // data
+      {
+        report_id,
+        report_name,
+        release,
+        institution_name,
+        institution_id,
+        created,
+        created_by,
+      }: Omit<Report, "id">,
   ): Promise<Report> {
     try {
       // console.log("STORING report", data);
@@ -73,7 +73,7 @@ export class PrismaReportService {
    * @throws If an error occurs while creating the report filter.
    */
   async createReportFilter(
-    data: Omit<ReportFilter, "id">,
+      data: Omit<ReportFilter, "id">,
   ): Promise<ReportFilter> {
     try {
       return await prisma.reportFilter.create({
@@ -180,8 +180,8 @@ export class PrismaReportService {
    * @throws If an error occurs while updating the report.
    */
   async updateReportById(
-    id: number,
-    data: Partial<Report>,
+      id: number,
+      data: Partial<Report>,
   ): Promise<Report | null> {
     try {
       return await prisma.report.update({
@@ -225,9 +225,9 @@ export class PrismaReportService {
         release: report.Report_Header.Release,
         institution_name: report.Report_Header.Institution_Name || "undefined",
         institution_id:
-          report.Report_Header.Institution_ID[0].Type +
-          ":" +
-          report.Report_Header.Institution_ID[0].Value,
+            report.Report_Header.Institution_ID[0].Type +
+            ":" +
+            report.Report_Header.Institution_ID[0].Value,
         created: report.Report_Header.Created,
         created_by: report.Report_Header.Created_By,
       });
@@ -255,27 +255,27 @@ export class PrismaReportService {
           trItem.Publisher_ID.map((id) => `${id.Type}:${id.Value}`).join(";");
 
           reportItemDetails.proprietary_id =
-            trItem.Item_ID.find((id) => id.Type === "Proprietary")?.Value ||
-            null;
+              trItem.Item_ID.find((id) => id.Type === "Proprietary")?.Value ||
+              null;
 
           trItem.Item_ID.map((id) => `${id.Type}:${id.Value}`).join(";");
           reportItemDetails.doi =
-            trItem.Item_ID.find((id) => id.Type === "DOI")?.Value || null;
+              trItem.Item_ID.find((id) => id.Type === "DOI")?.Value || null;
           reportItemDetails.isbn =
-            trItem.Item_ID.find((id) => id.Type === "ISBN")?.Value || null;
+              trItem.Item_ID.find((id) => id.Type === "ISBN")?.Value || null;
           reportItemDetails.print_issn =
-            trItem.Item_ID.find((id) => id.Type === "Print_ISSN")?.Value ||
-            null;
+              trItem.Item_ID.find((id) => id.Type === "Print_ISSN")?.Value ||
+              null;
           reportItemDetails.online_issn =
-            trItem.Item_ID.find((id) => id.Type === "Online_ISSN")?.Value ||
-            null;
+              trItem.Item_ID.find((id) => id.Type === "Online_ISSN")?.Value ||
+              null;
           reportItemDetails.proprietary_id =
-            trItem.Item_ID.find((id) => id.Type === "Proprietary")?.Value ||
-            null;
+              trItem.Item_ID.find((id) => id.Type === "Proprietary")?.Value ||
+              null;
           reportItemDetails.uri =
-            trItem.Item_ID.find((id) => id.Type === "URI")?.Value || null;
+              trItem.Item_ID.find((id) => id.Type === "URI")?.Value || null;
           reportItemDetails.data_type =
-            trItem.Item_ID.find((id) => id.Type === "Data_Type")?.Value || null;
+              trItem.Item_ID.find((id) => id.Type === "Data_Type")?.Value || null;
         } else if (report.Report_Header.Report_ID.includes("IR")) {
           const irItem = rawItem as ITRIRReportItem;
 
@@ -286,19 +286,19 @@ export class PrismaReportService {
           irItem.Item_ID.map((id) => `${id.Type}:${id.Value}`).join(";");
 
           reportItemDetails.doi =
-            irItem.Item_ID.find((id) => id.Type === "DOI")?.Value || null;
+              irItem.Item_ID.find((id) => id.Type === "DOI")?.Value || null;
           reportItemDetails.isbn =
-            irItem.Item_ID.find((id) => id.Type === "ISBN")?.Value || null;
+              irItem.Item_ID.find((id) => id.Type === "ISBN")?.Value || null;
           reportItemDetails.print_issn =
-            irItem.Item_ID.find((id) => id.Type === "Print_ISSN")?.Value ||
-            null;
+              irItem.Item_ID.find((id) => id.Type === "Print_ISSN")?.Value ||
+              null;
           reportItemDetails.online_issn =
-            irItem.Item_ID.find((id) => id.Type === "Online_ISSN")?.Value ||
-            null;
+              irItem.Item_ID.find((id) => id.Type === "Online_ISSN")?.Value ||
+              null;
           reportItemDetails.uri =
-            irItem.Item_ID.find((id) => id.Type === "URI")?.Value || null;
+              irItem.Item_ID.find((id) => id.Type === "URI")?.Value || null;
           reportItemDetails.data_type =
-            irItem.Item_ID.find((id) => id.Type === "Data_Type")?.Value || null;
+              irItem.Item_ID.find((id) => id.Type === "Data_Type")?.Value || null;
         } else if (report.Report_Header.Report_ID.includes("DR")) {
           const drItem = rawItem as IDRReportItem;
           reportItemDetails.database = drItem.Database;
@@ -306,19 +306,19 @@ export class PrismaReportService {
           drItem.Publisher_ID.map((id) => `${id.Type}:${id.Value}`).join(";");
           drItem.Item_ID.map((id) => `${id.Type}:${id.Value}`).join(";");
           reportItemDetails.doi =
-            drItem.Item_ID.find((id) => id.Type === "DOI")?.Value || null;
+              drItem.Item_ID.find((id) => id.Type === "DOI")?.Value || null;
           reportItemDetails.isbn =
-            drItem.Item_ID.find((id) => id.Type === "ISBN")?.Value || null;
+              drItem.Item_ID.find((id) => id.Type === "ISBN")?.Value || null;
           reportItemDetails.print_issn =
-            drItem.Item_ID.find((id) => id.Type === "Print_ISSN")?.Value ||
-            null;
+              drItem.Item_ID.find((id) => id.Type === "Print_ISSN")?.Value ||
+              null;
           reportItemDetails.online_issn =
-            drItem.Item_ID.find((id) => id.Type === "Online_ISSN")?.Value ||
-            null;
+              drItem.Item_ID.find((id) => id.Type === "Online_ISSN")?.Value ||
+              null;
           reportItemDetails.uri =
-            drItem.Item_ID.find((id) => id.Type === "URI")?.Value || null;
+              drItem.Item_ID.find((id) => id.Type === "URI")?.Value || null;
           reportItemDetails.data_type =
-            drItem.Item_ID.find((id) => id.Type === "Data_Type")?.Value || null;
+              drItem.Item_ID.find((id) => id.Type === "Data_Type")?.Value || null;
         }
 
         const savedItem = await this.createReportItem(reportItemDetails);
@@ -349,9 +349,9 @@ export class PrismaReportService {
    * @returns {Promise<Report[]>} - A promise that resolves to an array of reports that match the search criteria.
    */
   async searchReport(
-    title?: string,
-    issn?: string,
-    isbn?: string,
+      title?: string,
+      issn?: string,
+      isbn?: string,
   ): Promise<Report[]> {
     try {
       let whereClause: Prisma.ReportItemWhereInput = {};
@@ -412,7 +412,7 @@ export class PrismaReportService {
 
     /* Report Filters */
     const reportFilters = report.ReportFilter?.map(
-      (filter: any) => `${filter.filter_type}=${filter.value}`,
+        (filter: any) => `${filter.filter_type}=${filter.value}`,
     ).join(";");
     tsv += `Report_Filters\t${reportFilters}\n`;
 
@@ -456,9 +456,9 @@ export class PrismaReportService {
    * @returns {Promise<Report[]>} - A promise that resolves to an array of reports that match the search criteria.
    */
   async writeSearchedReportsToTSV(
-    title?: string,
-    issn?: string,
-    isbn?: string,
+      title?: string,
+      issn?: string,
+      isbn?: string,
   ): Promise<Report[]> {
     const reports = await this.searchReport(title, issn, isbn);
 
@@ -472,8 +472,8 @@ export class PrismaReportService {
         const vendorName = report.institution_id.split(":")[0];
 
         const fileName = this.generateSearchFilename(
-          title || issn || isbn || "",
-          vendorName,
+            title || issn || isbn || "",
+            vendorName,
         );
         await this.writeTSVToFile(await tsv, fileName);
         total++;
@@ -517,17 +517,17 @@ export class PrismaReportService {
     // re-run the prisma migrations, which will create a new database file and apply the schema
     try {
       exec(
-        "npx prisma migrate dev --rebuild-database",
-        (error, stdout, stderr) => {
-          if (error) {
-            console.error("Error while running Prisma migrate:", error);
-            throw error;
-          } else if (stderr) {
-            console.warn("Warnings during Prisma migrate:", stderr);
-          } else {
-            console.log("Prisma migrate output:", stdout);
-          }
-        },
+          "npx prisma migrate dev --rebuild-database",
+          (error, stdout, stderr) => {
+            if (error) {
+              console.error("Error while running Prisma migrate:", error);
+              throw error;
+            } else if (stderr) {
+              console.warn("Warnings during Prisma migrate:", stderr);
+            } else {
+              console.log("Prisma migrate output:", stdout);
+            }
+          },
       );
     } catch (error) {
       console.error("Error while rebuilding the database:", error);
@@ -546,8 +546,8 @@ export class PrismaReportService {
         const formattedDate: string = format(currentDate, "dd-MM-yyyy");
 
         const exportFilePath = path.join(
-          exportPath,
-          `CH_SearchDB_Export_${formattedDate}.db`
+            exportPath,
+            `CH_SearchDB_Export_${formattedDate}.db`
         );
 
         fs.copyFileSync(dbPath, exportFilePath);
