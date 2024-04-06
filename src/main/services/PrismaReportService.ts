@@ -1,4 +1,10 @@
 import {
+  IR_A1_Item,
+  IR_A1_ItemMetric,
+  IR_Item,
+  IR_ItemMetric,
+  IR_M1_Item,
+  IR_M1_ItemMetric,
   PR_Item,
   PR_ItemMetric,
   PR_P1_Item,
@@ -28,12 +34,6 @@ import {
   IReport,
   ITRIRReportItem,
 } from "src/renderer/src/interface/IReport";
-import { DirectorySettingService } from "./DirectorySettingService";
-import { writeFile } from "../utils/files";
-import { exec } from "child_process";
-import { format } from "date-fns";
-import * as fs from "fs";
-import path from "path";
 
 const prisma = new PrismaClient();
 
@@ -584,6 +584,144 @@ export class PrismaReportService {
     });
   }
 
+  async createIRItem(data: Omit<IR_Item, "id">): Promise<IR_Item> {
+    try {
+      const {
+        reportId,
+        title,
+        publisher,
+        publisherId,
+        platform,
+        doi,
+        yop,
+        item,
+        metricType,
+        reportingPeriodTotal,
+      } = data;
+
+      return await prisma.iR_Item.create({
+        data: {
+          reportId,
+          title,
+          publisher,
+          publisherId,
+          platform,
+          doi,
+          yop,
+          item,
+          metricType,
+          reportingPeriodTotal,
+        },
+      });
+    } catch (error) {
+      console.error("Error creating PR_Item:", error);
+      throw error;
+    }
+  }
+
+  async createIRItemMetric(details: Omit<IR_ItemMetric, "id">) {
+    return prisma.iR_ItemMetric.create({
+      data: {
+        reportItemId: details.reportItemId,
+        period: details.period,
+        value: details.value,
+        metricType: details.metricType,
+      },
+    });
+  }
+
+  async createIRA1Item(data: Omit<IR_A1_Item, "id">): Promise<IR_A1_Item> {
+    try {
+      const {
+        reportId,
+        title,
+        publisher,
+        publisherId,
+        platform,
+        doi,
+        yop,
+        item,
+        metricType,
+        reportingPeriodTotal,
+      } = data;
+
+      return await prisma.iR_A1_Item.create({
+        data: {
+          reportId,
+          title,
+          publisher,
+          publisherId,
+          platform,
+          doi,
+          yop,
+          item,
+          metricType,
+          reportingPeriodTotal,
+        },
+      });
+    } catch (error) {
+      console.error("Error creating PR_Item:", error);
+      throw error;
+    }
+  }
+
+  async createIRA1ItemMetric(details: Omit<IR_A1_ItemMetric, "id">) {
+    return prisma.iR_A1_ItemMetric.create({
+      data: {
+        reportItemId: details.reportItemId,
+        period: details.period,
+        value: details.value,
+        metricType: details.metricType,
+      },
+    });
+  }
+
+  async createIRM1Item(data: Omit<IR_M1_Item, "id">): Promise<IR_M1_Item> {
+    try {
+      const {
+        reportId,
+        title,
+        publisher,
+        publisherId,
+        platform,
+        doi,
+        yop,
+        item,
+        metricType,
+        reportingPeriodTotal,
+      } = data;
+
+      return await prisma.iR_M1_Item.create({
+        data: {
+          reportId,
+          title,
+          publisher,
+          publisherId,
+          platform,
+          doi,
+          yop,
+          item,
+          metricType,
+          reportingPeriodTotal,
+        },
+      });
+    } catch (error) {
+      console.error("Error creating PR_Item:", error);
+      throw error;
+    }
+  }
+
+  async createIRM1ItemMetric(details: Omit<IR_M1_ItemMetric, "id">) {
+    return prisma.iR_M1_ItemMetric.create({
+      data: {
+        reportItemId: details.reportItemId,
+        period: details.period,
+        value: details.value,
+        metricType: details.metricType,
+      },
+    });
+  }
+
   /**
    * This function is responsible for saving the fetched report into the database.
    * @param {Object} report - The report object that contains all the information about the report.
@@ -692,6 +830,42 @@ export class PrismaReportService {
               }
             }
           }
+        }
+      }
+
+      if (report.Report_Header.Report_ID.includes("IR")) {
+        for (const rawItem of report.Report_Items) {
+          const irItem = rawItem as ITRIRReportItem;
+          console.log("irItem:", irItem);
+          // let reportItemDetails: any = {
+          //   reportId: savedReport.id,
+          //   title: irItem.Title,
+          //   publisher: trItem.Publisher,
+          //   publisherId: trItem.Publisher_ID.map(
+          //     (id) => `${id.Type}:${id.Value}`,
+          //   ).join(";"),
+          //   platform: trItem.Platform,
+          //   doi: trItem.Item_ID.find((id) => id.Type === "DOI")?.Value || null,
+          //   yop: trItem.Item_ID.find((id) => id.Type === "YOP")?.Value || null,
+          //   proprietaryId:
+          //     trItem.Item_ID.find((id) => id.Type === "Proprietary")?.Type +
+          //       ":" +
+          //       trItem.Item_ID.find((id) => id.Type === "Proprietary")?.Value ||
+          //     null,
+          //   isbn:
+          //     trItem.Item_ID.find((id) => id.Type === "ISBN")?.Value || null,
+          //   printIssn:
+          //     trItem.Item_ID.find((id) => id.Type === "Print_ISSN")?.Value ||
+          //     null,
+          //   onlineIssn:
+          //     trItem.Item_ID.find((id) => id.Type === "Online_ISSN")?.Value ||
+          //     null,
+          //   uri: trItem.Item_ID.find((id) => id.Type === "URI")?.Value || null,
+          //   dataType:
+          //     trItem.Item_ID.find((id) => id.Type === "Data_Type")?.Value ||
+          //     null,
+          // };
+          // console.log(reportItemDetails);
         }
       }
 
