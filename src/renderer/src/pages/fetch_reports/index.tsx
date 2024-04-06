@@ -33,7 +33,9 @@ import { reports_5_1 } from "../../../../constants/Reports_5_1";
 import { reports_5 } from "../../../../constants/Reports_5";
 import { FetchResults } from "../../../../types/reports";
 import { reportsIds } from "../../../../constants";
-
+import { Box } from "@mui/material";
+import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
+import HelpMessages from "../../data/HelpMessages";
 /**
  * This is the "FetchReportsPage" component.
  *
@@ -72,7 +74,7 @@ const FetchReportsPage = () => {
 
   const [fromDate, setFromDate] = useState<Date>(new Date(currentYear, 0));
   const [toDate, setToDate] = useState<Date>(
-    new Date(currentYear, currentMonth - 1)
+    new Date(currentYear, currentMonth - 1),
   );
 
   const [fetchResults, setFetchResults] = useState<FetchResults>();
@@ -106,6 +108,11 @@ const FetchReportsPage = () => {
         type: "warning",
         message,
       });
+    } else if (selectedReports.length < 1 && !all) {
+      return setNotification({
+        type: "warning",
+        message: "Please select at least one report type.",
+      });
     }
 
     setFetching(true);
@@ -137,6 +144,12 @@ const FetchReportsPage = () => {
         })
       : setAvailableReports(reportsIds);
   }, [selectedVendors]);
+  const handleHelpClick = () => {
+    const helpContent = HelpMessages.fetchReportsPage.Help.url;
+    if (helpContent) {
+      window.open(helpContent, "_blank"); // Opens the URL in a new tab
+    }
+  };
 
   return (
     <Page>
@@ -164,12 +177,22 @@ const FetchReportsPage = () => {
         <PageTitle>
           <FlexBetween width="100%">
             Fetch Reports
-            <DualToggle
-              option1="5.1"
-              option2="5.0"
-              value={version}
-              setValue={setVersion}
-            />
+            <Box ml={20}>
+              <DualToggle
+                option1="5.1"
+                option2="5.0"
+                value={version}
+                setValue={setVersion}
+              />
+            </Box>
+            <Box mt={0.5} mr={0}>
+              <ActionButton
+                label="Help"
+                color="background"
+                icon={<HelpOutlineIcon fontSize="small" />}
+                onClick={handleHelpClick}
+              />
+            </Box>
           </FlexBetween>
         </PageTitle>
 

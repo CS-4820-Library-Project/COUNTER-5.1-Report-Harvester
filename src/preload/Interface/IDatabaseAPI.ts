@@ -27,4 +27,5 @@ export interface IDatabaseAPI {
    * @returns A promise that resolves when the database has been rebuilt successfully.
    */
   rebuildDatabase: () => Promise<void>;
+  exportDatabase: () => Promise<void>;
 }

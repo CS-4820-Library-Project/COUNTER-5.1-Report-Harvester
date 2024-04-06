@@ -23,8 +23,10 @@ interface Option {
 const options: Option[] = [
   { title: "Security", settings: ["Set Up Root Password"] },
   { title: "Reports", settings: ["Change Report Saving Directories"] },
+
   { title: "Advanced Settings", settings: ["Change API Request Settings"] },
   { title: "Database Settings", settings: ["Report Database Settings"]},
+
 ];
 
 // Styled component for the main title of the settings page.

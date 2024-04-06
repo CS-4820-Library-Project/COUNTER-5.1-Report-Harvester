@@ -13,17 +13,15 @@ import {
   FetchResults,
   SupportedAPIResponse,
 } from "src/types/reports";
-import {
-  FetchResult,
-  FetchResults,
-  SupportedAPIResponse,
-} from "src/types/reports";
 import { APIRequestSettingService } from "./APIRequestSettingService";
 import TSVService from "./TSVService";
 import { prismaReportService } from "./PrismaReportService";
 import { BrowserWindow } from "electron";
 import { IReport } from "src/renderer/src/interface/IReport";
+import { DirectorySettingService } from "./DirectorySettingService";
+import { writeFile } from "../utils/files";
 
+//
 export type FetchData = {
   fetchReports: Report[];
   selectedVendors: VendorRecord[];
@@ -35,12 +33,134 @@ export type FetchData = {
 /** The main service for performing GET operations on vendors that use the SUSHI API */
 
 export class FetchService {
+  static async exportResults(results: FetchResults) {
+    const dirService = new DirectorySettingService();
+
+    const resultSummary =
+      results.custom.vendors.length > 0 ? results.custom : results.main;
+
+    const now = new Date().toISOString();
+
+    let tsv: string[] = ["Results Summary"];
+    tsv.push("Total Succeeded\t" + resultSummary.succeeded);
+    tsv.push("Total Failed\t" + results.failed);
+    tsv.push("Timestamp\tVendor\tReporID\tStatus\tMessage");
+
+    for (const vendor of resultSummary.vendors) {
+      const reports = vendor.reports;
+      for (const report of reports) {
+        const status = report.success
+          ? "Success"
+          : report.errors.length > 0
+            ? "Error"
+            : "Warning";
+
+        let messages =
+          status === "Success"
+            ? "Report Stored Successfully"
+            : status === "Warning"
+              ? "Report Saved With Exceptions:\n"
+              : "Error Occcured While Fetching Report:\n";
+
+        if (!report.success) {
+          // Add Errors
+          report.errors.forEach((error) => {
+            if (!error) return;
+            else if (typeof error === "string")
+              messages += error.replace(/\t/g, "-") + "\n";
+            else
+              messages +=
+                "Exception " + error.code + ":" + error.message + "\n";
+          });
+
+          // Add Warnings
+          report.warnings.forEach((warning) => {
+            if (!warning) return;
+            else if (typeof warning === "string")
+              messages += warning.replace(/\t/g, "-") + "\n";
+            else
+              messages +=
+                "Exception " + warning.code + ":" + warning.message + "\n";
+          });
+        }
+
+        tsv.push(
+          [now, vendor.name, report.reportId, status, messages].join("\t"),
+        );
+      }
+    }
+
+    let path = await dirService.chooseDirectory();
+    path += "/FetchResults-" + now + ".tsv";
+    await writeFile(path, tsv.join("\n"));
+    await dirService.openPath(path);
+  }
+  /**
+   * Summarizes the results of fetching reports from vendors.
+   * @param fetchResults - The results of fetching reports from vendors.
+   * @param logger - The logger to use for logging.
+   * @returns The summarized results.
+   */
+  private static summarizeResults(
+    fetchResults: FetchResult[],
+    logger: LoggerService,
+  ): FetchResults {
+    const result = fetchResults.reduce(
+      (
+        acc: FetchResults,
+        {
+          reportId,
+          vendorName,
+          success,
+          custom,
+          errors,
+          warnings,
+        }: FetchResult,
+      ) => {
+        const report = { reportId, success, errors, warnings };
+
+        // Determine if the vendor is 'main' or 'custom'
+        const reportType = custom ? "custom" : "main";
+
+        const vendor = acc[reportType].vendors.find(
+          (v) => v.name === vendorName,
+        );
+        if (vendor) {
+          vendor.reports.push(report);
+          if (success) {
+            vendor.totalSucceed += 1;
+            acc[reportType].succeeded += 1;
+          }
+        } else {
+          acc[reportType].vendors.push({
+            name: vendorName,
+            reports: [report],
+            totalSucceed: success ? 1 : 0,
+          });
+          if (success) acc[reportType].succeeded += 1;
+        }
+
+        if (!success) acc.failed += 1;
+
+        return acc;
+      },
+      {
+        main: { succeeded: 0, vendors: [] },
+        custom: { succeeded: 0, vendors: [] },
+        failed: 0,
+        log: logger.writeLogsToFile(),
+      },
+    );
+
+    return result;
+  }
+
   /** Performs an *HTTP GET* call on the root of a vendor's SUSHI API to discover all the different types of reports
    *  they can supply.
    *  @param vendor - The vendor to fetch reports from.
    */
   static async getSupportedReports(
-    vendor: VendorRecord | VendorData
+    vendor: VendorRecord | VendorData,
   ): Promise<string[] | IFetchError | null> {
     const vendorInfo = vendor.data5_0 ?? vendor.data5_1;
     if (!vendorInfo) return [];
@@ -80,7 +200,7 @@ export class FetchService {
    */
   static async fetchReports(
     { fetchReports, selectedVendors, version, fromDate, toDate }: FetchData,
-    mainWindow: BrowserWindow
+    mainWindow: BrowserWindow,
   ) {
     const logger = new LoggerService();
 
@@ -99,17 +219,26 @@ export class FetchService {
       }
 
       const vendorReports = fetchReports.filter((report) =>
-        supported.some((r) => r.toUpperCase() === report.id)
+        supported.some((r) => r.toUpperCase() === report.id),
       );
 
       // If requests need to be throttled for this vendor, fetch reports sequentially
-      if (vendor[dataVersion]?.requireTwoAttemptsPerReport) {
+      if (vendor[dataVersion]?.requireRequestsThrottled) {
         const results = await vendorReports.reduce(
           async (prevPromise, report) => {
             const results = await prevPromise;
             await new Promise((resolve) =>
-              setTimeout(resolve, requestInterval)
+              setTimeout(resolve, requestInterval),
             );
+
+            // TODO: Remove console log
+            // console.log(
+            //   "\nThrottling requests for",
+            //   vendor.name,
+            //   "... With Interval",
+            //   requestInterval
+            // );
+
             const result = await FetchService.fetchReport(
               vendor,
               report,
@@ -117,11 +246,11 @@ export class FetchService {
               toDate,
               version as CounterVersion,
               requestTimeout,
-              logger
+              logger,
             );
             return [...results, result];
           },
-          Promise.resolve([] as FetchResult[])
+          Promise.resolve([] as FetchResult[]),
         );
         mainWindow.webContents.send("vendor-completed");
         return results;
@@ -138,9 +267,9 @@ export class FetchService {
               toDate,
               version as CounterVersion,
               requestTimeout,
-              logger
-            )
-          )
+              logger,
+            ),
+          ),
         );
         mainWindow.webContents.send("vendor-completed");
         return results;
@@ -148,65 +277,12 @@ export class FetchService {
     });
 
     // Wait for all promises to resolve
-    const fetchResults = (
-      await Promise.all(allPromises)
-    ).flat() as FetchResult[];
+    const fetchResults = (await Promise.allSettled(allPromises)).flatMap(
+      (result) => (result.status === "fulfilled" ? result.value : []),
+    );
 
     const summary = this.summarizeResults(fetchResults, logger);
     return summary;
-  }
-
-  /**
-   * Summarizes the results of fetching reports from vendors.
-   * @param fetchResults - The results of fetching reports from vendors.
-   * @param logger - The logger to use for logging.
-   * @returns The summarized results.
-   */
-  private static summarizeResults(
-    fetchResults: FetchResult[],
-    logger: LoggerService
-  ) {
-    const result = fetchResults.reduce(
-      (
-        acc: FetchResults,
-        { reportId, vendorName, success, custom, error }: FetchResult
-      ) => {
-        const report = { reportId, success, error };
-
-        // Determine if the vendor is 'main' or 'custom'
-        const reportType = custom ? "custom" : "main";
-
-        const vendor = acc[reportType].vendors.find(
-          (v) => v.name === vendorName
-        );
-        if (vendor) {
-          vendor.reports.push(report);
-          if (success) {
-            vendor.totalSucceed += 1;
-            acc[reportType].succeeded += 1;
-          }
-        } else {
-          acc[reportType].vendors.push({
-            name: vendorName,
-            reports: [report],
-            totalSucceed: success ? 1 : 0,
-          });
-          if (success) acc[reportType].succeeded += 1;
-        }
-
-        if (!success) acc.failed += 1;
-
-        return acc;
-      },
-      {
-        main: { succeeded: 0, vendors: [] },
-        custom: { succeeded: 0, vendors: [] },
-        failed: 0,
-        log: logger.writeLogsToFile(),
-      }
-    );
-
-    return result;
   }
 
   /**
@@ -227,17 +303,22 @@ export class FetchService {
     endDate: Date,
     counterVersion: CounterVersion,
     requestTimeout: number,
-    logger = new LoggerService()
+    logger = new LoggerService(),
   ): Promise<FetchResult> {
     let fetchResult: FetchResult = {
+      timestamp: new Date().toISOString(),
       reportId: reportSettings.id,
       vendorName: vendor.name,
       success: false,
       custom: reportSettings.name.includes("Custom"),
+      errors: [],
+      warnings: [],
     };
     if (!reportSettings.id || !vendor) return fetchResult;
 
-    const logHeader = `${vendor.name}\t${reportSettings.id}\t`;
+    const now = new Date().toLocaleString();
+
+    const logHeader = now + `\t${vendor.name}\t${reportSettings.id}\t`;
     const isCustomReport = reportSettings.name.includes("Custom");
 
     try {
@@ -250,9 +331,9 @@ export class FetchService {
       }&requestor_id=${
         vendorInfo.requestorId
       }&begin_date=${this.getDateAsString(
-        startDate
+        startDate,
       )}&end_date=${this.getDateAsString(endDate)}${this.getAPIKeySegment(
-        vendorInfo
+        vendorInfo,
       )}`;
 
       if (isCustomReport)
@@ -261,36 +342,18 @@ export class FetchService {
       // TODO: Improve Log
       logger.log(
         logHeader +
-          "Fetching Sushi API\t" +
-          `URL: ${reportUrl}. Vendor requires ${vendorInfo.requireTwoAttemptsPerReport ? 2 : 1} fetch(es).`
+          "Fetching Sushi API from URL\t" +
+          `${reportUrl}\tVendor requires ${vendorInfo.requireTwoAttemptsPerReport ? 2 : 1} fetch(es).\n`,
       );
 
-      let attempts = vendorInfo.requireTwoAttemptsPerReport ? 2 : 1;
-
-      let response = null;
-
-      for (let i = 0; i < attempts; i++) {
-        const responsePromise = fetch(reportUrl);
-        const timeoutPromise = new Promise((_, reject) => {
-          setTimeout(
-            () =>
-              reject({
-                code: -1,
-                severity: "Minor",
-                message: "Request timeout exceeded",
-                meaning: "Adjust your request timeout settings to be longer",
-              } as IFetchError),
-            requestTimeout * 1000
-          );
-        });
-
-        response = (await Promise.race([responsePromise, timeoutPromise])) as
-          | Response
-          | IFetchError;
-      }
+      const response = await this.fetchWithAttempts(
+        vendorInfo,
+        reportUrl,
+        requestTimeout,
+      );
 
       // Throw TSV Error Message or Returns Data
-      const data = await this.validateResponse(response);
+      const data = await this.validateResponse(response, fetchResult);
 
       const reportFromJsonFunc =
         counterVersion == CounterVersion.v5_0
@@ -307,79 +370,153 @@ export class FetchService {
         vendor.name,
         reportSettings.id,
         startDate,
-        endDate
+        endDate,
       );
 
       // TODO: THROWS MANY ERRORS
-      TSVService.writeTSVReport(tsvFilename, tsv, isCustomReport);
+      await TSVService.writeTSVReport(tsvFilename, tsv, isCustomReport);
 
       // TODO: DATABASE CRASHING
       // if (reportSettings.id === "TR")
-      //   prismaReportService.saveFetchedReport(report);
+      await prismaReportService.saveFetchedReport(report);
+      // console.log("report: ", report);
 
       fetchResult.success = true;
-      fetchResult.warning = report.Report_Header.Exceptions;
+      fetchResult.timestamp = new Date().toISOString();
+      if (report.Report_Header.Exceptions)
+        fetchResult.warnings = [report.Report_Header.Exceptions];
 
       return fetchResult;
     } catch (error) {
       let errorMessage = logHeader + error;
       errorMessage += error;
 
-      console.log(errorMessage);
+      // console.log(errorMessage);
 
       logger.log(errorMessage);
 
       return {
         reportId: reportSettings.id,
         custom: isCustomReport,
+        timestamp: new Date().toISOString(),
         vendorName: vendor.name,
         success: false,
-        error: errorMessage,
+        errors: [...fetchResult.errors, error as IFetchError],
+        warnings: fetchResult.warnings,
       };
     }
   }
 
   /**
+   * Fetches a report from a vendor with multiple attempts.
+   * @param vendorInfo - The vendor to fetch the report from.
+   * @param reportUrl - The URL of the report to fetch.
+   * @param requestTimeout - The timeout for the request.
+   * @returns The response of the fetch operation.
+   * @throws An error if the fetch operation fails.
+   */
+  private static async fetchWithAttempts(
+    vendorInfo: VendorInfo,
+    reportUrl: string,
+    requestTimeout: number,
+  ) {
+    let attempts = vendorInfo.requireTwoAttemptsPerReport ? 2 : 1;
+
+    let response = null;
+
+    for (let i = 0; i < attempts; i++) {
+      // TODO: Remove Console Log
+      if (attempts > 1)
+        console.log(
+          vendorInfo.baseURL + " Attempt ",
+          i + 1,
+          " TimeOut ",
+          requestTimeout,
+          new Date().toISOString(),
+        );
+
+      const responsePromise = fetch(reportUrl);
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(
+          () =>
+            reject({
+              code: -1,
+              severity: "Minor",
+              message:
+                "Request timeout exceeded - No response received in " +
+                requestTimeout +
+                " seconds.",
+              meaning: "Adjust your request timeout settings to be longer",
+            } as IFetchError),
+          requestTimeout * 1000,
+        );
+      });
+
+      response = (await Promise.race([responsePromise, timeoutPromise])) as
+        | Response
+        | IFetchError;
+
+      if (
+        response instanceof Response &&
+        response.status === 429 &&
+        i < attempts - 1
+      ) {
+        // TODO: Remove Console Log
+        console.log("Rate limit exceeded, waiting for 3 seconds...");
+        await new Promise((resolve) => setTimeout(resolve, 3000));
+      }
+    }
+
+    return response;
+  }
+
+  /**
    * Validates a fetch response, throwing a tsv string error if the response is not valid.
+   * And attaches the COUNTER Error if any to the fetch result.
    * @param response - The response to validate.
    */
   private static async validateResponse(
-    response: Response | IFetchError | null
+    response: Response | IFetchError | null,
+    fetchResult: FetchResult,
   ) {
     let fetchingError = "Fetching Reports\t";
-    let data;
-
-    if (response && "ok" in response && !response.ok) {
-      // Handle JSON error
-      if (response.headers.get("content-type")?.includes("application/json")) {
-        data = await response.json();
-        const counterError = this.getExistingFetchError(data);
-        if (counterError)
-          fetchingError +=
-            "Exception " + counterError.code + " - " + counterError.message;
-        else fetchingError += "Unknown error:" + JSON.stringify(data);
-      }
-      // HTTP Error
-      else
-        fetchingError += `Network Error: HTTP ${response.status} - ${response.statusText}`;
-      throw fetchingError;
-    }
-
     if (!response) throw (fetchingError += "No response received");
 
-    try {
-      response = response as Response;
-      const report = (await response.json()) as IReport;
-      return report;
-    } catch (error) {
-      // console.log(error);
-      throw (
-        fetchingError +
-        "Invalid Report Data JSON Format ( " +
-        JSON.stringify(response) +
-        " ):\n"
-      );
+    response = response as Response;
+    let data;
+
+    // Handle JSON RESPONSE
+    if (response.headers.get("content-type")?.includes("application/json")) {
+      data = await response.json().catch(() => {
+        fetchingError +=
+          "Invalid JSON Format ( " + JSON.stringify(response) + " ):\n";
+
+        throw fetchingError;
+      });
+
+      const counterError = this.getExistingFetchError(data);
+      // Get Counter Error If not Report Data
+      if (counterError) {
+        fetchResult.errors = [...fetchResult.errors, counterError];
+        fetchingError +=
+          "Exception " +
+          counterError.code +
+          " - " +
+          counterError.message +
+          "\t";
+        throw fetchingError;
+
+        // Handle Other Data Sent
+      } else {
+        // Hopefully the data is a report
+        if (response.ok) return data as IReport;
+        // Ramdom Responses from API - usually { message: "Internal Server Error" } with a 200 status
+        else fetchingError += "Unknown error:" + JSON.stringify(data);
+      }
     }
+    // Handle HTTP RESPONSE
+    else
+      fetchingError += `Network Error: HTTP ${response.status} - ${response.statusText}`;
   }
 
   /**
@@ -410,7 +547,7 @@ export class FetchService {
    */
   private static convertFiltersToURLParams(
     reportSettings: Report,
-    counterVersion: CounterVersion = CounterVersion.v5_0
+    counterVersion: CounterVersion = CounterVersion.v5_0,
   ) {
     const filters = reportSettings.filters;
     const attributes = reportSettings.attributes;
