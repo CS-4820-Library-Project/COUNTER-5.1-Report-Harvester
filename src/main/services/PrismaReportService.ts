@@ -132,7 +132,7 @@ export class PrismaReportService {
   }
 
   async createPRP1ItemMetric(details: Omit<PR_P1_ItemMetric, "id">) {
-    return prisma.pR_ItemMetric.create({
+    return prisma.pR_P1_ItemMetric.create({
       data: {
         reportItemId: details.reportItemId,
         period: details.period,
@@ -885,10 +885,6 @@ export class PrismaReportService {
 
       if (report.Report_Header.Report_ID.includes("PR")) {
         for (const rawItem of report.Report_Items) {
-          const reportItemDetails: any = {
-            reportId: savedReport.id,
-            platform: rawItem.Platform,
-          };
           const metricCounts = new Map<string, number>();
           const metricPeriods = new Map<
             string,
@@ -917,6 +913,10 @@ export class PrismaReportService {
               }
             }
           }
+          const reportItemDetails: any = {
+            reportId: savedReport.id,
+            platform: rawItem.Platform,
+          };
 
           for (const [metricType, periodTotal] of metricCounts.entries()) {
             const reportId = reportItemDetails.reportId;
