@@ -62,6 +62,7 @@ export interface IItemPubReportItem extends IReportItem {
  * Represents a report item with additional title information.
  */
 export interface ITRIRReportItem extends IItemPubReportItem {
+  Item: string;
   Title: string;
 }
 

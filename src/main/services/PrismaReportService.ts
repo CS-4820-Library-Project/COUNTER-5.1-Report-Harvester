@@ -1,4 +1,10 @@
 import {
+  DR_D1_Item,
+  DR_D1_ItemMetric,
+  DR_D2_Item,
+  DR_D2_ItemMetric,
+  DR_Item,
+  DR_ItemMetric,
   IR_A1_Item,
   IR_A1_ItemMetric,
   IR_Item,
@@ -722,6 +728,132 @@ export class PrismaReportService {
     });
   }
 
+  async createDRItem(data: Omit<DR_Item, "id">): Promise<DR_Item> {
+    try {
+      const {
+        reportId,
+        database,
+        proprietary,
+        publisher,
+        publisherId,
+        platform,
+        metricType,
+        reportingPeriodTotal,
+      } = data;
+
+      return await prisma.dR_Item.create({
+        data: {
+          reportId,
+          database,
+          proprietary,
+          publisher,
+          publisherId,
+          platform,
+          metricType,
+          reportingPeriodTotal,
+        },
+      });
+    } catch (error) {
+      console.error("Error creating PR_Item:", error);
+      throw error;
+    }
+  }
+
+  async createDRItemMetric(details: Omit<DR_ItemMetric, "id">) {
+    return prisma.dR_ItemMetric.create({
+      data: {
+        reportItemId: details.reportItemId,
+        period: details.period,
+        value: details.value,
+        metricType: details.metricType,
+      },
+    });
+  }
+
+  async createDRD1Item(data: Omit<DR_D1_Item, "id">): Promise<DR_D1_Item> {
+    try {
+      const {
+        reportId,
+        database,
+        proprietary,
+        publisher,
+        publisherId,
+        platform,
+        metricType,
+        reportingPeriodTotal,
+      } = data;
+
+      return await prisma.dR_D1_Item.create({
+        data: {
+          reportId,
+          database,
+          proprietary,
+          publisher,
+          publisherId,
+          platform,
+          metricType,
+          reportingPeriodTotal,
+        },
+      });
+    } catch (error) {
+      console.error("Error creating PR_Item:", error);
+      throw error;
+    }
+  }
+
+  async createDRD1ItemMetric(details: Omit<DR_D1_ItemMetric, "id">) {
+    return prisma.dR_D1_ItemMetric.create({
+      data: {
+        reportItemId: details.reportItemId,
+        period: details.period,
+        value: details.value,
+        metricType: details.metricType,
+      },
+    });
+  }
+
+  async createDRD2Item(data: Omit<DR_D2_Item, "id">): Promise<DR_D2_Item> {
+    try {
+      const {
+        reportId,
+        database,
+        proprietary,
+        publisher,
+        publisherId,
+        platform,
+        metricType,
+        reportingPeriodTotal,
+      } = data;
+
+      return await prisma.dR_D2_Item.create({
+        data: {
+          reportId,
+          database,
+          proprietary,
+          publisher,
+          publisherId,
+          platform,
+          metricType,
+          reportingPeriodTotal,
+        },
+      });
+    } catch (error) {
+      console.error("Error creating PR_Item:", error);
+      throw error;
+    }
+  }
+
+  async createDRD2ItemMetric(details: Omit<DR_D2_ItemMetric, "id">) {
+    return prisma.dR_D2_ItemMetric.create({
+      data: {
+        reportItemId: details.reportItemId,
+        period: details.period,
+        value: details.value,
+        metricType: details.metricType,
+      },
+    });
+  }
+
   /**
    * This function is responsible for saving the fetched report into the database.
    * @param {Object} report - The report object that contains all the information about the report.
@@ -833,39 +965,193 @@ export class PrismaReportService {
         }
       }
 
+      if (report.Report_Header.Report_ID.includes("DR")) {
+        for (const rawItem of report.Report_Items) {
+          const drItem = rawItem as IDRReportItem;
+          let reportItemDetails: any = {
+            reportId: savedReport.id,
+            database: drItem.Database,
+            proprietary:
+              drItem.Item_ID.find((id) => id.Type === "Proprietary")?.Value ||
+              null,
+            publisher: drItem.Publisher,
+            publisherId: drItem.Publisher_ID.map(
+              (id) => `${id.Type}:${id.Value}`,
+            ).join(";"),
+            platform: drItem.Platform,
+          };
+
+          const metricCounts = new Map<string, number>();
+          const metricPeriods = new Map<
+            string,
+            Array<{ period: string; value: number }>
+          >();
+
+          for (let i = 0; i < rawItem.Performance.length; i++) {
+            const period = `${rawItem.Performance[i].Period.Begin_Date} - ${rawItem.Performance[i].Period.End_Date}`;
+
+            for (let j = 0; j < rawItem.Performance[i].Instance.length; j++) {
+              const metricType = rawItem.Performance[i].Instance[j].Metric_Type;
+              const count = rawItem.Performance[i].Instance[j].Count;
+
+              if (metricCounts.has(metricType)) {
+                const currCount = metricCounts.get(metricType);
+                metricCounts.set(metricType, (currCount ?? 0) + count);
+              } else {
+                metricCounts.set(metricType, count);
+              }
+
+              if (metricPeriods.has(metricType)) {
+                metricPeriods.get(metricType)?.push({ period, value: count });
+              } else {
+                metricPeriods.set(metricType, [{ period, value: count }]);
+              }
+            }
+          }
+
+          for (const [
+            metricType,
+            reportingPeriodTotal,
+          ] of metricCounts.entries()) {
+            reportItemDetails["metricType"] = metricType;
+            reportItemDetails["reportingPeriodTotal"] = reportingPeriodTotal;
+
+            if (report.Report_Header.Report_ID == "DR") {
+              const ir_item = await this.createDRItem(reportItemDetails);
+              const periodsValues = metricPeriods.get(metricType);
+              if (periodsValues) {
+                for (const { period, value } of periodsValues) {
+                  await this.createDRItemMetric({
+                    reportItemId: ir_item.id,
+                    metricType,
+                    period,
+                    value,
+                  });
+                }
+              }
+            } else if (report.Report_Header.Report_ID == "DR_D1") {
+              const ir_item = await this.createDRD1Item(reportItemDetails);
+              const periodsValues = metricPeriods.get(metricType);
+              if (periodsValues) {
+                for (const { period, value } of periodsValues) {
+                  await this.createDRD1ItemMetric({
+                    reportItemId: ir_item.id,
+                    metricType,
+                    period,
+                    value,
+                  });
+                }
+              }
+            } else if (report.Report_Header.Report_ID == "DR_D2") {
+              const ir_item = await this.createDRD2Item(reportItemDetails);
+              const periodsValues = metricPeriods.get(metricType);
+              if (periodsValues) {
+                for (const { period, value } of periodsValues) {
+                  await this.createDRD2ItemMetric({
+                    reportItemId: ir_item.id,
+                    metricType,
+                    period,
+                    value,
+                  });
+                }
+              }
+            }
+          }
+        }
+      }
+
       if (report.Report_Header.Report_ID.includes("IR")) {
         for (const rawItem of report.Report_Items) {
           const irItem = rawItem as ITRIRReportItem;
-          console.log("irItem:", irItem);
-          // let reportItemDetails: any = {
-          //   reportId: savedReport.id,
-          //   title: irItem.Title,
-          //   publisher: trItem.Publisher,
-          //   publisherId: trItem.Publisher_ID.map(
-          //     (id) => `${id.Type}:${id.Value}`,
-          //   ).join(";"),
-          //   platform: trItem.Platform,
-          //   doi: trItem.Item_ID.find((id) => id.Type === "DOI")?.Value || null,
-          //   yop: trItem.Item_ID.find((id) => id.Type === "YOP")?.Value || null,
-          //   proprietaryId:
-          //     trItem.Item_ID.find((id) => id.Type === "Proprietary")?.Type +
-          //       ":" +
-          //       trItem.Item_ID.find((id) => id.Type === "Proprietary")?.Value ||
-          //     null,
-          //   isbn:
-          //     trItem.Item_ID.find((id) => id.Type === "ISBN")?.Value || null,
-          //   printIssn:
-          //     trItem.Item_ID.find((id) => id.Type === "Print_ISSN")?.Value ||
-          //     null,
-          //   onlineIssn:
-          //     trItem.Item_ID.find((id) => id.Type === "Online_ISSN")?.Value ||
-          //     null,
-          //   uri: trItem.Item_ID.find((id) => id.Type === "URI")?.Value || null,
-          //   dataType:
-          //     trItem.Item_ID.find((id) => id.Type === "Data_Type")?.Value ||
-          //     null,
-          // };
-          // console.log(reportItemDetails);
+          let reportItemDetails: any = {
+            reportId: savedReport.id,
+            title: irItem.Title,
+            publisher: irItem.Publisher,
+            publisherId: irItem.Publisher_ID.map(
+              (id) => `${id.Type}:${id.Value}`,
+            ).join(";"),
+            platform: irItem.Platform,
+            doi: irItem.Item_ID.find((id) => id.Type === "DOI")?.Value || null,
+            yop: irItem.Item_ID.find((id) => id.Type === "YOP")?.Value || null,
+            item: irItem.Item,
+          };
+
+          const metricCounts = new Map<string, number>();
+          const metricPeriods = new Map<
+            string,
+            Array<{ period: string; value: number }>
+          >();
+
+          for (let i = 0; i < rawItem.Performance.length; i++) {
+            const period = `${rawItem.Performance[i].Period.Begin_Date} - ${rawItem.Performance[i].Period.End_Date}`;
+
+            for (let j = 0; j < rawItem.Performance[i].Instance.length; j++) {
+              const metricType = rawItem.Performance[i].Instance[j].Metric_Type;
+              const count = rawItem.Performance[i].Instance[j].Count;
+
+              if (metricCounts.has(metricType)) {
+                const currCount = metricCounts.get(metricType);
+                metricCounts.set(metricType, (currCount ?? 0) + count);
+              } else {
+                metricCounts.set(metricType, count);
+              }
+
+              if (metricPeriods.has(metricType)) {
+                metricPeriods.get(metricType)?.push({ period, value: count });
+              } else {
+                metricPeriods.set(metricType, [{ period, value: count }]);
+              }
+            }
+          }
+
+          for (const [
+            metricType,
+            reportingPeriodTotal,
+          ] of metricCounts.entries()) {
+            reportItemDetails["metricType"] = metricType;
+            reportItemDetails["reportingPeriodTotal"] = reportingPeriodTotal;
+
+            if (report.Report_Header.Report_ID == "IR") {
+              const ir_item = await this.createIRItem(reportItemDetails);
+              const periodsValues = metricPeriods.get(metricType);
+              if (periodsValues) {
+                for (const { period, value } of periodsValues) {
+                  await this.createIRItemMetric({
+                    reportItemId: ir_item.id,
+                    metricType,
+                    period,
+                    value,
+                  });
+                }
+              }
+            } else if (report.Report_Header.Report_ID == "IR_A1") {
+              const ir_item = await this.createIRA1Item(reportItemDetails);
+              const periodsValues = metricPeriods.get(metricType);
+              if (periodsValues) {
+                for (const { period, value } of periodsValues) {
+                  await this.createIRA1ItemMetric({
+                    reportItemId: ir_item.id,
+                    metricType,
+                    period,
+                    value,
+                  });
+                }
+              }
+            } else if (report.Report_Header.Report_ID == "IR_M1") {
+              const ir_item = await this.createIRM1Item(reportItemDetails);
+              const periodsValues = metricPeriods.get(metricType);
+              if (periodsValues) {
+                for (const { period, value } of periodsValues) {
+                  await this.createIRM1ItemMetric({
+                    reportItemId: ir_item.id,
+                    metricType,
+                    period,
+                    value,
+                  });
+                }
+              }
+            }
+          }
         }
       }
 
