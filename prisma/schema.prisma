@@ -225,7 +225,7 @@ model TR_B1_Item {
   printIssn            String?
   onlineIssn           String?
   uri                  String?
-  dataType             String
+  dataType             String?
   metricType           String
   reportingPeriodTotal Int
   TR_B1_ItemMetric     TR_B1_ItemMetric[]
@@ -256,7 +256,7 @@ model TR_B2_Item {
   printIssn            String?
   onlineIssn           String?
   uri                  String?
-  dataType             String
+  dataType             String?
   metricType           String
   reportingPeriodTotal Int
   TR_B2_ItemMetric     TR_B2_ItemMetric[]
@@ -287,7 +287,7 @@ model TR_B3_Item {
   printIssn            String?
   onlineIssn           String?
   uri                  String?
-  dataType             String
+  dataType             String?
   metricType           String
   reportingPeriodTotal Int
   TR_B3_ItemMetric     TR_B3_ItemMetric[]
@@ -318,7 +318,7 @@ model TR_J1_Item {
   printIssn            String?
   onlineIssn           String?
   uri                  String?
-  dataType             String
+  dataType             String?
   metricType           String
   reportingPeriodTotal Int
   TR_J1_ItemMetric     TR_J1_ItemMetric[]
@@ -349,7 +349,7 @@ model TR_J2_Item {
   printIssn            String?
   onlineIssn           String?
   uri                  String?
-  dataType             String
+  dataType             String?
   metricType           String
   reportingPeriodTotal Int
   TR_J2_ItemMetric     TR_J2_ItemMetric[]
@@ -380,7 +380,7 @@ model TR_J3_Item {
   printIssn            String?
   onlineIssn           String?
   uri                  String?
-  dataType             String
+  dataType             String?
   metricType           String
   reportingPeriodTotal Int
   TR_J3_ItemMetric     TR_J3_ItemMetric[]
@@ -411,7 +411,7 @@ model TR_J4_Item {
   printIssn            String?
   onlineIssn           String?
   uri                  String?
-  dataType             String
+  dataType             String?
   metricType           String
   reportingPeriodTotal Int
   TR_J4_ItemMetric     TR_J4_ItemMetric[]
