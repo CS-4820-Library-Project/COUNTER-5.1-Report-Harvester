@@ -15,7 +15,6 @@ import {
   PR_ItemMetric,
   PR_P1_Item,
   PR_P1_ItemMetric,
-  Prisma,
   PrismaClient,
   Report,
   ReportFilter,
@@ -30,6 +29,7 @@ import {
   TR_J1_Item,
   TR_J1_ItemMetric,
   TR_J2_Item,
+  TR_J2_ItemMetric,
   TR_J3_Item,
   TR_J3_ItemMetric,
   TR_J4_Item,
@@ -40,8 +40,42 @@ import {
   IReport,
   ITRIRReportItem,
 } from "src/renderer/src/interface/IReport";
+import { DirectorySettingService } from "./DirectorySettingService";
+import { writeFile } from "fs-extra";
+import { format } from "date-fns";
 
 const prisma = new PrismaClient();
+
+type TRModelNames =
+  | "TR_Item"
+  | "TR_B1_Item"
+  | "TR_B2_Item"
+  | "TR_B3_Item"
+  | "TR_J1_Item"
+  | "TR_J2_Item"
+  | "TR_J3_Item"
+  | "TR_J4_Item";
+
+type WhereClause = {
+  title?: {
+    contains: string;
+  };
+  OR?: [
+    {
+      onlineIssn: {
+        contains: string;
+      };
+    },
+    {
+      printIssn: {
+        contains: string;
+      };
+    },
+  ];
+  isbn?: {
+    contains: string;
+  };
+};
 
 export class PrismaReportService {
   async createReport({
@@ -467,7 +501,7 @@ export class PrismaReportService {
     }
   }
 
-  async createTRJ2ItemMetric(details: Omit<TR_B1_ItemMetric, "id">) {
+  async createTRJ2ItemMetric(details: Omit<TR_J2_ItemMetric, "id">) {
     return prisma.tR_J2_ItemMetric.create({
       data: {
         reportItemId: details.reportItemId,
@@ -1352,6 +1386,348 @@ export class PrismaReportService {
       console.log("There was an error while saving reports:", error);
       throw new Error("Failed to save report.");
     }
+  }
+
+  async searchReport(
+    page: number, // page set to default 1 if not provided
+    limit: number, // limit set to default 10 if not provided
+    title?: string,
+    issn?: string,
+    isbn?: string,
+  ): Promise<Report[]> {
+    try {
+      let whereClause: WhereClause = {};
+
+      if (title) {
+        whereClause.title = {
+          contains: title.toLowerCase(),
+        };
+      } else if (issn) {
+        whereClause.OR = [
+          {
+            onlineIssn: {
+              contains: issn.toLowerCase(),
+            },
+          },
+          {
+            printIssn: {
+              contains: issn.toLowerCase(),
+            },
+          },
+        ];
+      } else if (isbn) {
+        whereClause.isbn = {
+          contains: isbn.toLowerCase(),
+        };
+      }
+
+      const reportItemsOfAllModels = await Promise.all(
+        [
+          "TR_Item",
+          "TR_B1_Item",
+          "TR_B2_Item",
+          "TR_B3_Item",
+          "TR_J1_Item",
+          "TR_J2_Item",
+          "TR_J3_Item",
+          "TR_J4_Item",
+        ].map((model) => {
+          switch (model) {
+            case "TR_Item":
+              return prisma.tR_Item.findMany({
+                where: whereClause,
+                include: {
+                  report: {
+                    include: {
+                      TR_Item: {
+                        include: {
+                          TR_ItemMetric: true,
+                        },
+                      },
+                      ReportFilter: true,
+                    },
+                  },
+                },
+                // skip: (page - 1) * limit, // This will skip the items of previous pages
+                // take: limit, // This will limit the number of items returned
+              });
+            case "TR_B1_Item":
+              return prisma.tR_B1_Item.findMany({
+                where: whereClause,
+                include: {
+                  report: {
+                    include: {
+                      TR_B1_Item: {
+                        include: {
+                          TR_B1_ItemMetric: true,
+                        },
+                      },
+                      ReportFilter: true,
+                    },
+                  },
+                },
+                // skip: (page - 1) * limit, // This will skip the items of previous pages
+                // take: limit, // This will limit the number of items returned
+              });
+            case "TR_B2_Item":
+              return prisma.tR_B2_Item.findMany({
+                where: whereClause,
+                include: {
+                  report: {
+                    include: {
+                      TR_B2_Item: {
+                        include: {
+                          TR_B2_ItemMetric: true,
+                        },
+                      },
+                      ReportFilter: true,
+                    },
+                  },
+                },
+                // skip: (page - 1) * limit, // This will skip the items of previous pages
+                // take: limit, // This will limit the number of items returned
+              });
+            case "TR_B3_Item":
+              return prisma.tR_B3_Item.findMany({
+                where: whereClause,
+                include: {
+                  report: {
+                    include: {
+                      TR_B3_Item: {
+                        include: {
+                          TR_B3_ItemMetric: true,
+                        },
+                      },
+                      ReportFilter: true,
+                    },
+                  },
+                },
+                // skip: (page - 1) * limit, // This will skip the items of previous pages
+                // take: limit, // This will limit the number of items returned
+              });
+            case "TR_J1_Item":
+              return prisma.tR_J1_Item.findMany({
+                where: whereClause,
+                include: {
+                  report: {
+                    include: {
+                      TR_J1_Item: {
+                        include: {
+                          TR_J1_ItemMetric: true,
+                        },
+                      },
+                      ReportFilter: true,
+                    },
+                  },
+                },
+                // skip: (page - 1) * limit, // This will skip the items of previous pages
+                // take: limit, // This will limit the number of items returned
+              });
+            case "TR_J2_Item":
+              return prisma.tR_J2_Item.findMany({
+                where: whereClause,
+                include: {
+                  report: {
+                    include: {
+                      TR_J2_Item: {
+                        include: {
+                          TR_J2_ItemMetric: true,
+                        },
+                      },
+                      ReportFilter: true,
+                    },
+                  },
+                },
+                // skip: (page - 1) * limit, // This will skip the items of previous pages
+                // take: limit, // This will limit the number of items returned
+              });
+            case "TR_J3_Item":
+              return prisma.tR_J3_Item.findMany({
+                where: whereClause,
+                include: {
+                  report: {
+                    include: {
+                      TR_J3_Item: {
+                        include: {
+                          TR_J3_ItemMetric: true,
+                        },
+                      },
+                      ReportFilter: true,
+                    },
+                  },
+                },
+                // skip: (page - 1) * limit, // This will skip the items of previous pages
+                // take: limit, // This will limit the number of items returned
+              });
+            case "TR_J4_Item":
+              return prisma.tR_J4_Item.findMany({
+                where: whereClause,
+                include: {
+                  report: {
+                    include: {
+                      TR_J4_Item: {
+                        include: {
+                          TR_J4_ItemMetric: true,
+                        },
+                      },
+                      ReportFilter: true,
+                    },
+                  },
+                },
+                skip: (page - 1) * limit, // This will skip the items of previous pages
+                take: limit, // This will limit the number of items returned
+              });
+            default:
+              return [];
+          }
+        }),
+      );
+
+      // Flatten the array and map each item to its parent report
+      const reportItems = reportItemsOfAllModels.flat();
+      const reports = reportItems.map((item: any) => item.report);
+
+      // Deduplicate reports based on a unique property (like id)
+      const uniqueReports: Report[] = [];
+      const reportIds = new Set();
+
+      for (const report of reports) {
+        if (!reportIds.has(report.id)) {
+          reportIds.add(report.id);
+          uniqueReports.push(report);
+        }
+      }
+
+      return uniqueReports;
+    } catch (error) {
+      console.error("Error searching reports:", error);
+      throw error;
+    }
+  }
+
+  async convertReportToTSV(report: any): Promise<string> {
+    let tsv = "";
+
+    // Headers
+    tsv += `Report_Name\t${report.report_name}\n`;
+    tsv += `Report_ID\t${report.report_id}\n`;
+    tsv += `Release\t${report.release}\n`;
+    tsv += `Institution_Name\t${report.institution_name}\n`;
+    tsv += `Institution_ID\t${report.institution_id}\n`;
+
+    // Report Filters
+    const reportFilters = report.ReportFilter?.map(
+      (filter: any) => `${filter.filter_type}=${filter.value}`,
+    ).join(";");
+    tsv += `Report_Filters\t${reportFilters}\n`;
+
+    tsv += `Created\t${report.created}\n`;
+    tsv += `Created_By\t${report.created_by}\n`;
+    tsv += "\n";
+
+    tsv += `Title\tPublisher\tPublisher_ID\tPlatform\tDOI\tYOP\tProprietary_ID\tISBN\tPrint_ISSN\tOnline_ISSN\tURI\tData_Type\tMetric_Type\tReporting_Period_Total\n`;
+
+    if (report.report_id.includes("TR")) {
+      if (report.report_id === "TR") {
+        for (const item of report.TR_Item) {
+          for (const metric of item.TR_ItemMetric) {
+            tsv += `${item.title}\t${item.publisher}\t${item.publisherId}\t${item.platform}\t${item.doi}\t${item.yop}\t${item.proprietaryId}\t${item.isbn}\t${item.printIssn}\t${item.onlineIssn}\t${item.uri}\t${item.dataType}\t${metric.metricType}\t${item.reportingPeriodTotal}\n`;
+          }
+          tsv += "\n";
+        }
+      } else if (report.report_id === "TR_B1") {
+        for (const item of report.TR_B1_Item) {
+          for (const metric of item.TR_B1_ItemMetric) {
+            tsv += `${item.title}\t${item.publisher}\t${item.publisherId}\t${item.platform}\t${item.doi}\t${item.yop}\t${item.proprietaryId}\t${item.isbn}\t${item.printIssn}\t${item.onlineIssn}\t${item.uri}\t${item.dataType}\t${metric.metricType}\t${item.reportingPeriodTotal}\n`;
+          }
+          tsv += "\n";
+        }
+      } else if (report.report_id === "TR_B2") {
+        for (const item of report.TR_B2_Item) {
+          for (const metric of item.TR_B2_ItemMetric) {
+            tsv += `${item.title}\t${item.publisher}\t${item.publisherId}\t${item.platform}\t${item.doi}\t${item.yop}\t${item.proprietaryId}\t${item.isbn}\t${item.printIssn}\t${item.onlineIssn}\t${item.uri}\t${item.dataType}\t${metric.metricType}\t${item.reportingPeriodTotal}\n`;
+          }
+          tsv += "\n";
+        }
+      } else if (report.report_id === "TR_B3") {
+        for (const item of report.TR_B3_Item) {
+          for (const metric of item.TR_B3_ItemMetric) {
+            tsv += `${item.title}\t${item.publisher}\t${item.publisherId}\t${item.platform}\t${item.doi}\t${item.yop}\t${item.proprietaryId}\t${item.isbn}\t${item.printIssn}\t${item.onlineIssn}\t${item.uri}\t${item.dataType}\t${metric.metricType}\t${item.reportingPeriodTotal}\n`;
+          }
+          tsv += "\n";
+        }
+      } else if (report.report_id === "TR_J1") {
+        for (const item of report.TR_J1_Item) {
+          for (const metric of item.TR_J1_ItemMetric) {
+            tsv += `${item.title}\t${item.publisher}\t${item.publisherId}\t${item.platform}\t${item.doi}\t${item.yop}\t${item.proprietaryId}\t${item.isbn}\t${item.printIssn}\t${item.onlineIssn}\t${item.uri}\t${item.dataType}\t${metric.metricType}\t${item.reportingPeriodTotal}\n`;
+          }
+          tsv += "\n";
+        }
+      } else if (report.report_id === "TR_J2") {
+        for (const item of report.TR_J2_Item) {
+          for (const metric of item.TR_J2_ItemMetric) {
+            tsv += `${item.title}\t${item.publisher}\t${item.publisherId}\t${item.platform}\t${item.doi}\t${item.yop}\t${item.proprietaryId}\t${item.isbn}\t${item.printIssn}\t${item.onlineIssn}\t${item.uri}\t${item.dataType}\t${metric.metricType}\t${item.reportingPeriodTotal}\n`;
+          }
+          tsv += "\n";
+        }
+      } else if (report.report_id === "TR_J3") {
+        for (const item of report.TR_J3_Item) {
+          for (const metric of item.TR_J3_ItemMetric) {
+            tsv += `${item.title}\t${item.publisher}\t${item.publisherId}\t${item.platform}\t${item.doi}\t${item.yop}\t${item.proprietaryId}\t${item.isbn}\t${item.printIssn}\t${item.onlineIssn}\t${item.uri}\t${item.dataType}\t${metric.metricType}\t${item.reportingPeriodTotal}\n`;
+          }
+          tsv += "\n";
+        }
+      } else if (report.report_id === "TR_J4") {
+        for (const item of report.TR_J4_Item) {
+          for (const metric of item.TR_J4_ItemMetric) {
+            tsv += `${item.title}\t${item.publisher}\t${item.publisherId}\t${item.platform}\t${item.doi}\t${item.yop}\t${item.proprietaryId}\t${item.isbn}\t${item.printIssn}\t${item.onlineIssn}\t${item.uri}\t${item.dataType}\t${metric.metricType}\t${item.reportingPeriodTotal}\n`;
+          }
+          tsv += "\n";
+        }
+      }
+    }
+
+    return tsv;
+  }
+
+  async writeTSVToFile(tsv: string, fileName: string): Promise<void> {
+    const dirService = new DirectorySettingService();
+    const filePath = dirService.getPath("search", `${fileName}.tsv`);
+
+    writeFile(filePath, tsv);
+  }
+
+  private generateSearchFilename(query: string, vendorName: string) {
+    let filename = query.replace(/ /g, "_") + "_";
+    filename += vendorName.toLowerCase() + "_";
+    filename += format(new Date(), "yyyyMMddHHmmss");
+
+    return filename;
+  }
+
+  async writeSearchedReportsToTSV(
+    title?: string,
+    issn?: string,
+    isbn?: string,
+  ): Promise<Report[]> {
+    const reports = await this.searchReport(1, 250, title, issn, isbn);
+
+    let fileNumber = 1; // Counter variable for filename
+
+    for (const report of reports) {
+      const tsv = this.convertReportToTSV(report);
+      const vendorName = report.institution_id.split(":")[0];
+
+      const fileName =
+        this.generateSearchFilename(title || issn || isbn || "", vendorName) +
+        "_" +
+        fileNumber; // Add the counter to the filename
+
+      await this.writeTSVToFile(await tsv, fileName);
+      fileNumber++; // Increment the counter
+    }
+
+    return reports;
   }
 }
 
