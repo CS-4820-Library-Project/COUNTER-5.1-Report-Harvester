@@ -194,7 +194,7 @@ model TR_Item {
   printIssn            String?
   onlineIssn           String?
   uri                  String?
-  dataType             String
+  dataType             String?
   metricType           String
   reportingPeriodTotal Int
   TR_ItemMetric        TR_ItemMetric[]

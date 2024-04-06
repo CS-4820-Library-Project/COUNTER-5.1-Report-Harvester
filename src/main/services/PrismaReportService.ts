@@ -7,6 +7,8 @@ import {
   PrismaClient,
   Report,
   ReportFilter,
+  TR_Item,
+  TR_ItemMetric,
 } from "@prisma/client";
 import {
   IDRReportItem,
@@ -112,6 +114,62 @@ export class PrismaReportService {
 
   async createPRP1ItemMetric(details: Omit<PR_P1_ItemMetric, "id">) {
     return prisma.pR_ItemMetric.create({
+      data: {
+        reportItemId: details.reportItemId,
+        period: details.period,
+        value: details.value,
+        metricType: details.metricType,
+      },
+    });
+  }
+
+  async createTRItem(data: Omit<TR_Item, "id">): Promise<TR_Item> {
+    try {
+      const {
+        reportId,
+        title,
+        publisher,
+        publisherId,
+        platform,
+        doi,
+        yop,
+        proprietaryId,
+        isbn,
+        printIssn,
+        onlineIssn,
+        uri,
+        dataType,
+        metricType,
+        reportingPeriodTotal,
+      } = data;
+
+      return await prisma.tR_Item.create({
+        data: {
+          reportId,
+          title,
+          publisher,
+          publisherId,
+          platform,
+          doi,
+          yop,
+          proprietaryId,
+          isbn,
+          printIssn,
+          onlineIssn,
+          uri,
+          dataType,
+          metricType,
+          reportingPeriodTotal,
+        },
+      });
+    } catch (error) {
+      console.error("Error creating PR_Item:", error);
+      throw error;
+    }
+  }
+
+  async createTRItemMetric(details: Omit<TR_ItemMetric, "id">) {
+    return prisma.tR_ItemMetric.create({
       data: {
         reportItemId: details.reportItemId,
         period: details.period,
@@ -273,80 +331,88 @@ export class PrismaReportService {
         }
       }
 
-      // if (report.Report_Header.Report_ID.includes("TR")) {
-      //   const trItem = rawItem as ITRIRReportItem;
-      //   console.log("trItem:", trItem);
-      //   reportItemDetails.title = trItem.Title;
-      //   reportItemDetails.publisher = trItem.Publisher;
-      //   trItem.Publisher_ID.map((id) => `${id.Type}:${id.Value}`).join(";");
-      //
-      //   reportItemDetails.proprietary_id =
-      //     trItem.Item_ID.find((id) => id.Type === "Proprietary")?.Value ||
-      //     null;
-      //
-      //   trItem.Item_ID.map((id) => `${id.Type}:${id.Value}`).join(";");
-      //   reportItemDetails.doi =
-      //     trItem.Item_ID.find((id) => id.Type === "DOI")?.Value || null;
-      //   reportItemDetails.isbn =
-      //     trItem.Item_ID.find((id) => id.Type === "ISBN")?.Value || null;
-      //   reportItemDetails.print_issn =
-      //     trItem.Item_ID.find((id) => id.Type === "Print_ISSN")?.Value ||
-      //     null;
-      //   reportItemDetails.online_issn =
-      //     trItem.Item_ID.find((id) => id.Type === "Online_ISSN")?.Value ||
-      //     null;
-      //   reportItemDetails.proprietary_id =
-      //     trItem.Item_ID.find((id) => id.Type === "Proprietary")?.Value ||
-      //     null;
-      //   reportItemDetails.uri =
-      //     trItem.Item_ID.find((id) => id.Type === "URI")?.Value || null;
-      //   reportItemDetails.data_type =
-      //     trItem.Item_ID.find((id) => id.Type === "Data_Type")?.Value || null;
-      // } else if (report.Report_Header.Report_ID.includes("IR")) {
-      //   const irItem = rawItem as ITRIRReportItem;
-      //
-      //   reportItemDetails.title = irItem.Title;
-      //   reportItemDetails.publisher = irItem.Publisher;
-      //
-      //   irItem.Publisher_ID.map((id) => `${id.Type}:${id.Value}`).join(";");
-      //   irItem.Item_ID.map((id) => `${id.Type}:${id.Value}`).join(";");
-      //
-      //   reportItemDetails.doi =
-      //     irItem.Item_ID.find((id) => id.Type === "DOI")?.Value || null;
-      //   reportItemDetails.isbn =
-      //     irItem.Item_ID.find((id) => id.Type === "ISBN")?.Value || null;
-      //   reportItemDetails.print_issn =
-      //     irItem.Item_ID.find((id) => id.Type === "Print_ISSN")?.Value ||
-      //     null;
-      //   reportItemDetails.online_issn =
-      //     irItem.Item_ID.find((id) => id.Type === "Online_ISSN")?.Value ||
-      //     null;
-      //   reportItemDetails.uri =
-      //     irItem.Item_ID.find((id) => id.Type === "URI")?.Value || null;
-      //   reportItemDetails.data_type =
-      //     irItem.Item_ID.find((id) => id.Type === "Data_Type")?.Value || null;
-      // } else if (report.Report_Header.Report_ID.includes("DR")) {
-      //   const drItem = rawItem as IDRReportItem;
-      //   reportItemDetails.database = drItem.Database;
-      //   reportItemDetails.publisher = drItem.Publisher;
-      //   drItem.Publisher_ID.map((id) => `${id.Type}:${id.Value}`).join(";");
-      //   drItem.Item_ID.map((id) => `${id.Type}:${id.Value}`).join(";");
-      //   reportItemDetails.doi =
-      //     drItem.Item_ID.find((id) => id.Type === "DOI")?.Value || null;
-      //   reportItemDetails.isbn =
-      //     drItem.Item_ID.find((id) => id.Type === "ISBN")?.Value || null;
-      //   reportItemDetails.print_issn =
-      //     drItem.Item_ID.find((id) => id.Type === "Print_ISSN")?.Value ||
-      //     null;
-      //   reportItemDetails.online_issn =
-      //     drItem.Item_ID.find((id) => id.Type === "Online_ISSN")?.Value ||
-      //     null;
-      //   reportItemDetails.uri =
-      //     drItem.Item_ID.find((id) => id.Type === "URI")?.Value || null;
-      //   reportItemDetails.data_type =
-      //     drItem.Item_ID.find((id) => id.Type === "Data_Type")?.Value || null;
-      // }
-      //
+      if (report.Report_Header.Report_ID == "TR") {
+        for (const rawItem of report.Report_Items) {
+          const trItem = rawItem as ITRIRReportItem;
+          let reportItemDetails: any = {
+            reportId: savedReport.id,
+            title: trItem.Title,
+            publisher: trItem.Publisher,
+            publisherId: trItem.Publisher_ID.map(
+              (id) => `${id.Type}:${id.Value}`,
+            ).join(";"),
+            platform: trItem.Platform,
+            doi: trItem.Item_ID.find((id) => id.Type === "DOI")?.Value || null,
+            yop: trItem.Item_ID.find((id) => id.Type === "YOP")?.Value || null,
+            proprietaryId:
+              trItem.Item_ID.find((id) => id.Type === "Proprietary")?.Type +
+                ":" +
+                trItem.Item_ID.find((id) => id.Type === "Proprietary")?.Value ||
+              null,
+            isbn:
+              trItem.Item_ID.find((id) => id.Type === "ISBN")?.Value || null,
+            printIssn:
+              trItem.Item_ID.find((id) => id.Type === "Print_ISSN")?.Value ||
+              null,
+            onlineIssn:
+              trItem.Item_ID.find((id) => id.Type === "Online_ISSN")?.Value ||
+              null,
+            uri: trItem.Item_ID.find((id) => id.Type === "URI")?.Value || null,
+            dataType:
+              trItem.Item_ID.find((id) => id.Type === "Data_Type")?.Value ||
+              null,
+          };
+
+          const metricCounts = new Map<string, number>();
+          const metricPeriods = new Map<
+            string,
+            Array<{ period: string; value: number }>
+          >();
+
+          for (let i = 0; i < rawItem.Performance.length; i++) {
+            const period = `${rawItem.Performance[i].Period.Begin_Date} - ${rawItem.Performance[i].Period.End_Date}`;
+
+            for (let j = 0; j < rawItem.Performance[i].Instance.length; j++) {
+              const metricType = rawItem.Performance[i].Instance[j].Metric_Type;
+              const count = rawItem.Performance[i].Instance[j].Count;
+
+              if (metricCounts.has(metricType)) {
+                const currCount = metricCounts.get(metricType);
+                metricCounts.set(metricType, (currCount ?? 0) + count);
+              } else {
+                metricCounts.set(metricType, count);
+              }
+
+              if (metricPeriods.has(metricType)) {
+                metricPeriods.get(metricType)?.push({ period, value: count });
+              } else {
+                metricPeriods.set(metricType, [{ period, value: count }]);
+              }
+            }
+          }
+
+          for (const [
+            metricType,
+            reportingPeriodTotal,
+          ] of metricCounts.entries()) {
+            reportItemDetails["metricType"] = metricType;
+            reportItemDetails["reportingPeriodTotal"] = reportingPeriodTotal;
+            const tr_item = await this.createTRItem(reportItemDetails);
+
+            const periodsValues = metricPeriods.get(metricType);
+            if (periodsValues) {
+              for (const { period, value } of periodsValues) {
+                await this.createTRItemMetric({
+                  reportItemId: tr_item.id,
+                  metricType,
+                  period,
+                  value,
+                });
+              }
+            }
+          }
+        }
+      }
     } catch (error) {
       console.log("There was an error while saving reports:", error);
       throw new Error("Failed to save report.");
