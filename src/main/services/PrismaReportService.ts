@@ -15,7 +15,6 @@ import {
   PR_ItemMetric,
   PR_P1_Item,
   PR_P1_ItemMetric,
-  Prisma,
   PrismaClient,
   Report,
   ReportFilter,
@@ -42,6 +41,37 @@ import {
 } from "src/renderer/src/interface/IReport";
 
 const prisma = new PrismaClient();
+
+type TRModelNames =
+  | "TR_Item"
+  | "TR_B1_Item"
+  | "TR_B2_Item"
+  | "TR_B3_Item"
+  | "TR_J1_Item"
+  | "TR_J2_Item"
+  | "TR_J3_Item"
+  | "TR_J4_Item";
+
+type WhereClause = {
+  title?: {
+    contains: string;
+  };
+  OR?: [
+    {
+      onlineIssn: {
+        contains: string;
+      };
+    },
+    {
+      printIssn: {
+        contains: string;
+      };
+    },
+  ];
+  isbn?: {
+    contains: string;
+  };
+};
 
 export class PrismaReportService {
   async createReport({
@@ -1352,6 +1382,141 @@ export class PrismaReportService {
       console.log("There was an error while saving reports:", error);
       throw new Error("Failed to save report.");
     }
+  }
+
+  async searchReport(
+    title?: string,
+    issn?: string,
+    isbn?: string,
+  ): Promise<Report[]> {
+    try {
+      let whereClause: WhereClause = {};
+
+      if (title) {
+        whereClause.title = {
+          contains: title.toLowerCase(),
+        };
+      } else if (issn) {
+        whereClause.OR = [
+          {
+            onlineIssn: {
+              contains: issn.toLowerCase(),
+            },
+          },
+          {
+            printIssn: {
+              contains: issn.toLowerCase(),
+            },
+          },
+        ];
+      } else if (isbn) {
+        whereClause.isbn = {
+          contains: isbn.toLowerCase(),
+        };
+      }
+
+      const reportItemsOfAllModels = await Promise.all(
+        [
+          "TR_Item",
+          "TR_B1_Item",
+          "TR_B2_Item",
+          "TR_B3_Item",
+          "TR_J1_Item",
+          "TR_J2_Item",
+          "TR_J3_Item",
+          "TR_J4_Item",
+        ].map((model) => {
+          switch (model) {
+            case "TR_Item":
+              return prisma.tR_Item.findMany({
+                where: whereClause,
+                include: {
+                  report: true,
+                },
+              });
+            case "TR_B1_Item":
+              return prisma.tR_B1_Item.findMany({
+                where: whereClause,
+                include: {
+                  report: true,
+                },
+              });
+            case "TR_B2_Item":
+              return prisma.tR_B2_Item.findMany({
+                where: whereClause,
+                include: {
+                  report: true,
+                },
+              });
+            case "TR_B3_Item":
+              return prisma.tR_B3_Item.findMany({
+                where: whereClause,
+                include: {
+                  report: true,
+                },
+              });
+            case "TR_J1_Item":
+              return prisma.tR_J1_Item.findMany({
+                where: whereClause,
+                include: {
+                  report: true,
+                },
+              });
+            case "TR_J2_Item":
+              return prisma.tR_J2_Item.findMany({
+                where: whereClause,
+                include: {
+                  report: true,
+                },
+              });
+            case "TR_J3_Item":
+              return prisma.tR_J3_Item.findMany({
+                where: whereClause,
+                include: {
+                  report: true,
+                },
+              });
+            case "TR_J4_Item":
+              return prisma.tR_J4_Item.findMany({
+                where: whereClause,
+                include: {
+                  report: true,
+                },
+              });
+            default:
+              return [];
+          }
+        }),
+      );
+
+      // Flatten the array and map each item to its parent report
+      const reportItems = reportItemsOfAllModels.flat();
+      const reports = reportItems.map((item: any) => item.report);
+
+      // Deduplicate reports based on a unique property (like id)
+      const uniqueReports: Report[] = [];
+      const reportIds = new Set();
+
+      for (const report of reports) {
+        if (!reportIds.has(report.id)) {
+          reportIds.add(report.id);
+          uniqueReports.push(report);
+        }
+      }
+
+      return uniqueReports;
+    } catch (error) {
+      console.error("Error searching reports:", error);
+      throw error;
+    }
+  }
+
+  async writeSearchedReportsToTSV(
+    title?: string,
+    issn?: string,
+    isbn?: string,
+  ): Promise<Report[]> {
+    return await this.searchReport(title, issn, isbn);
   }
 }
 
