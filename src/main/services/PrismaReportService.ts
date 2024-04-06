@@ -1,18 +1,16 @@
-/**
- * Service class for interacting with the Prisma report database.
- */
 import {
+  PR_Item,
+  PR_ItemMetric,
   Prisma,
   PrismaClient,
   Report,
   ReportFilter,
-  ReportItem,
 } from "@prisma/client";
 import {
   IDRReportItem,
   IReport,
   ITRIRReportItem,
-} from "../../renderer/src/interface/IReport";
+} from "src/renderer/src/interface/IReport";
 import { DirectorySettingService } from "./DirectorySettingService";
 import { writeFile } from "../utils/files";
 import { exec } from "child_process";
@@ -22,32 +20,17 @@ import path from "path";
 
 const prisma = new PrismaClient();
 
-/**
- * Service class for interacting with the Prisma report database.
- */
 export class PrismaReportService {
-  /**
-   * Creates a new report.
-   *
-   * @param data - The data for the report, excluding the id.
-   * @returns A promise that resolves to the created report.
-   * @throws If an error occurs while creating the report.
-   */
-  async createReport(
-      // data
-      {
-        report_id,
-        report_name,
-        release,
-        institution_name,
-        institution_id,
-        created,
-        created_by,
-      }: Omit<Report, "id">,
-  ): Promise<Report> {
+  async createReport({
+    report_id,
+    report_name,
+    release,
+    institution_name,
+    institution_id,
+    created,
+    created_by,
+  }: Omit<Report, "id">): Promise<Report> {
     try {
-      // console.log("STORING report", data);
-      // return {} as Report;
       return await prisma.report.create({
         data: {
           report_id,
@@ -65,15 +48,8 @@ export class PrismaReportService {
     }
   }
 
-  /**
-   * Creates a new report filter.
-   *
-   * @param data - The data for the report filter, excluding the id.
-   * @returns A promise that resolves to the created report filter.
-   * @throws If an error occurs while creating the report filter.
-   */
   async createReportFilter(
-      data: Omit<ReportFilter, "id">,
+    data: Omit<ReportFilter, "id">,
   ): Promise<ReportFilter> {
     try {
       return await prisma.reportFilter.create({
@@ -85,131 +61,33 @@ export class PrismaReportService {
     }
   }
 
-  /**
-   * Creates a new report item.
-   *
-   * @param data - The data for the report item, excluding the id.
-   * @returns A promise that resolves to the created report item.
-   * @throws If an error occurs while creating the report item.
-   */
-  async createReportItem(data: Omit<ReportItem, "id">): Promise<ReportItem> {
+  async createPRItem(data: Omit<PR_Item, "id">): Promise<PR_Item> {
     try {
-      return await prisma.reportItem.create({
-        data,
+      const { reportId, platform, metricType, periodTotal } = data;
+
+      return await prisma.pR_Item.create({
+        data: {
+          reportId,
+          platform,
+          metricType,
+          periodTotal,
+        },
       });
     } catch (error) {
-      console.error("Error creating report item:", error);
+      console.error("Error creating PR_Item:", error);
       throw error;
     }
   }
 
-  /**
-   * Creates a new report metric.
-   *
-   * @returns A promise that resolves to the created report metric.
-   * @throws If an error occurs while creating the report metric.
-   * @param details
-   */
-  async createReportMetric(details: any) {
-    return prisma.reportMetric.create({
+  async createPRItemMetric(details: Omit<PR_ItemMetric, "id">) {
+    return prisma.pR_ItemMetric.create({
       data: {
         reportItemId: details.reportItemId,
         period: details.period,
         value: details.value,
-        metricType: details.metricType, // properly handled
+        metricType: details.metricType,
       },
     });
-  }
-
-  /**
-   * Retrieves a report by its id.
-   *
-   * @param id - The id of the report to retrieve.
-   * @returns A promise that resolves to the retrieved report, or null if not found.
-   * @throws If an error occurs while retrieving the report.
-   */
-  async getReportById(id: number): Promise<Report | null> {
-    try {
-      return await prisma.report.findUnique({
-        where: { id },
-        include: {
-          ReportFilter: true,
-          ReportItem: {
-            include: {
-              ReportMetric: true,
-            },
-          },
-        },
-      });
-    } catch (error) {
-      console.error("Error getting report by id:", error);
-      throw error;
-    }
-  }
-
-  /**
-   * Retrieves all reports.
-   *
-   * @returns A promise that resolves to an array of all reports.
-   * @throws If an error occurs while retrieving the reports.
-   */
-  async getAllReports(): Promise<Report[]> {
-    try {
-      return await prisma.report.findMany({
-        include: {
-          ReportFilter: true,
-          ReportItem: {
-            include: {
-              ReportMetric: true,
-            },
-          },
-        },
-      });
-    } catch (error) {
-      console.error("Error getting all reports:", error);
-      throw error;
-    }
-  }
-
-  /**
-   * Updates a report by its id.
-   *
-   * @param id - The id of the report to update.
-   * @param data - The partial data to update the report with.
-   * @returns A promise that resolves to the updated report, or null if not found.
-   * @throws If an error occurs while updating the report.
-   */
-  async updateReportById(
-      id: number,
-      data: Partial<Report>,
-  ): Promise<Report | null> {
-    try {
-      return await prisma.report.update({
-        where: { id },
-        data,
-      });
-    } catch (error) {
-      console.error("Error updating report by id:", error);
-      throw error;
-    }
-  }
-
-  /**
-   * Deletes a report by its id.
-   *
-   * @param id - The id of the report to delete.
-   * @returns A promise that resolves to the deleted report, or null if not found.
-   * @throws If an error occurs while deleting the report.
-   */
-  async deleteReportById(id: number): Promise<Report | null> {
-    try {
-      return await prisma.report.delete({
-        where: { id },
-      });
-    } catch (error) {
-      console.error("Error deleting report by id:", error);
-      throw error;
-    }
   }
 
   /**
@@ -225,9 +103,9 @@ export class PrismaReportService {
         release: report.Report_Header.Release,
         institution_name: report.Report_Header.Institution_Name || "undefined",
         institution_id:
-            report.Report_Header.Institution_ID[0].Type +
-            ":" +
-            report.Report_Header.Institution_ID[0].Value,
+          report.Report_Header.Institution_ID[0].Type +
+          ":" +
+          report.Report_Header.Institution_ID[0].Value,
         created: report.Report_Header.Created,
         created_by: report.Report_Header.Created_By,
       });
@@ -247,93 +125,141 @@ export class PrismaReportService {
           platform: rawItem.Platform,
         };
 
-        if (report.Report_Header.Report_ID.includes("TR")) {
-          const trItem = rawItem as ITRIRReportItem;
-          console.log("trItem:", trItem);
-          reportItemDetails.title = trItem.Title;
-          reportItemDetails.publisher = trItem.Publisher;
-          trItem.Publisher_ID.map((id) => `${id.Type}:${id.Value}`).join(";");
+        if (report.Report_Header.Report_ID == "PR") {
+          for (const rawItem of report.Report_Items) {
+            const metricCounts = new Map<string, number>();
+            const metricPeriods = new Map<
+              string,
+              Array<{ period: string; value: number }>
+            >();
 
-          reportItemDetails.proprietary_id =
-              trItem.Item_ID.find((id) => id.Type === "Proprietary")?.Value ||
-              null;
+            for (let i = 0; i < rawItem.Performance.length; i++) {
+              const period = `${rawItem.Performance[i].Period.Begin_Date} - ${rawItem.Performance[i].Period.End_Date}`;
 
-          trItem.Item_ID.map((id) => `${id.Type}:${id.Value}`).join(";");
-          reportItemDetails.doi =
-              trItem.Item_ID.find((id) => id.Type === "DOI")?.Value || null;
-          reportItemDetails.isbn =
-              trItem.Item_ID.find((id) => id.Type === "ISBN")?.Value || null;
-          reportItemDetails.print_issn =
-              trItem.Item_ID.find((id) => id.Type === "Print_ISSN")?.Value ||
-              null;
-          reportItemDetails.online_issn =
-              trItem.Item_ID.find((id) => id.Type === "Online_ISSN")?.Value ||
-              null;
-          reportItemDetails.proprietary_id =
-              trItem.Item_ID.find((id) => id.Type === "Proprietary")?.Value ||
-              null;
-          reportItemDetails.uri =
-              trItem.Item_ID.find((id) => id.Type === "URI")?.Value || null;
-          reportItemDetails.data_type =
-              trItem.Item_ID.find((id) => id.Type === "Data_Type")?.Value || null;
-        } else if (report.Report_Header.Report_ID.includes("IR")) {
-          const irItem = rawItem as ITRIRReportItem;
+              for (let j = 0; j < rawItem.Performance[i].Instance.length; j++) {
+                const metricType =
+                  rawItem.Performance[i].Instance[j].Metric_Type;
 
-          reportItemDetails.title = irItem.Title;
-          reportItemDetails.publisher = irItem.Publisher;
+                const count = rawItem.Performance[i].Instance[j].Count;
 
-          irItem.Publisher_ID.map((id) => `${id.Type}:${id.Value}`).join(";");
-          irItem.Item_ID.map((id) => `${id.Type}:${id.Value}`).join(";");
+                if (metricCounts.has(metricType)) {
+                  const currCount = metricCounts.get(metricType);
+                  metricCounts.set(metricType, (currCount ?? 0) + count);
+                } else {
+                  metricCounts.set(metricType, count);
+                }
 
-          reportItemDetails.doi =
-              irItem.Item_ID.find((id) => id.Type === "DOI")?.Value || null;
-          reportItemDetails.isbn =
-              irItem.Item_ID.find((id) => id.Type === "ISBN")?.Value || null;
-          reportItemDetails.print_issn =
-              irItem.Item_ID.find((id) => id.Type === "Print_ISSN")?.Value ||
-              null;
-          reportItemDetails.online_issn =
-              irItem.Item_ID.find((id) => id.Type === "Online_ISSN")?.Value ||
-              null;
-          reportItemDetails.uri =
-              irItem.Item_ID.find((id) => id.Type === "URI")?.Value || null;
-          reportItemDetails.data_type =
-              irItem.Item_ID.find((id) => id.Type === "Data_Type")?.Value || null;
-        } else if (report.Report_Header.Report_ID.includes("DR")) {
-          const drItem = rawItem as IDRReportItem;
-          reportItemDetails.database = drItem.Database;
-          reportItemDetails.publisher = drItem.Publisher;
-          drItem.Publisher_ID.map((id) => `${id.Type}:${id.Value}`).join(";");
-          drItem.Item_ID.map((id) => `${id.Type}:${id.Value}`).join(";");
-          reportItemDetails.doi =
-              drItem.Item_ID.find((id) => id.Type === "DOI")?.Value || null;
-          reportItemDetails.isbn =
-              drItem.Item_ID.find((id) => id.Type === "ISBN")?.Value || null;
-          reportItemDetails.print_issn =
-              drItem.Item_ID.find((id) => id.Type === "Print_ISSN")?.Value ||
-              null;
-          reportItemDetails.online_issn =
-              drItem.Item_ID.find((id) => id.Type === "Online_ISSN")?.Value ||
-              null;
-          reportItemDetails.uri =
-              drItem.Item_ID.find((id) => id.Type === "URI")?.Value || null;
-          reportItemDetails.data_type =
-              drItem.Item_ID.find((id) => id.Type === "Data_Type")?.Value || null;
-        }
+                if (metricPeriods.has(metricType)) {
+                  metricPeriods.get(metricType)?.push({ period, value: count });
+                } else {
+                  metricPeriods.set(metricType, [{ period, value: count }]);
+                }
+              }
+            }
 
-        const savedItem = await this.createReportItem(reportItemDetails);
+            for (const [metricType, periodTotal] of metricCounts.entries()) {
+              const reportId = reportItemDetails.reportId;
+              const platform = rawItem.Platform;
 
-        for (const performance of rawItem.Performance) {
-          const periodString = `${performance.Period.Begin_Date.slice(0, 7)} - ${performance.Period.End_Date.slice(0, 7)}`;
-          for (const instance of performance.Instance) {
-            await this.createReportMetric({
-              reportItemId: savedItem.id,
-              period: periodString,
-              value: instance.Count,
-              metricType: instance.Metric_Type,
-            });
+              const pr_item = await this.createPRItem({
+                reportId,
+                platform,
+                metricType,
+                periodTotal,
+              });
+
+              const periodsValues = metricPeriods.get(metricType);
+
+              if (periodsValues) {
+                for (const { period, value } of periodsValues) {
+                  await this.createPRItemMetric({
+                    reportItemId: pr_item.id,
+                    metricType,
+                    period,
+                    value,
+                  });
+                }
+              }
+            }
           }
+        } else if (report.Report_Header.Report_ID == "PR_P1") {
+          console.log("PR P1 Report");
         }
+
+        // if (report.Report_Header.Report_ID.includes("TR")) {
+        //   const trItem = rawItem as ITRIRReportItem;
+        //   console.log("trItem:", trItem);
+        //   reportItemDetails.title = trItem.Title;
+        //   reportItemDetails.publisher = trItem.Publisher;
+        //   trItem.Publisher_ID.map((id) => `${id.Type}:${id.Value}`).join(";");
+        //
+        //   reportItemDetails.proprietary_id =
+        //     trItem.Item_ID.find((id) => id.Type === "Proprietary")?.Value ||
+        //     null;
+        //
+        //   trItem.Item_ID.map((id) => `${id.Type}:${id.Value}`).join(";");
+        //   reportItemDetails.doi =
+        //     trItem.Item_ID.find((id) => id.Type === "DOI")?.Value || null;
+        //   reportItemDetails.isbn =
+        //     trItem.Item_ID.find((id) => id.Type === "ISBN")?.Value || null;
+        //   reportItemDetails.print_issn =
+        //     trItem.Item_ID.find((id) => id.Type === "Print_ISSN")?.Value ||
+        //     null;
+        //   reportItemDetails.online_issn =
+        //     trItem.Item_ID.find((id) => id.Type === "Online_ISSN")?.Value ||
+        //     null;
+        //   reportItemDetails.proprietary_id =
+        //     trItem.Item_ID.find((id) => id.Type === "Proprietary")?.Value ||
+        //     null;
+        //   reportItemDetails.uri =
+        //     trItem.Item_ID.find((id) => id.Type === "URI")?.Value || null;
+        //   reportItemDetails.data_type =
+        //     trItem.Item_ID.find((id) => id.Type === "Data_Type")?.Value || null;
+        // } else if (report.Report_Header.Report_ID.includes("IR")) {
+        //   const irItem = rawItem as ITRIRReportItem;
+        //
+        //   reportItemDetails.title = irItem.Title;
+        //   reportItemDetails.publisher = irItem.Publisher;
+        //
+        //   irItem.Publisher_ID.map((id) => `${id.Type}:${id.Value}`).join(";");
+        //   irItem.Item_ID.map((id) => `${id.Type}:${id.Value}`).join(";");
+        //
+        //   reportItemDetails.doi =
+        //     irItem.Item_ID.find((id) => id.Type === "DOI")?.Value || null;
+        //   reportItemDetails.isbn =
+        //     irItem.Item_ID.find((id) => id.Type === "ISBN")?.Value || null;
+        //   reportItemDetails.print_issn =
+        //     irItem.Item_ID.find((id) => id.Type === "Print_ISSN")?.Value ||
+        //     null;
+        //   reportItemDetails.online_issn =
+        //     irItem.Item_ID.find((id) => id.Type === "Online_ISSN")?.Value ||
+        //     null;
+        //   reportItemDetails.uri =
+        //     irItem.Item_ID.find((id) => id.Type === "URI")?.Value || null;
+        //   reportItemDetails.data_type =
+        //     irItem.Item_ID.find((id) => id.Type === "Data_Type")?.Value || null;
+        // } else if (report.Report_Header.Report_ID.includes("DR")) {
+        //   const drItem = rawItem as IDRReportItem;
+        //   reportItemDetails.database = drItem.Database;
+        //   reportItemDetails.publisher = drItem.Publisher;
+        //   drItem.Publisher_ID.map((id) => `${id.Type}:${id.Value}`).join(";");
+        //   drItem.Item_ID.map((id) => `${id.Type}:${id.Value}`).join(";");
+        //   reportItemDetails.doi =
+        //     drItem.Item_ID.find((id) => id.Type === "DOI")?.Value || null;
+        //   reportItemDetails.isbn =
+        //     drItem.Item_ID.find((id) => id.Type === "ISBN")?.Value || null;
+        //   reportItemDetails.print_issn =
+        //     drItem.Item_ID.find((id) => id.Type === "Print_ISSN")?.Value ||
+        //     null;
+        //   reportItemDetails.online_issn =
+        //     drItem.Item_ID.find((id) => id.Type === "Online_ISSN")?.Value ||
+        //     null;
+        //   reportItemDetails.uri =
+        //     drItem.Item_ID.find((id) => id.Type === "URI")?.Value || null;
+        //   reportItemDetails.data_type =
+        //     drItem.Item_ID.find((id) => id.Type === "Data_Type")?.Value || null;
+        // }
+        //
       }
     } catch (error) {
       console.log("There was an error while saving reports:", error);
@@ -349,9 +275,9 @@ export class PrismaReportService {
    * @returns {Promise<Report[]>} - A promise that resolves to an array of reports that match the search criteria.
    */
   async searchReport(
-      title?: string,
-      issn?: string,
-      isbn?: string,
+    title?: string,
+    issn?: string,
+    isbn?: string,
   ): Promise<Report[]> {
     try {
       let whereClause: Prisma.ReportItemWhereInput = {};
@@ -412,7 +338,7 @@ export class PrismaReportService {
 
     /* Report Filters */
     const reportFilters = report.ReportFilter?.map(
-        (filter: any) => `${filter.filter_type}=${filter.value}`,
+      (filter: any) => `${filter.filter_type}=${filter.value}`,
     ).join(";");
     tsv += `Report_Filters\t${reportFilters}\n`;
 
@@ -456,9 +382,9 @@ export class PrismaReportService {
    * @returns {Promise<Report[]>} - A promise that resolves to an array of reports that match the search criteria.
    */
   async writeSearchedReportsToTSV(
-      title?: string,
-      issn?: string,
-      isbn?: string,
+    title?: string,
+    issn?: string,
+    isbn?: string,
   ): Promise<Report[]> {
     const reports = await this.searchReport(title, issn, isbn);
 
@@ -472,8 +398,8 @@ export class PrismaReportService {
         const vendorName = report.institution_id.split(":")[0];
 
         const fileName = this.generateSearchFilename(
-            title || issn || isbn || "",
-            vendorName,
+          title || issn || isbn || "",
+          vendorName,
         );
         await this.writeTSVToFile(await tsv, fileName);
         total++;
@@ -517,17 +443,17 @@ export class PrismaReportService {
     // re-run the prisma migrations, which will create a new database file and apply the schema
     try {
       exec(
-          "npx prisma migrate dev --rebuild-database",
-          (error, stdout, stderr) => {
-            if (error) {
-              console.error("Error while running Prisma migrate:", error);
-              throw error;
-            } else if (stderr) {
-              console.warn("Warnings during Prisma migrate:", stderr);
-            } else {
-              console.log("Prisma migrate output:", stdout);
-            }
-          },
+        "npx prisma migrate dev --rebuild-database",
+        (error, stdout, stderr) => {
+          if (error) {
+            console.error("Error while running Prisma migrate:", error);
+            throw error;
+          } else if (stderr) {
+            console.warn("Warnings during Prisma migrate:", stderr);
+          } else {
+            console.log("Prisma migrate output:", stdout);
+          }
+        },
       );
     } catch (error) {
       console.error("Error while rebuilding the database:", error);
@@ -546,8 +472,8 @@ export class PrismaReportService {
         const formattedDate: string = format(currentDate, "dd-MM-yyyy");
 
         const exportFilePath = path.join(
-            exportPath,
-            `CH_SearchDB_Export_${formattedDate}.db`
+          exportPath,
+          `CH_SearchDB_Export_${formattedDate}.db`,
         );
 
         fs.copyFileSync(dbPath, exportFilePath);
