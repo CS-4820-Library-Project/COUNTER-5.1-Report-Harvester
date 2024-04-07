@@ -1,7 +1,10 @@
 // dataBaseRouter.ts
 import { ipcMain } from "electron";
-import {PrismaReportService, prismaReportService} from "../services/PrismaReportService";
-import {DirectorySettingService} from "../services/DirectorySettingService";
+import {
+  PrismaReportService,
+  prismaReportService,
+} from "../services/PrismaReportService";
+import { DirectorySettingService } from "../services/DirectorySettingService";
 
 /**
  * Handles database-related IPC events.
@@ -43,7 +46,7 @@ const DatabaseRouter = () => {
       return await prismaReportService.writeSearchedReportsToTSV(
         title,
         issn,
-        isbn
+        isbn,
       );
     } catch (error) {
       console.error("Error searching report: ", error);
@@ -54,11 +57,10 @@ const DatabaseRouter = () => {
   ipcMain.handle("rebuild-database", async (_event) => {
     try {
       await prismaReportService.rebuildDatabase();
-      // TODO: Add a logger service to log the completion of the database rebuild.
-      console.log("Database rebuild completed.");
-    } catch (error) {
-      console.error("Error rebuilding database: ", error);
-      throw error;
+      console.log("Database rebuild completed successfully.");
+    } catch (e) {
+      console.error(`Error rebuilding database: ${e}`);
+      throw e;
     }
   });
 
@@ -69,7 +71,7 @@ const DatabaseRouter = () => {
         await PrismaReportService.exportDatabase(path);
       }
     } catch (e) {
-      console.log(`Error exporting database: ${e}`)
+      console.log(`Error exporting database: ${e}`);
       throw e;
     }
   });
