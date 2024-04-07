@@ -41,12 +41,12 @@ import {
   ITRIRReportItem,
 } from "src/renderer/src/interface/IReport";
 import { DirectorySettingService } from "./DirectorySettingService";
-import { writeFile } from "fs-extra";
 import { format } from "date-fns";
 import fs from "fs";
 import path from "path";
 import { exec } from "child_process";
 import { reports_5 } from "src/constants/Reports_5";
+import { writeFile } from "../utils/files";
 
 const prisma = new PrismaClient();
 
@@ -898,7 +898,7 @@ export class PrismaReportService {
    * @returns {Promise<void>} - A promise that resolves when all the report information has been saved into the database.
    */
   async saveFetchedReport(report: IReport): Promise<void> {
-    console.log(report.Report_Header.Report_Filters);
+    // console.log(report.Report_Header.Report_Filters);
 
     try {
       const savedReport = await this.createReport({
@@ -944,7 +944,7 @@ export class PrismaReportService {
 
       if (report.Report_Header.Report_ID.includes("PR")) {
         for (const rawItem of report.Report_Items) {
-          console.log("Raw Item:", rawItem);
+          // console.log("Raw Item:", rawItem);
           const metricCounts = new Map<string, number>();
           const metricPeriods = new Map<
             string,
@@ -1719,6 +1719,8 @@ export class PrismaReportService {
   async writeTSVToFile(tsv: string, fileName: string): Promise<void> {
     const dirService = new DirectorySettingService();
     const filePath = dirService.getPath("search", `${fileName}.tsv`);
+
+    console.log("Writing TSV to file:", filePath);
 
     writeFile(filePath, tsv);
   }

@@ -13,7 +13,7 @@ import Strong from "../../components/text/Strong";
 import { useNotification } from "../../components/NotificationBadge";
 import Page from "../../components/page/Page";
 import PageColumn from "../../components/page/PageColumn";
-import {ImportExportOutlined} from "@mui/icons-material";
+import { ImportExportOutlined } from "@mui/icons-material";
 
 const SearchReportsPage = () => {
   const theme = useTheme();
@@ -110,9 +110,9 @@ const SearchReportsPage = () => {
       transition: "background-color 0.3s",
     }) as const;
 
-
   const handleOpenResults = async () => {
     const searchPath = await window.settings.getDirectory("search");
+    console.log(searchPath);
     window.settings.openPath(searchPath);
   };
   const handleHelpClick = () => {
@@ -135,17 +135,17 @@ const SearchReportsPage = () => {
           </Typography>
           <div>
             <ActionButton
-                label="Export Database"
-                color="primary"
-                icon={<ImportExportOutlined fontSize="small" />}
-                onClick={handleExportDatabaseClick}
-                style={{marginRight:'20px'}}
+              label="Export Database"
+              color="primary"
+              icon={<ImportExportOutlined fontSize="small" />}
+              onClick={handleExportDatabaseClick}
+              style={{ marginRight: "20px" }}
             />
             <ActionButton
-                label="Help"
-                color="background"
-                icon={<HelpOutlineIcon fontSize="small" />}
-                onClick={handleHelpClick}
+              label="Help"
+              color="background"
+              icon={<HelpOutlineIcon fontSize="small" />}
+              onClick={handleHelpClick}
             />
           </div>
         </FlexBetween>
