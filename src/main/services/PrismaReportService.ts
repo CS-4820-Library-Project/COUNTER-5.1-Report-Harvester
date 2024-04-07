@@ -1758,7 +1758,7 @@ export class PrismaReportService {
   async rebuildDatabase() {
     const dbFile = path.join(
       __dirname,
-      process.env.DATABASE_FILE || "../../prisma/search.db"
+      process.env.DATABASE_FILE || "../../prisma/search.db",
     );
 
     try {
