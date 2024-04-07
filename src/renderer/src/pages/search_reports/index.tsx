@@ -14,6 +14,7 @@ import { useNotification } from "../../components/NotificationBadge";
 import Page from "../../components/page/Page";
 import PageColumn from "../../components/page/PageColumn";
 import { ImportExportOutlined } from "@mui/icons-material";
+import { RefreshOutlined } from "@mui/icons-material";
 
 const SearchReportsPage = () => {
   const theme = useTheme();
@@ -112,7 +113,7 @@ const SearchReportsPage = () => {
 
   const handleOpenResults = async () => {
     const searchPath = await window.settings.getDirectory("search");
-    window.settings.openPath(searchPath);
+    await window.settings.openPath(searchPath);
   };
   const handleHelpClick = () => {
     const helpContent = HelpMessages.searchReportsPage.Help.url;
@@ -125,6 +126,10 @@ const SearchReportsPage = () => {
     await window.database.exportDatabase();
   };
 
+  const handleRebuildDatabaseClick = async () => {
+    await window.database.rebuildDatabase();
+  };
+
   return (
     <Page>
       <PageColumn width="100%" gap="70px">
@@ -133,6 +138,13 @@ const SearchReportsPage = () => {
             Search Reports in Database
           </Typography>
           <div>
+            <ActionButton
+              label="Rebuild Database"
+              color="secondary"
+              icon={<RefreshOutlined fontSize="small" />}
+              onClick={handleRebuildDatabaseClick()}
+              style={{ marginRight: "20px" }}
+            />
             <ActionButton
               label="Export Database"
               color="primary"

@@ -898,8 +898,6 @@ export class PrismaReportService {
    * @returns {Promise<void>} - A promise that resolves when all the report information has been saved into the database.
    */
   async saveFetchedReport(report: IReport): Promise<void> {
-    console.log(report.Report_Header.Report_Filters);
-
     try {
       const savedReport = await this.createReport({
         report_id: report.Report_Header.Report_ID,
@@ -944,7 +942,6 @@ export class PrismaReportService {
 
       if (report.Report_Header.Report_ID.includes("PR")) {
         for (const rawItem of report.Report_Items) {
-          console.log("Raw Item:", rawItem);
           const metricCounts = new Map<string, number>();
           const metricPeriods = new Map<
             string,
@@ -1763,6 +1760,7 @@ export class PrismaReportService {
     );
 
     try {
+      await prisma.$disconnect();
       if (fs.existsSync(dbFile)) {
         await fs.promises.unlink(dbFile);
         console.log("Previous database file deleted.");
