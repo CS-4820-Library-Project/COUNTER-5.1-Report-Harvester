@@ -110,7 +110,7 @@ export class PrismaReportService {
   }
 
   async createReportFilter(
-    data: Omit<ReportFilter, "id">,
+    data: Omit<ReportFilter, "id">
   ): Promise<ReportFilter> {
     try {
       return await prisma.reportFilter.create({
@@ -1036,7 +1036,7 @@ export class PrismaReportService {
               null,
             publisher: drItem.Publisher,
             publisherId: drItem.Publisher_ID.map(
-              (id) => `${id.Type}:${id.Value}`,
+              (id) => `${id.Type}:${id.Value}`
             ).join(";"),
             platform: drItem.Platform,
           };
@@ -1128,7 +1128,7 @@ export class PrismaReportService {
             title: irItem.Title,
             publisher: irItem.Publisher,
             publisherId: irItem.Publisher_ID.map(
-              (id) => `${id.Type}:${id.Value}`,
+              (id) => `${id.Type}:${id.Value}`
             ).join(";"),
             platform: irItem.Platform,
             doi: irItem.Item_ID.find((id) => id.Type === "DOI")?.Value || null,
@@ -1223,7 +1223,7 @@ export class PrismaReportService {
             title: trItem.Title,
             publisher: trItem.Publisher,
             publisherId: trItem.Publisher_ID.map(
-              (id) => `${id.Type}:${id.Value}`,
+              (id) => `${id.Type}:${id.Value}`
             ).join(";"),
             platform: trItem.Platform,
             doi: trItem.Item_ID.find((id) => id.Type === "DOI")?.Value || null,
@@ -1419,7 +1419,7 @@ export class PrismaReportService {
     limit: number, // limit set to default 10 if not provided
     title?: string,
     issn?: string,
-    isbn?: string,
+    isbn?: string
   ): Promise<Report[]> {
     try {
       let whereClause: WhereClause = {};
@@ -1606,7 +1606,7 @@ export class PrismaReportService {
             default:
               return [];
           }
-        }),
+        })
       );
 
       // Flatten the array and map each item to its parent report
@@ -1643,7 +1643,7 @@ export class PrismaReportService {
 
     // Report Filters
     const reportFilters = report.ReportFilter?.map(
-      (filter: any) => `${filter.filter_type}=${filter.value}`,
+      (filter: any) => `${filter.filter_type}=${filter.value}`
     ).join(";");
     tsv += `Report_Filters\t${reportFilters}\n`;
 
@@ -1734,7 +1734,7 @@ export class PrismaReportService {
   async writeSearchedReportsToTSV(
     title?: string,
     issn?: string,
-    isbn?: string,
+    isbn?: string
   ): Promise<Report[]> {
     const reports = await this.searchReport(1, 250, title, issn, isbn);
 
@@ -1784,7 +1784,7 @@ export class PrismaReportService {
           } else {
             console.log("Prisma migrate output:", stdout);
           }
-        },
+        }
       );
     } catch (error) {
       console.error("Error while rebuilding the database:", error);
@@ -1804,7 +1804,7 @@ export class PrismaReportService {
 
         const exportFilePath = path.join(
           exportPath,
-          `CH_SearchDB_Export_${formattedDate}.db`,
+          `CH_SearchDB_Export_${formattedDate}.db`
         );
 
         fs.copyFileSync(dbPath, exportFilePath);
