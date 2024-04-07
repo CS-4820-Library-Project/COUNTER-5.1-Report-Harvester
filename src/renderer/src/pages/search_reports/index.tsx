@@ -63,6 +63,8 @@ const SearchReportsPage = () => {
         activeButton === "ISBN" ? searchValue : "",
       );
 
+      console.log(results);
+
       if (results.length > 0) {
         setNotification({
           type: "success",
@@ -142,7 +144,7 @@ const SearchReportsPage = () => {
               label="Rebuild Database"
               color="secondary"
               icon={<RefreshOutlined fontSize="small" />}
-              onClick={handleRebuildDatabaseClick()}
+              onClick={handleRebuildDatabaseClick}
               style={{ marginRight: "20px" }}
             />
             <ActionButton
