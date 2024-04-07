@@ -7,7 +7,7 @@ COUNTER 5.1 Report Harvester is an open-source desktop application that helps li
 # Alpha Release Available
 
 This project is still under development. Please use the main branch to test the app or download the installer for your platform. See all releases and installers down below
-This project is still under development. Please use the main branch to test the app or download the installer for your platform. See all releases and installers down below
+<img width="1624" alt="Screenshot 2024-04-05 at 5 37 13 PM" src="https://github.com/CS-4820-Library-Project/COUNTER-5.1-Report-Harvester/assets/124853347/1517cf2e-d915-42fa-8d75-37750d3a4579">
 
 ### Download in Windows
 
@@ -17,7 +17,7 @@ This project is still under development. Please use the main branch to test the 
 
 ### Download in Mac - M series (ARM Architecture)
 
-Requires to disable gatekeeper for installation. We currently don't have a apple developer program certificate. You can also create an installer locally for your machine. See Wiki for more details.
+Requires to disable gatekeeper for installation. We currently don't have an Apple developer program certificate. You can also create a local installer for your machine. Take a look at Wiki for more details.
 
 ##
 
