@@ -7,15 +7,18 @@ import {
   IReportItem,
   ITRIRReportItem,
 } from "../../renderer/src/interface/IReport";
-import {ReportIDTSVHeaderDict, TRItemIdHeaders, TSVHeaders as THd,} from "../../renderer/src/const/TSVStrings";
-import {CounterVersion} from "../../renderer/src/const/CounterVersion";
-import {json} from "express";
-import {Count} from "@prisma/client/runtime/library";
+import {
+  ReportIDTSVHeaderDict,
+  TRItemIdHeaders,
+  TSVHeaders as THd,
+} from "../../renderer/src/const/TSVStrings";
+import { CounterVersion } from "../../renderer/src/const/CounterVersion";
+import { json } from "express";
+import { Count } from "@prisma/client/runtime/library";
 
 /** The main service for cleansing, coercing, and analyzing Reports from SUSHI APIs. */
 
 export class ReportService {
-
   /** Converts a 5.0 report from JSON into an **IReport** object. */
 
   static get50ReportFromJSON(data: any): IReport | null {
@@ -24,7 +27,7 @@ export class ReportService {
     }
     return {
       Report_Header: ReportService.getHeaderObjectFromJSON(data.Report_Header),
-      Report_Items: data.Report_Items
+      Report_Items: data.Report_Items,
     } as IReport;
   }
 
@@ -107,8 +110,6 @@ export class ReportService {
           const reportItem = item as ITRIRReportItem;
 
           reportItem["Title"] = irItem.Title;
-
-          console.log(irItem.Item_ID);
 
           reportItem["Item_ID"] = [
             {
@@ -217,13 +218,17 @@ export class ReportService {
     } as IReport;
   }
 
-  /** Converts an `IReport` object into a string representing the data in TSV format. */
-
+  /**
+   * Converts an `IReport` object into a string representing the data in TSV format.
+   * @throws An string error message if the conversion fails.
+   */
   static convertReportToTSV(report: IReport): string {
     let tsv = "";
 
     try {
       // PARSE REPORT HEADERS
+
+      console.log(JSON.stringify(report.Report_Header));
       const header = report.Report_Header;
       if (!header)
         throw (
@@ -248,7 +253,8 @@ export class ReportService {
         THd.REPORT_FILTERS,
         THd.REPORT_ATTRIBUTES,
         THd.EXCEPTIONS,
-        THd.REPORTING_PERIOD]) {
+        THd.REPORTING_PERIOD,
+      ]) {
         tsv += `${headerRow.toString()}\t${header[headerRow] ?? ""}\n`;
       }
 
@@ -327,7 +333,6 @@ export class ReportService {
 
             let rowData = ``;
 
-            // TODO: CHECK ERRORS
             if (header.Report_ID.includes("TR")) {
               let trItem = item as ITRIRReportItem;
               rowData += `${trItem.Title}\t${trItem.Publisher}\t`;
@@ -476,19 +481,37 @@ export class ReportService {
       Report_Name: jsonHeader.Report_Name,
       Report_ID: jsonHeader.Report_ID,
       Release: jsonHeader.Release,
-      Report_Filters: ReportService.getSemicolonDelimitedString("Report_Filters", jsonHeader),
-      Metric_Types: ReportService.getSemicolonDelimitedString("Metric_Types", jsonHeader),
-      Report_Attributes: ReportService.getSemicolonDelimitedString("Report_Attributes", jsonHeader),
-      Exceptions: ReportService.getSemicolonDelimitedString("Exceptions", jsonHeader),
-      Reporting_Period: ReportService.getSemicolonDelimitedString("Reporting_Period", jsonHeader),
+      Report_Filters: ReportService.getSemicolonDelimitedString(
+        "Report_Filters",
+        jsonHeader
+      ),
+      Metric_Types: ReportService.getSemicolonDelimitedString(
+        "Metric_Types",
+        jsonHeader
+      ),
+      Report_Attributes: ReportService.getSemicolonDelimitedString(
+        "Report_Attributes",
+        jsonHeader
+      ),
+      Exceptions: ReportService.getSemicolonDelimitedString(
+        "Exceptions",
+        jsonHeader
+      ),
+      Reporting_Period: ReportService.getSemicolonDelimitedString(
+        "Reporting_Period",
+        jsonHeader
+      ),
       Institution_Name: jsonHeader.Institution_Name,
-      Institution_ID: jsonHeader.Release == '5' ? jsonHeader.Institution_ID : Object.keys(jsonHeader.Institution_ID)?.map((key) => ({
-        Type: key,
-        Value: jsonHeader.Institution_ID[key],
-      })),
+      Institution_ID:
+        jsonHeader.Release == "5"
+          ? jsonHeader.Institution_ID
+          : Object.keys(jsonHeader.Institution_ID)?.map((key) => ({
+              Type: key,
+              Value: jsonHeader.Institution_ID[key],
+            })),
       Created: jsonHeader.Created,
       Created_By: jsonHeader.Created_By,
-      Registry_Record: jsonHeader.Registry_Record ?? ""
+      Registry_Record: jsonHeader.Registry_Record ?? "",
     } as IReportHeader;
   }
 
@@ -498,14 +521,16 @@ export class ReportService {
   ): string {
     if (!jsonHeader[member]) return "";
 
-    if (jsonHeader.Release == '5') {
-      return jsonHeader[member].map(filter => {
-        if (Array.isArray(filter.Value)) {
-          return `${filter.Name}=${(filter.Value as string[]).join('|')}`;
-        } else {
-          return `${filter.Name}=${filter.Value}`;
-        }
-      }).join(';');
+    if (jsonHeader.Release == "5") {
+      return jsonHeader[member]
+        .map((filter) => {
+          if (Array.isArray(filter.Value)) {
+            return `${filter.Name}=${(filter.Value as string[]).join("|")}`;
+          } else {
+            return `${filter.Name}=${filter.Value}`;
+          }
+        })
+        .join(";");
     }
 
     return Object.keys(jsonHeader[member])

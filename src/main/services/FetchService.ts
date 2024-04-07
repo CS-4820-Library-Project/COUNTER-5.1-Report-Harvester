@@ -59,28 +59,28 @@ export class FetchService {
           status === "Success"
             ? "Report Stored Successfully"
             : status === "Warning"
-              ? "Report Saved With Exceptions:\n"
-              : "Error Occcured While Fetching Report:\n";
+              ? "Report Saved With Exceptions: "
+              : "Error Occcured While Fetching Report: ";
 
         if (!report.success) {
           // Add Errors
           report.errors.forEach((error) => {
             if (!error) return;
             else if (typeof error === "string")
-              messages += error.replace(/\t/g, "-") + "\n";
+              messages += error.replace(/\t/g, "-") + "; ";
             else
               messages +=
-                "Exception " + error.code + ":" + error.message + "\n";
+                "Exception " + error.code + ":" + error.message + "; ";
           });
 
           // Add Warnigns
           report.warnings.forEach((warning) => {
             if (!warning) return;
             else if (typeof warning === "string")
-              messages += warning.replace(/\t/g, "-") + "\n";
+              messages += warning.replace(/\t/g, "-") + "; ";
             else
               messages +=
-                "Exception " + warning.code + ":" + warning.message + "\n";
+                "Exception " + warning.code + ":" + warning.message + "; ";
           });
         }
 
@@ -418,14 +418,14 @@ export class FetchService {
 
     for (let i = 0; i < attempts; i++) {
       // TODO: Remove Console Log
-      if (attempts > 1)
-        console.log(
-          vendorInfo.baseURL + " Attempt ",
-          i + 1,
-          " TimeOut ",
-          requestTimeout,
-          new Date().toISOString()
-        );
+      // if (attempts > 1)
+      //   console.log(
+      //     vendorInfo.baseURL + " Attempt ",
+      //     i + 1,
+      //     " TimeOut ",
+      //     requestTimeout,
+      //     new Date().toISOString()
+      //   );
 
       const responsePromise = fetch(reportUrl);
       const timeoutPromise = new Promise((_, reject) => {
@@ -454,7 +454,7 @@ export class FetchService {
         i < attempts - 1
       ) {
         // TODO: Remove Console Log
-        console.log("Rate limit exceeded, waiting for 3 seconds...");
+        // console.log("Rate limit exceeded, waiting for 3 seconds...");
         await new Promise((resolve) => setTimeout(resolve, 3000));
       }
     }
@@ -519,13 +519,13 @@ export class FetchService {
   private static getExistingFetchError(data: any): IFetchError | null {
     if (Array.isArray(data)) data = data[0];
 
-    if ("Code" in data) {
+    if ("Code" in data || "code" in data) {
       const meaning = SushiExceptionDictionary[data.Code];
       return {
-        code: data.Code,
+        code: data.Code ?? data.code,
         meaning: meaning ?? SushiGeneralWarningMeaning,
-        message: data.Message,
-        severity: data.Severity,
+        message: data.Message ?? data.message,
+        severity: data.Severity ?? data.severity,
       } as IFetchError;
     }
     return null;
