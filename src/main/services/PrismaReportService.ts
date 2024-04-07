@@ -110,7 +110,7 @@ export class PrismaReportService {
   }
 
   async createReportFilter(
-    data: Omit<ReportFilter, "id">,
+    data: Omit<ReportFilter, "id">
   ): Promise<ReportFilter> {
     try {
       return await prisma.reportFilter.create({
@@ -1033,7 +1033,7 @@ export class PrismaReportService {
               null,
             publisher: drItem.Publisher,
             publisherId: drItem.Publisher_ID.map(
-              (id) => `${id.Type}:${id.Value}`,
+              (id) => `${id.Type}:${id.Value}`
             ).join(";"),
             platform: drItem.Platform,
           };
@@ -1125,7 +1125,7 @@ export class PrismaReportService {
             title: irItem.Title,
             publisher: irItem.Publisher,
             publisherId: irItem.Publisher_ID.map(
-              (id) => `${id.Type}:${id.Value}`,
+              (id) => `${id.Type}:${id.Value}`
             ).join(";"),
             platform: irItem.Platform,
             doi: irItem.Item_ID.find((id) => id.Type === "DOI")?.Value || null,
@@ -1220,7 +1220,7 @@ export class PrismaReportService {
             title: trItem.Title,
             publisher: trItem.Publisher,
             publisherId: trItem.Publisher_ID.map(
-              (id) => `${id.Type}:${id.Value}`,
+              (id) => `${id.Type}:${id.Value}`
             ).join(";"),
             platform: trItem.Platform,
             doi: trItem.Item_ID.find((id) => id.Type === "DOI")?.Value || null,
@@ -1406,7 +1406,7 @@ export class PrismaReportService {
         }
       }
     } catch (error) {
-      console.log("There was an error while saving reports:", error);
+      // console.log("There was an error while saving reports:", error);
       throw new Error("Failed to save report.");
     }
   }
@@ -1416,7 +1416,7 @@ export class PrismaReportService {
     limit: number, // limit set to default 10 if not provided
     title?: string,
     issn?: string,
-    isbn?: string,
+    isbn?: string
   ): Promise<Report[]> {
     try {
       let whereClause: WhereClause = {};
@@ -1603,7 +1603,7 @@ export class PrismaReportService {
             default:
               return [];
           }
-        }),
+        })
       );
 
       // Flatten the array and map each item to its parent report
@@ -1640,7 +1640,7 @@ export class PrismaReportService {
 
     // Report Filters
     const reportFilters = report.ReportFilter?.map(
-      (filter: any) => `${filter.filter_type}=${filter.value}`,
+      (filter: any) => `${filter.filter_type}=${filter.value}`
     ).join(";");
     tsv += `Report_Filters\t${reportFilters}\n`;
 
@@ -1717,7 +1717,7 @@ export class PrismaReportService {
     const dirService = new DirectorySettingService();
     const filePath = dirService.getPath("search", `${fileName}.tsv`);
 
-    console.log("Writing TSV to file:", filePath);
+    // console.log("Writing TSV to file:", filePath);
 
     writeFile(filePath, tsv);
   }
@@ -1733,7 +1733,7 @@ export class PrismaReportService {
   async writeSearchedReportsToTSV(
     title?: string,
     issn?: string,
-    isbn?: string,
+    isbn?: string
   ): Promise<Report[]> {
     const reports = await this.searchReport(1, 250, title, issn, isbn);
 
@@ -1758,19 +1758,19 @@ export class PrismaReportService {
   async rebuildDatabase() {
     const dbFile = path.join(
       __dirname,
-      process.env.DATABASE_FILE || "../../prisma/search.db",
+      process.env.DATABASE_FILE || "../../prisma/search.db"
     );
 
     try {
       await prisma.$disconnect();
       if (fs.existsSync(dbFile)) {
         await fs.promises.unlink(dbFile);
-        console.log("Previous database file deleted.");
+        // console.log("Previous database file deleted.");
       }
 
       const stdout = execSync("npx prisma db push --force-reset").toString();
 
-      console.log("Prisma migrate output:", stdout);
+      // console.log("Prisma migrate output:", stdout);
     } catch (error) {
       console.error("Error while rebuilding the database:", error);
       throw error;
@@ -1788,12 +1788,12 @@ export class PrismaReportService {
 
         const exportFilePath = path.join(
           exportPath,
-          `CH_SearchDB_Export_${formattedDate}.db`,
+          `CH_SearchDB_Export_${formattedDate}.db`
         );
 
         fs.copyFileSync(dbPath, exportFilePath);
 
-        console.log(`Database exported successfully to: ${exportFilePath}`);
+        // console.log(`Database exported successfully to: ${exportFilePath}`);
       } catch (error) {
         console.error("Error while exporting the database file:", error);
       }

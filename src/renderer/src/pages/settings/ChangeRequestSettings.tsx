@@ -1,7 +1,7 @@
 /**
  * This is the "ChangeRequestSettings" component.
  *
- * This component allows users to modify and save settings related to handling requests within an application. 
+ * This component allows users to modify and save settings related to handling requests within an application.
  * It features a user interface for adjusting settings like report request intervals, request timeout durations, and concurrency limits for reports and vendors.
  *
  * The main elements of this component are:
@@ -14,7 +14,7 @@
  *
  * The component leverages Material UI for styling and layout, demonstrating the use of custom hooks for state management, useCallback for memoizing handlers, and styled components for custom styling.
  */
-import React, {useState, ChangeEvent, useCallback, useEffect} from "react";
+import React, { useState, ChangeEvent, useCallback, useEffect } from "react";
 import { Typography, Box, Button, IconButton, Theme } from "@mui/material";
 import { styled } from "@mui/system";
 import { useTheme } from "@mui/material/styles";
@@ -122,7 +122,6 @@ interface CounterProps {
   onInputChange: (e: ChangeEvent<HTMLInputElement>) => void;
 }
 
-
 // Counter component illustrates how to handle state and events in a function component with props.
 // The component demonstrates a common pattern for inputs that need to validate or process their data before updating state.
 const Counter: React.FC<CounterProps> = ({
@@ -163,34 +162,34 @@ const Counter: React.FC<CounterProps> = ({
 // Main component where the settings form is constructed. It makes use of the custom `useCounter` hook and
 // demonstrates handling form state and events in a complex component.
 const ChangeRequestSettings: React.FC = () => {
-    const [reportRequestInterval, setReportRequestInterval] = useState(0);
-    const [requestTimeout, setRequestTimeout] = useState(0);
-    const [concurrentReports, setConcurrentReports] = useState(0);
-    const [concurrentVendors, setConcurrentVendors] = useState(0);
+  const [reportRequestInterval, setReportRequestInterval] = useState(0);
+  const [requestTimeout, setRequestTimeout] = useState(0);
+  const [concurrentReports, setConcurrentReports] = useState(0);
+  const [concurrentVendors, setConcurrentVendors] = useState(0);
 
-    useEffect(() => {
-        window.settings.readSettings().then((settings) => {
-            setReportRequestInterval(settings.requestInterval);
-            setRequestTimeout(settings.requestTimeout);
-            setConcurrentReports(settings.concurrentReports);
-            setConcurrentVendors(settings.concurrentVendors);
-        });
-    }, []);
+  useEffect(() => {
+    window.settings.readSettings().then((settings) => {
+      setReportRequestInterval(settings.requestInterval);
+      setRequestTimeout(settings.requestTimeout);
+      setConcurrentReports(settings.concurrentReports);
+      setConcurrentVendors(settings.concurrentVendors);
+    });
+  }, []);
 
-    const saveChanges = async () => {
-        const isSaved = await window.settings.saveSettings({
-            requestInterval: reportRequestInterval,
-            requestTimeout: requestTimeout,
-            concurrentReports: concurrentReports,
-            concurrentVendors: concurrentVendors,
-        });
+  const saveChanges = async () => {
+    const isSaved = await window.settings.saveSettings({
+      requestInterval: reportRequestInterval,
+      requestTimeout: requestTimeout,
+      concurrentReports: concurrentReports,
+      concurrentVendors: concurrentVendors,
+    });
 
-        if (isSaved) {
-          console.log("Settings saved successfully");
-        } else {
-          console.error("Error saving the settings");
-        }
-    };
+    if (isSaved) {
+      // console.log("Settings saved successfully");
+    } else {
+      // console.error("Error saving the settings");
+    }
+  };
 
   return (
     <SettingsBox>

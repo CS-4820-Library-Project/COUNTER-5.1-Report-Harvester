@@ -191,10 +191,10 @@ export class ReportService {
 
     if (header.Release == "5.1") {
       tsv += `${THd.METRIC_TYPES}\t${header.Metric_Types}\n`;
-      tsv += `${THd.REPORT_FILTERS}\t${header.Report_Filters ?? "undefined"}\n`;
-      tsv += `${THd.REPORT_ATTRIBUTES}\t${header.Report_Attributes ?? "undefined"}\n`;
-      tsv += `${THd.EXCEPTIONS}\t${header.Exceptions ?? "undefined"}\n`;
-      tsv += `${THd.REPORTING_PERIOD}\t${header.Reporting_Period ?? "undefined"}\n`;
+      tsv += `${THd.REPORT_FILTERS}\t${header.Report_Filters ?? ""}\n`;
+      tsv += `${THd.REPORT_ATTRIBUTES}\t${header.Report_Attributes ?? ""}\n`;
+      tsv += `${THd.EXCEPTIONS}\t${header.Exceptions ?? ""}\n`;
+      tsv += `${THd.REPORTING_PERIOD}\t${header.Reporting_Period ?? ""}\n`;
     } else {
       const filtersArray = header.Report_Filters as IReportFilter[];
       const reportFilters = filtersArray
@@ -401,6 +401,7 @@ export class ReportService {
       ]) {
         if (jsonHeader[member]) {
           console.log(`${member}: ${jsonHeader[member]}`);
+
           header[member] = ReportService.getSemicolonDelimitedString(
             member,
             jsonHeader

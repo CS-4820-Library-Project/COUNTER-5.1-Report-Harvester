@@ -56,7 +56,6 @@ const FetchProgress = ({ close, totalVendors, fetchResults }: Props) => {
     window.reports.onVendorCompleted(() => {
       setProgress((prevProgress) => prevProgress + 100 / totalVendors);
     });
-    console.log("Vendor Completed Listener Added");
 
     // Cleanup
     return window.reports.removeVendorCompletedListeners;
@@ -78,7 +77,7 @@ const FetchProgress = ({ close, totalVendors, fetchResults }: Props) => {
   }, []);
 
   useEffect(() => {
-    console.log("Fetch Results", fetchResults);
+    // console.log("Fetch Results", fetchResults);
   }, [fetchResults]);
 
   return (

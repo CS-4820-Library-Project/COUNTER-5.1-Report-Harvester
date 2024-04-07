@@ -13,8 +13,6 @@ import {
   TSVHeaders as THd,
 } from "../../renderer/src/const/TSVStrings";
 import { CounterVersion } from "../../renderer/src/const/CounterVersion";
-import { json } from "express";
-import { Count } from "@prisma/client/runtime/library";
 
 /** The main service for cleansing, coercing, and analyzing Reports from SUSHI APIs. */
 
@@ -160,7 +158,7 @@ export class ReportService {
       } as IReport;
     } catch (error) {
       const logHeader = `Processing Report Data\t`;
-      console.log(logHeader + error);
+      // console.log(logHeader + error);
       throw logHeader + error;
     }
   }
@@ -228,7 +226,10 @@ export class ReportService {
     try {
       // PARSE REPORT HEADERS
 
-      console.log(JSON.stringify(report.Report_Header));
+      // console.log(JSON.stringify(report));
+
+      // console.log(report.);
+
       const header = report.Report_Header;
       if (!header)
         throw (
@@ -402,7 +403,7 @@ export class ReportService {
     } catch (error) {
       let logMessage = `Converting Report to TSV\t`;
       logMessage += error;
-      console.log(logMessage);
+      // console.log(logMessage);
       throw logMessage;
     }
   }
@@ -519,6 +520,8 @@ export class ReportService {
     member: string,
     jsonHeader: { [key: string]: any }
   ): string {
+    console.log(jsonHeader[member]);
+
     if (!jsonHeader[member]) return "";
 
     if (jsonHeader.Release == "5") {
