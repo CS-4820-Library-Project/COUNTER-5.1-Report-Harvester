@@ -41,12 +41,12 @@ import {
   ITRIRReportItem,
 } from "src/renderer/src/interface/IReport";
 import { DirectorySettingService } from "./DirectorySettingService";
-import { writeFile } from "fs-extra";
 import { format } from "date-fns";
 import fs from "fs";
 import path from "path";
 import { execSync } from "child_process";
 import { reports_5 } from "src/constants/Reports_5";
+import { writeFile } from "../utils/files";
 
 const prisma = new PrismaClient();
 
@@ -1716,6 +1716,8 @@ export class PrismaReportService {
   async writeTSVToFile(tsv: string, fileName: string): Promise<void> {
     const dirService = new DirectorySettingService();
     const filePath = dirService.getPath("search", `${fileName}.tsv`);
+
+    console.log("Writing TSV to file:", filePath);
 
     writeFile(filePath, tsv);
   }
