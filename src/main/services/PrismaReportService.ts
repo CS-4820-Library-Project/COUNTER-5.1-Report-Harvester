@@ -45,7 +45,7 @@ import { writeFile } from "fs-extra";
 import { format } from "date-fns";
 import fs from "fs";
 import path from "path";
-import { exec } from "child_process";
+import { execSync } from "child_process";
 import { reports_5 } from "src/constants/Reports_5";
 
 const prisma = new PrismaClient();
@@ -1756,36 +1756,21 @@ export class PrismaReportService {
     return reports;
   }
 
-  // rebuilding database
   async rebuildDatabase() {
-    // specify the database file
-    const dbFile = process.env.DATABASE_FILE || "../../prisma/search.db";
+    const dbFile = path.join(
+      __dirname,
+      process.env.DATABASE_FILE || "../../prisma/search.db",
+    );
 
-    // if the database file exists, delete the file
-    if (fs.existsSync(dbFile)) {
-      try {
+    try {
+      if (fs.existsSync(dbFile)) {
         await fs.promises.unlink(dbFile);
         console.log("Previous database file deleted.");
-      } catch (error) {
-        console.error("Error while deleting the database file:", error);
       }
-    }
 
-    // re-run the prisma migrations, which will create a new database file and apply the schema
-    try {
-      exec(
-        "npx prisma migrate dev --rebuild-database",
-        (error, stdout, stderr) => {
-          if (error) {
-            console.error("Error while running Prisma migrate:", error);
-            throw error;
-          } else if (stderr) {
-            console.warn("Warnings during Prisma migrate:", stderr);
-          } else {
-            console.log("Prisma migrate output:", stdout);
-          }
-        },
-      );
+      const stdout = execSync("npx prisma db push --force-reset").toString();
+
+      console.log("Prisma migrate output:", stdout);
     } catch (error) {
       console.error("Error while rebuilding the database:", error);
       throw error;

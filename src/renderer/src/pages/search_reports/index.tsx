@@ -13,7 +13,7 @@ import Strong from "../../components/text/Strong";
 import { useNotification } from "../../components/NotificationBadge";
 import Page from "../../components/page/Page";
 import PageColumn from "../../components/page/PageColumn";
-import {ImportExportOutlined} from "@mui/icons-material";
+import { ImportExportOutlined } from "@mui/icons-material";
 
 const SearchReportsPage = () => {
   const theme = useTheme();
@@ -59,7 +59,7 @@ const SearchReportsPage = () => {
       const results = await window.database.writeSearchedReportsToTSV(
         activeButton === "Title" ? searchValue : "",
         activeButton === "ISSN" ? searchValue : "",
-        activeButton === "ISBN" ? searchValue : ""
+        activeButton === "ISBN" ? searchValue : "",
       );
 
       if (results.length > 0) {
@@ -110,7 +110,6 @@ const SearchReportsPage = () => {
       transition: "background-color 0.3s",
     }) as const;
 
-
   const handleOpenResults = async () => {
     const searchPath = await window.settings.getDirectory("search");
     window.settings.openPath(searchPath);
@@ -135,17 +134,17 @@ const SearchReportsPage = () => {
           </Typography>
           <div>
             <ActionButton
-                label="Export Database"
-                color="primary"
-                icon={<ImportExportOutlined fontSize="small" />}
-                onClick={handleExportDatabaseClick}
-                style={{marginRight:'20px'}}
+              label="Export Database"
+              color="primary"
+              icon={<ImportExportOutlined fontSize="small" />}
+              onClick={handleExportDatabaseClick}
+              style={{ marginRight: "20px" }}
             />
             <ActionButton
-                label="Help"
-                color="background"
-                icon={<HelpOutlineIcon fontSize="small" />}
-                onClick={handleHelpClick}
+              label="Help"
+              color="background"
+              icon={<HelpOutlineIcon fontSize="small" />}
+              onClick={handleHelpClick}
             />
           </div>
         </FlexBetween>
