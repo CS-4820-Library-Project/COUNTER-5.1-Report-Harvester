@@ -1,18 +1,22 @@
 import {
   IDRReportItem,
+  IInstitutionId,
   IPerformance,
   IReport,
-  IReportFilter,
   IReportHeader,
   IReportItem,
   ITRIRReportItem,
-} from "../interface/IReport";
+  ITRReportItem,
+  I_IR_ReportItem,
+} from "../../renderer/src/interface/IReport";
 import {
   ReportIDTSVHeaderDict,
   TRItemIdHeaders,
   TSVHeaders as THd,
-} from "../const/TSVStrings";
-import { CounterVersion } from "../const/CounterVersion";
+} from "../../renderer/src/const/TSVStrings";
+import { CounterVersion } from "../../renderer/src/const/CounterVersion";
+import { NameValue, TypeValue } from "src/types/reports";
+import { MainReportIDs } from "src/types/counter";
 
 /** The main service for cleansing, coercing, and analyzing Reports from SUSHI APIs. */
 
@@ -20,103 +24,153 @@ export class ReportService {
   /** Converts a 5.0 report from JSON into an **IReport** object. */
 
   static get50ReportFromJSON(data: any): IReport | null {
-    return data as IReport;
+    if (!(data && data.Report_Header && data.Report_Items)) {
+      return null;
+    }
+
+    if (data.Report_Header?.Report_ID.includes("IR"))
+      return {
+        Report_Header: ReportService.getHeaderObjectFromJSON(
+          data.Report_Header
+        ),
+        Report_Items: data.Report_Items,
+      } as IReport;
+
+    return null;
   }
 
   /** Converts a 5.1 report from JSON into an **IReport** object. */
 
   static get51ReportFromJson(data: any): IReport | null {
-    if (data.Report_Header.Report_ID.includes("IR"))
-      return ReportService.get51IRFromJSON(data); // direct call to self as `this` is lost in promise
+    try {
+      if (data.Report_Header.Report_ID.includes("IR"))
+        return ReportService.get51IRFromJSON(data); // direct call to self as `this` is lost in promise
 
-    const reportId = data.Report_Header.Report_ID;
-    const reportItems = data.Report_Items?.map((item: any) => {
-      const performanceMap = new Map<string, IPerformance>();
+      const reportId = data.Report_Header.Report_ID;
+      const reportItems = data.Report_Items?.map((item: any) => {
+        const performanceMap = new Map<string, IPerformance>();
 
-      item.Attribute_Performance.forEach((attrPerf: any) => {
-        const perf = attrPerf.Performance;
+        item.Attribute_Performance.forEach((attrPerf: any) => {
+          const perf = attrPerf.Performance;
 
-        Object.keys(perf).forEach((metricType: string) => {
-          const monthData = perf[metricType];
+          Object.keys(perf).forEach((metricType: string) => {
+            const monthData = perf[metricType];
 
-          Object.keys(monthData).forEach((month: string) => {
-            const year = Number(month.slice(0, 4));
-            const lastDayOfMonth = new Date(
-              year,
-              Number(month.slice(5, 7)),
-              0
-            ).getDate();
-            const periodKey = `${month}-01-${year}-${lastDayOfMonth}`;
+            Object.keys(monthData).forEach((month: string) => {
+              const year = Number(month.slice(0, 4));
+              const lastDayOfMonth = new Date(
+                year,
+                Number(month.slice(5, 7)),
+                0
+              ).getDate();
+              const periodKey = `${month}-01-${year}-${lastDayOfMonth}`;
 
-            let performance = performanceMap.get(periodKey);
-            if (!performance) {
-              performance = {
-                Period: {
-                  Begin_Date: `${month}-01`,
-                  End_Date: `${month}-${lastDayOfMonth}`,
-                },
-                Instance: [],
-              };
-              performanceMap.set(periodKey, performance);
-            }
+              let performance = performanceMap.get(periodKey);
+              if (!performance) {
+                performance = {
+                  Period: {
+                    Begin_Date: `${month}-01`,
+                    End_Date: `${month}-${lastDayOfMonth}`,
+                  },
+                  Instance: [],
+                };
+                performanceMap.set(periodKey, performance);
+              }
 
-            performance.Instance.push({
-              Metric_Type: metricType,
-              Count: monthData[month] || 0,
+              performance.Instance.push({
+                Metric_Type: metricType,
+                Count: monthData[month] || 0,
+              });
             });
           });
         });
+
+        const reportItem: IReportItem = {
+          Platform: item.Platform,
+          Performance: Array.from(performanceMap.values()),
+        };
+
+        // Process TR Report
+        if (reportId.includes("TR")) {
+          const reportItem = item as ITRIRReportItem;
+          const trItem = item as ITRIRReportItem;
+
+          reportItem["Title"] = trItem.Title;
+          reportItem["Publisher_ID"] = Object.keys(trItem.Publisher_ID)?.map(
+            (key) => ({
+              Type: key,
+              Value: trItem.Publisher_ID[
+                key as unknown as number
+              ] as unknown as string,
+            })
+          );
+          reportItem["Publisher"] = trItem.Publisher;
+          reportItem["Item_ID"] = Object.keys(trItem.Item_ID)?.map((key) => ({
+            Type: key,
+            Value: trItem.Item_ID[
+              key as unknown as number
+            ] as unknown as string,
+          }));
+        }
+        // Process IR Report
+        else if (reportId.includes("IR")) {
+          const irItem = item as I_IR_ReportItem;
+          const reportItem = item as I_IR_ReportItem;
+
+          reportItem["Item"] = irItem.Item;
+
+          reportItem["Item_ID"] = [
+            {
+              Type: "DOI",
+              Value: irItem.Item_ID[
+                "DOI" as unknown as number
+              ] as unknown as string,
+            },
+            {
+              Type: "YOP",
+              Value: irItem.Item_ID[
+                "YOP" as unknown as number
+              ] as unknown as string,
+            },
+          ];
+        }
+        // Process DR Report
+        else if (reportId.includes("DR")) {
+          const drItem = item as IDRReportItem;
+          const reportItem = item as IDRReportItem;
+
+          reportItem["Database"] = drItem.Database;
+          reportItem["Publisher"] = drItem.Publisher;
+          reportItem["Publisher_ID"] = Object.keys(drItem.Publisher_ID)?.map(
+            (key) => ({
+              Type: key,
+              Value: drItem.Publisher_ID[
+                key as unknown as number
+              ] as unknown as string,
+            })
+          );
+          reportItem["Item_ID"] = Object.keys(drItem.Item_ID)?.map((key) => ({
+            Type: key,
+            Value: drItem.Item_ID[
+              key as unknown as number
+            ] as unknown as string,
+          }));
+        }
+
+        return reportItem;
       });
 
-      const reportItem: IReportItem = {
-        Platform: item.Platform,
-        Performance: Array.from(performanceMap.values()),
-      };
-
-      if (reportId.includes("TR")) {
-        const trItem = item as ITRIRReportItem;
-        reportItem["Title"] = trItem.Title;
-        reportItem["Publisher_ID"] = Object.keys(trItem.Publisher_ID)?.map(
-          (key) => ({
-            Type: key,
-            Value: trItem.Publisher_ID[key],
-          })
-        );
-        reportItem["Publisher"] = trItem.Publisher;
-        reportItem["Item_ID"] = Object.keys(trItem.Item_ID)?.map((key) => ({
-          Type: key,
-          Value: trItem.Item_ID[key],
-        }));
-      } else if (reportId.includes("IR")) {
-        const irItem = item as ITRIRReportItem;
-        reportItem["Title"] = irItem.Title;
-        reportItem["Item_ID"] = [
-          { Type: "DOI", Value: irItem.Item_ID["DOI"] },
-          { Type: "YOP", Value: irItem.Item_ID["YOP"] },
-        ];
-      } else if (reportId.includes("DR")) {
-        const drItem = item as IDRReportItem;
-        reportItem["Database"] = drItem.Database;
-        reportItem["Publisher"] = drItem.Publisher;
-        reportItem["Publisher_ID"] = Object.keys(drItem.Publisher_ID)?.map(
-          (key) => ({
-            Type: key,
-            Value: drItem.Publisher_ID[key],
-          })
-        );
-        reportItem["Item_ID"] = Object.keys(drItem.Item_ID)?.map((key) => ({
-          Type: key,
-          Value: drItem.Item_ID[key],
-        }));
-      }
-
-      return reportItem;
-    });
-
-    return {
-      Report_Header: ReportService.getHeaderObjectFromJSON(data.Report_Header), // direct call to self as `this` is lost in promise
-      Report_Items: reportItems,
-    } as IReport;
+      return {
+        Report_Header: ReportService.getHeaderObjectFromJSON(
+          data.Report_Header
+        ), // direct call to self as `this` is lost in promise
+        Report_Items: reportItems,
+      } as IReport;
+    } catch (error) {
+      const logHeader = `Processing Report Data\t`;
+      // console.log(logHeader + error);
+      throw logHeader + error;
+    }
   }
 
   static get51IRFromJSON(data: any): IReport | null {
@@ -172,141 +226,193 @@ export class ReportService {
     } as IReport;
   }
 
-  /** Converts an `IReport` object into a string representing the data in TSV format. */
-
+  /**
+   * Converts an `IReport` object into a string representing the data in TSV format.
+   * @throws An string error message if the conversion fails.
+   */
   static convertReportToTSV(report: IReport): string {
     let tsv = "";
 
-    const header = report.Report_Header;
-    tsv += `${THd.REPORT_NAME}\t${header.Report_Name}\n`;
-    tsv += `${THd.REPORT_ID}\t${header.Report_ID}\n`;
-    tsv += `${THd.RELEASE}\t${header.Release}\n`;
-    tsv += `${THd.INST_NAME}\t${header.Institution_Name}\n`;
+    try {
+      // PARSE REPORT HEADERS
+      const header = report.Report_Header;
+      if (!header)
+        throw (
+          "Report Header is missing. Server send this object\t" +
+          JSON.stringify(report)
+        );
 
-    const institutionIDs = header.Institution_ID?.map(
-      (id) => `${id.Type}:${id.Value}`
-    ).join(";");
+      tsv += `${THd.REPORT_NAME}\t${header.Report_Name}\n`;
+      tsv += `${THd.REPORT_ID}\t${header.Report_ID}\n`;
+      tsv += `${THd.RELEASE}\t${header.Release}\n`;
+      tsv += `${THd.INST_NAME}\t${header.Institution_Name}\n`;
 
-    tsv += `${THd.INST_ID}\t${institutionIDs}\n`;
-
-    if (header.Release == "5.1") {
-      tsv += `${THd.METRIC_TYPES}\t${header.Metric_Types}\n`;
-      tsv += `${THd.REPORT_FILTERS}\t${header.Report_Filters ?? ""}\n`;
-      tsv += `${THd.REPORT_ATTRIBUTES}\t${header.Report_Attributes ?? ""}\n`;
-      tsv += `${THd.EXCEPTIONS}\t${header.Exceptions ?? ""}\n`;
-      tsv += `${THd.REPORTING_PERIOD}\t${header.Reporting_Period ?? ""}\n`;
-    } else {
-      const filtersArray = header.Report_Filters as IReportFilter[];
-      const reportFilters = filtersArray
-        ?.map((filter) => `${filter.Name}=${filter.Value}`)
+      let institutionIDs = header.Institution_ID as IInstitutionId[];
+      const institutionIdString = institutionIDs
+        ?.map((id) => `${id.Type}:${id.Value}`)
         .join(";");
-      tsv += `${THd.REPORT_FILTERS}\t${reportFilters}\n`;
-    }
 
-    tsv += `${THd.CREATED}\t${header.Created}\n`;
-    tsv += `${THd.CREATED_BY}\t${header.Created_By}\n`;
+      tsv += `${THd.INST_ID}\t${institutionIdString}\n`;
 
-    if (header.Release == "5.1")
-      tsv += `${THd.REGISTRY_RECORD}\t${header.Registry_Record ?? ""}\n`;
+      for (const headerRow of [
+        THd.METRIC_TYPES,
+        THd.REPORT_FILTERS,
+        THd.REPORT_ATTRIBUTES,
+        THd.EXCEPTIONS,
+        THd.REPORTING_PERIOD,
+      ]) {
+        tsv += `${headerRow.toString()}\t${header[headerRow] ?? ""}\n`;
+      }
 
-    tsv += "\n";
+      tsv += `${THd.CREATED}\t${header.Created}\n`;
+      tsv += `${THd.CREATED_BY}\t${header.Created_By}\n`;
 
-    tsv += ReportIDTSVHeaderDict[header.Report_ID.substring(0, 2)] ?? "";
+      if (header.Release == "5.1")
+        tsv += `${THd.REGISTRY_RECORD}\t${header.Registry_Record ?? ""}\n`;
 
-    const uniqueMonths: Set<string> = new Set();
-    report.Report_Items.forEach((item) => {
-      item.Performance.forEach((performance) => {
-        const startDate = performance.Period.Begin_Date;
-        const endDate = performance.Period.End_Date;
-        const startMonth = startDate.slice(0, 7);
-        const endMonth = endDate.slice(0, 7);
-        uniqueMonths.add(startMonth);
-        uniqueMonths.add(endMonth);
-      });
-    });
+      tsv += "\n";
+      tsv +=
+        ReportIDTSVHeaderDict(
+          header.Report_ID.substring(0, 2) as MainReportIDs,
+          header.Release
+        ) ?? "";
 
-    const monthHeaders = Array.from(uniqueMonths).sort();
-    tsv += monthHeaders.join("\t") + "\n";
+      // PARSE REPORT ITEMS
+      const reportItems = report.Report_Items;
+      if (!reportItems) return tsv;
 
-    report.Report_Items.forEach((item) => {
-      const metricCounts: { [metricType: string]: number[] } = {};
-      item.Performance.forEach((performance) => {
-        performance.Instance.forEach((instance) => {
-          if (!metricCounts[instance.Metric_Type]) {
-            metricCounts[instance.Metric_Type] = new Array(
-              monthHeaders.length
-            ).fill(0);
-          }
+      const uniqueMonths: Set<string> = new Set();
+      report.Report_Items.forEach((item) => {
+        if (!item) return tsv;
+
+        item.Performance.forEach((performance) => {
+          if (!performance) return tsv;
+
           const startDate = performance.Period.Begin_Date;
           const endDate = performance.Period.End_Date;
-          const startMonthIndex = monthHeaders.indexOf(startDate.slice(0, 7));
-          const endMonthIndex = monthHeaders.indexOf(endDate.slice(0, 7));
-          const count = instance.Count / (endMonthIndex - startMonthIndex + 1);
-          for (let i = startMonthIndex; i <= endMonthIndex; i++) {
-            metricCounts[instance.Metric_Type][i] += count;
-          }
+          const startMonth = startDate.slice(0, 7);
+          const endMonth = endDate.slice(0, 7);
+          uniqueMonths.add(startMonth);
+          uniqueMonths.add(endMonth);
         });
       });
 
-      Object.keys(metricCounts).forEach((metricType) => {
-        let rowData = ``;
+      const monthHeaders = Array.from(uniqueMonths).sort();
+      tsv += monthHeaders.join("\t") + "\n";
 
-        if (header.Report_ID.includes("TR")) {
-          let trItem = item as ITRIRReportItem;
-          rowData += `${trItem.Title}\t${trItem.Publisher}\t`;
-          const publisherIDs = trItem.Publisher_ID?.map(
-            (id) => `${id.Type}:${id.Value}`
-          ).join(";");
-          rowData += `${publisherIDs}\t${trItem.Platform}\t`;
+      if (report.Report_Items)
+        report.Report_Items.forEach((item) => {
+          if (!item || !item.Performance) return tsv;
 
-          const itemIDs = trItem.Item_ID.reduce(
-            (acc: { [key: string]: string }, id) => {
-              if (TRItemIdHeaders?.map((h) => h as string).includes(id.Type)) {
-                acc[id.Type] = id.Value;
+          const metricCounts: { [metricType: string]: number[] } = {};
+
+          if (!item.Performance) return tsv;
+          // throw "Performance is missing\t" + JSON.stringify(item);
+
+          item.Performance.forEach((performance) => {
+            if (!performance) return tsv;
+
+            performance.Instance.forEach((instance) => {
+              if (!metricCounts[instance.Metric_Type]) {
+                metricCounts[instance.Metric_Type] = new Array(
+                  monthHeaders.length
+                ).fill(0);
               }
-              return acc;
-            },
-            {}
-          );
+              const startDate = performance.Period.Begin_Date;
+              const endDate = performance.Period.End_Date;
+              const startMonthIndex = monthHeaders.indexOf(
+                startDate.slice(0, 7)
+              );
+              const endMonthIndex = monthHeaders.indexOf(endDate.slice(0, 7));
+              const count =
+                instance.Count / (endMonthIndex - startMonthIndex + 1);
+              for (let i = startMonthIndex; i <= endMonthIndex; i++) {
+                metricCounts[instance.Metric_Type][i] += count;
+              }
+            });
+          });
 
-          TRItemIdHeaders.forEach(
-            (header) => (rowData += `${itemIDs[header] || ``}\t`)
-          );
-        }
+          if (!metricCounts || !item) return tsv;
 
-        if (header.Report_ID.includes("IR")) {
-          const irItem = item as ITRIRReportItem;
-          if (Array.isArray(irItem.Item_ID)) {
-            const doi =
-              irItem.Item_ID.find((id) => id.Type === THd.DOI)?.Value || "";
-            const yop =
-              irItem.Item_ID.find((id) => id.Type === THd.YOP)?.Value || "";
-            rowData += `${irItem.Title}\t${irItem.Platform}\t${doi}\t${yop}`;
-          } else {
-            rowData += `${irItem.Title}\t${irItem.Platform}\t\t`;
-          }
-        }
+          Object.keys(metricCounts).forEach((metricType) => {
+            if (!metricType) return tsv;
 
-        if (header.Report_ID.includes("DR")) {
-          const drItem = item as IDRReportItem;
-          const propId =
-            drItem.Item_ID.find((id) => id.Type === THd.PROPRIETARY_ID)
-              ?.Value || "";
-          rowData += `${drItem.Database}\t${drItem.Platform}\t${propId}\t`;
-        }
+            let rowData = ``;
 
-        if (header.Report_ID.includes("PR")) {
-          rowData += `${item.Platform}\t`;
-        }
+            if (header.Report_ID.includes("TR")) {
+              let trItem = item as ITRReportItem;
+              rowData += `${trItem.Title}\t${trItem.Publisher}\t`;
 
-        rowData += `${metricType}\t${this.getSum(metricCounts[metricType])}\t`;
-        rowData += `${metricCounts[metricType].join("\t")}\n`;
+              const publisherIDs = trItem.Publisher_ID?.map(
+                (id: TypeValue) => `${id.Type}:${id.Value}`
+              ).join(";");
+              rowData += `${publisherIDs}\t${trItem.Platform}\t`;
 
-        tsv += rowData;
-      });
-    });
+              // Get Item_IDs from Item
+              const itemIDs = trItem.Item_ID?.reduce(
+                (acc: { [key: string]: string }, id: TypeValue) => {
+                  //
+                  const isTRHeader = TRItemIdHeaders?.map(
+                    (h) => h as string
+                  ).includes(id.Type);
 
-    return tsv;
+                  if (isTRHeader) acc[id.Type] = id.Value;
+                  return acc;
+                },
+                {}
+              );
+
+              TRItemIdHeaders?.forEach((header) => {
+                if (!itemIDs) return "";
+                else rowData += `${itemIDs[header] || ``}\t`;
+              });
+            }
+
+            if (header.Report_ID.includes("IR")) {
+              const irItem = item as I_IR_ReportItem;
+
+              if (Array.isArray(irItem.Item_ID)) {
+                const doi =
+                  irItem.Item_ID.find((id: TypeValue) => id.Type === THd.DOI)
+                    ?.Value || "";
+                const yop =
+                  irItem.Item_ID.find((id: TypeValue) => id.Type === THd.YOP)
+                    ?.Value || "";
+
+                rowData += `${irItem.Item}\t${irItem.Platform}\t${doi}\t${yop}`;
+              } else {
+                rowData += `${irItem.Item}\t${irItem.Platform}\t\t`;
+              }
+            }
+
+            if (header.Report_ID.includes("DR")) {
+              const drItem = item as IDRReportItem;
+
+              if (!drItem.Item_ID) return tsv;
+
+              const propId =
+                drItem.Item_ID.find((id) => id.Type === THd.PROPRIETARY_ID)
+                  ?.Value || "";
+              rowData += `${drItem.Database}\t${drItem.Platform}\t${propId}\t`;
+            }
+
+            if (header.Report_ID.includes("PR"))
+              rowData += `${item.Platform}\t`;
+
+            rowData += `${metricType}\t${this.getSum(metricCounts[metricType])}\t`;
+            rowData += `${metricCounts[metricType].join("\t")}\n`;
+
+            tsv += rowData;
+          });
+        });
+
+      return tsv;
+    } catch (error) {
+      let logMessage = `Converting Report to TSV\t`;
+      logMessage += error;
+      // console.log(logMessage);
+      throw logMessage;
+    }
   }
 
   /**
@@ -327,23 +433,28 @@ export class ReportService {
     startDate: Date,
     endDate: Date
   ): string {
-    const year = startDate.getFullYear();
+    try {
+      const year = startDate.getFullYear();
 
-    const startPeriod =
-      startDate.getFullYear() +
-      this.padLeft((startDate.getMonth() + 1).toString(), 2, "0");
+      const startPeriod =
+        startDate.getFullYear() +
+        this.padLeft((startDate.getMonth() + 1).toString(), 2, "0");
 
-    const endPeriod =
-      endDate.getFullYear() +
-      this.padLeft((endDate.getMonth() + 1).toString(), 2, "0");
+      const endPeriod =
+        endDate.getFullYear() +
+        this.padLeft((endDate.getMonth() + 1).toString(), 2, "0");
 
-    vendorName = vendorName.replace(/ /g, "-");
-    version = version.replace(".", "_") as CounterVersion;
+      vendorName = vendorName.replace(/ /g, "-");
+      version = version.replace(".", "_") as CounterVersion;
 
-    let filename = `${year}/${vendorName}/`;
-    filename += `${vendorName}_${reportType}_${version}_${startPeriod}-${endPeriod}`;
+      let filename = `${year}/${vendorName}/`;
+      filename += `${vendorName}_${reportType}_${version}_${startPeriod}-${endPeriod}`;
 
-    return filename;
+      return filename;
+    } catch (error) {
+      let logMessage = `Generating TSV Filename\t`;
+      throw logMessage + error;
+    }
   }
 
   /**
@@ -374,51 +485,91 @@ export class ReportService {
   }
 
   static getHeaderObjectFromJSON(jsonHeader: any): IReportHeader {
-    let header = {
+    return {
       Report_Name: jsonHeader.Report_Name,
       Report_ID: jsonHeader.Report_ID,
       Release: jsonHeader.Release,
+      Report_Filters: ReportService.getSemicolonDelimitedString(
+        "Report_Filters",
+        jsonHeader
+      ),
+      Metric_Types: ReportService.getSemicolonDelimitedString(
+        "Metric_Types",
+        jsonHeader
+      ),
+      Report_Attributes: ReportService.getSemicolonDelimitedString(
+        "Report_Attributes",
+        jsonHeader
+      ),
+      Exceptions: ReportService.getSemicolonDelimitedString(
+        "Exceptions",
+        jsonHeader
+      ),
+      Reporting_Period: ReportService.getSemicolonDelimitedString(
+        "Reporting_Period",
+        jsonHeader
+      ),
       Institution_Name: jsonHeader.Institution_Name,
-      Institution_ID: Object.keys(jsonHeader.Institution_ID)?.map((key) => ({
-        Type: key,
-        Value: jsonHeader.Institution_ID[key],
-      })),
-      Report_Filters: Object.keys(jsonHeader.Report_Filters)?.map((key) => ({
-        Name: key,
-        Value: jsonHeader.Report_Filters[key],
-      })),
+      Institution_ID:
+        jsonHeader.Release == "5"
+          ? jsonHeader.Institution_ID
+          : Object.keys(jsonHeader.Institution_ID)?.map((key) => ({
+              Type: key,
+              Value: jsonHeader.Institution_ID[key],
+            })) || "",
       Created: jsonHeader.Created,
       Created_By: jsonHeader.Created_By,
+      Registry_Record: jsonHeader.Registry_Record ?? "",
     } as IReportHeader;
-
-    if (header.Release == "5.1") {
-      for (let member of [
-        "Report_Filters",
-        "Metric_Types",
-        "Report_Attributes",
-        "Exceptions",
-        "Reporting_Period",
-      ]) {
-        if (jsonHeader[member]) {
-          console.log(`${member}: ${jsonHeader[member]}`);
-
-          header[member] = ReportService.getSemicolonDelimitedString(
-            member,
-            jsonHeader
-          );
-        }
-      }
-
-      if (jsonHeader.Registry_Record) {
-        header["Registry_Record"] = jsonHeader.Registry_Record;
-      }
-    }
-
-    return header;
   }
 
-  static getSemicolonDelimitedString(member, jsonHeader): string {
-    return Object.keys(jsonHeader[member])
+  static getSemicolonDelimitedString(
+    member: string,
+    jsonHeader: { [key: string]: any }
+  ): string {
+    let filters = jsonHeader[member];
+
+    if (!filters && member !== "Reporting_Period") return "";
+
+    if (jsonHeader.Release == "5") {
+      // Remove Begin_Date and End_Date from filters
+      if (member === "Report_Filters")
+        filters = filters.filter((filter: any) => {
+          return filter.Name !== "Begin_Date" && filter.Name !== "End_Date";
+        });
+
+      // Get Reporting_Period from filters
+      if (member === "Reporting_Period") {
+        return jsonHeader["Report_Filters"]
+          .filter((filter: NameValue) =>
+            ["Begin_Date", "End_Date"].includes(filter.Name)
+          )
+          .sort((a: NameValue, b: NameValue) => a.Name.localeCompare(b.Name))
+          .map((filter: NameValue) => `${filter.Name}=${filter.Value}`)
+          .join(";");
+      }
+
+      return filters
+        .map((filter: any) => {
+          //
+          if (member === "Exceptions") {
+            let exceptionString = `${filter.Code}=${filter.Message}`;
+            if (filter.Data) exceptionString += `(${filter.Data})`;
+
+            return exceptionString;
+          }
+
+          if (Array.isArray(filter.Value)) {
+            return `${filter.Name}=${(filter.Value as string[]).join("|")}`;
+          }
+          //
+          else return `${filter.Name}=${filter.Value}`;
+        })
+        .join(";");
+    }
+
+    // For 5.1
+    return Object.keys(filters)
       ?.map((key) => {
         let result = `${key}=`;
         let memberValue = jsonHeader[member][key];

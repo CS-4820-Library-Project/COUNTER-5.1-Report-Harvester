@@ -62,6 +62,8 @@ export type Period = {
   endDate: string | Date;
 };
 
+export type MainReportIDs = "TR" | "PR" | "IR" | "DR";
+
 export type Report_Id =
   | "PR"
   | "DR"

@@ -47,6 +47,7 @@ import path from "path";
 import { execSync } from "child_process";
 import { reports_5 } from "src/constants/Reports_5";
 import { writeFile } from "../utils/files";
+import { TypeValue } from "src/types/reports";
 
 const prisma = new PrismaClient();
 
@@ -903,19 +904,18 @@ export class PrismaReportService {
         report_id: report.Report_Header.Report_ID,
         report_name: report.Report_Header.Report_Name,
         release: report.Report_Header.Release,
-        metric_types: report.Report_Header.Metric_Types || "undefined",
-        report_attributes:
-          report.Report_Header.Report_Attributes || "undefined",
-        exceptions: report.Report_Header.Exceptions || "undefined",
-        reporting_period: report.Report_Header.Reporting_Period || "undefined",
-        institution_name: report.Report_Header.Institution_Name || "undefined",
+        metric_types: report.Report_Header.Metric_Types || "",
+        report_attributes: report.Report_Header.Report_Attributes || "",
+        exceptions: report.Report_Header.Exceptions || "",
+        reporting_period: report.Report_Header.Reporting_Period || "",
+        institution_name: report.Report_Header.Institution_Name || "",
         institution_id:
           report.Report_Header.Institution_ID[0].Type +
           ":" +
           report.Report_Header.Institution_ID[0].Value,
         created: report.Report_Header.Created,
         created_by: report.Report_Header.Created_By,
-        registry_record: report.Report_Header.Registry_Record || "undefined",
+        registry_record: report.Report_Header.Registry_Record || "",
       });
 
       const filtersString = report.Report_Header.Report_Filters;
@@ -1125,11 +1125,15 @@ export class PrismaReportService {
             title: irItem.Title,
             publisher: irItem.Publisher,
             publisherId: irItem.Publisher_ID.map(
-              (id) => `${id.Type}:${id.Value}`
+              (id: TypeValue) => `${id.Type}:${id.Value}`
             ).join(";"),
             platform: irItem.Platform,
-            doi: irItem.Item_ID.find((id) => id.Type === "DOI")?.Value || null,
-            yop: irItem.Item_ID.find((id) => id.Type === "YOP")?.Value || null,
+            doi:
+              irItem.Item_ID.find((id: TypeValue) => id.Type === "DOI")
+                ?.Value || null,
+            yop:
+              irItem.Item_ID.find((id: TypeValue) => id.Type === "YOP")
+                ?.Value || null,
             item: irItem.Item,
           };
 

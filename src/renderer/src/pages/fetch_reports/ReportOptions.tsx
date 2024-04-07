@@ -375,7 +375,7 @@ const ReportOptions = ({
                 setSelected={handleSelectedReport}
                 isActive={activeReport?.id === report.id}
                 setActiveTab={handleActiveReport}
-                disabled={availableReports.includes(report.id)}
+                disabled={!availableReports.includes(report.id)}
               />
             ) : (
               <Toggle

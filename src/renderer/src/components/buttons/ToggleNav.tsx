@@ -41,7 +41,7 @@ const ToggleNav = ({
           : primary.main
         : background.main,
     "&:hover": {
-      bgcolor: isSelected ? primary.hover : background.hover,
+      bgcolor: isSelected && !disabled ? primary.hover : background.hover,
     },
   };
 
@@ -59,13 +59,15 @@ const ToggleNav = ({
     height: "100%" as const,
     // textTransform: "none" as const,
     "&:hover": {
-      bgcolor: isSelected ? primary.hover : background.hover,
+      bgcolor: isSelected && !disabled ? primary.hover : background.hover,
     } as const,
   };
 
   const pillStyle = {
-    color: isSelected ? primary.contrastText : background.contrastText,
-    boxShadow: isActive ? `0px 5px 10px 0px ${primary.dark}` : "none",
+    color:
+      isSelected && !disabled ? primary.contrastText : background.contrastText,
+    boxShadow:
+      isActive && !disabled ? `0px 5px 10px 0px ${primary.dark}` : "none",
     gap: "2px" as const,
     borderRadius: "25px" as const,
     overflow: "hidden" as const,
@@ -87,7 +89,10 @@ const ToggleNav = ({
 
   return hint ? (
     <TooltipBottom hint={hint}>
-      <FlexBetween onClick={handleSelect} sx={pillStyle}>
+      <FlexBetween
+        onClick={!disabled ? handleSelect : undefined}
+        sx={pillStyle}
+      >
         {/* Left side */}
         <Button
           sx={leftSideStyle}
