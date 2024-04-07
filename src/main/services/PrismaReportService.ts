@@ -43,18 +43,11 @@ import {
 import { DirectorySettingService } from "./DirectorySettingService";
 import { writeFile } from "fs-extra";
 import { format } from "date-fns";
+import fs from "fs";
+import path from "path";
+import { exec } from "child_process";
 
 const prisma = new PrismaClient();
-
-type TRModelNames =
-  | "TR_Item"
-  | "TR_B1_Item"
-  | "TR_B2_Item"
-  | "TR_B3_Item"
-  | "TR_J1_Item"
-  | "TR_J2_Item"
-  | "TR_J3_Item"
-  | "TR_J4_Item";
 
 type WhereClause = {
   title?: {
@@ -1728,6 +1721,68 @@ export class PrismaReportService {
     }
 
     return reports;
+  }
+
+  // rebuilding database
+  async rebuildDatabase() {
+    // specify the database file
+    const dbFile = process.env.DATABASE_FILE || "../../../prisma/search.db";
+
+    // if the database file exists, delete the file
+    if (fs.existsSync(dbFile)) {
+      try {
+        await fs.promises.unlink(dbFile);
+        console.log("Previous database file deleted.");
+      } catch (error) {
+        console.error("Error while deleting the database file:", error);
+      }
+    }
+
+    // re-run the prisma migrations, which will create a new database file and apply the schema
+    try {
+      exec(
+        "npx prisma migrate dev --rebuild-database",
+        (error, stdout, stderr) => {
+          if (error) {
+            console.error("Error while running Prisma migrate:", error);
+            throw error;
+          } else if (stderr) {
+            console.warn("Warnings during Prisma migrate:", stderr);
+          } else {
+            console.log("Prisma migrate output:", stdout);
+          }
+        },
+      );
+    } catch (error) {
+      console.error("Error while rebuilding the database:", error);
+      throw error;
+    }
+  }
+
+  static async exportDatabase(exportPath: string) {
+    const dbFile = process.env.DATABASE_FILE || "../../prisma/search.db";
+
+    const dbPath = path.join(__dirname, dbFile);
+
+    if (fs.existsSync(dbPath)) {
+      try {
+        const currentDate: Date = new Date();
+        const formattedDate: string = format(currentDate, "dd-MM-yyyy");
+
+        const exportFilePath = path.join(
+          exportPath,
+          `CH_SearchDB_Export_${formattedDate}.db`,
+        );
+
+        fs.copyFileSync(dbPath, exportFilePath);
+
+        console.log(`Database exported successfully to: ${exportFilePath}`);
+      } catch (error) {
+        console.error("Error while exporting the database file:", error);
+      }
+    } else {
+      console.error("Database file does not exist. ", dbPath);
+    }
   }
 }
 
