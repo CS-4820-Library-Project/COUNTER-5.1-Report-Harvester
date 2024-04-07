@@ -1759,7 +1759,7 @@ export class PrismaReportService {
   // rebuilding database
   async rebuildDatabase() {
     // specify the database file
-    const dbFile = process.env.DATABASE_FILE || "../../../prisma/search.db";
+    const dbFile = process.env.DATABASE_FILE || "../../prisma/search.db";
 
     // if the database file exists, delete the file
     if (fs.existsSync(dbFile)) {
@@ -1794,8 +1794,8 @@ export class PrismaReportService {
 
   static async exportDatabase(exportPath: string) {
     const dbFile = process.env.DATABASE_FILE || "../../prisma/search.db";
-
     const dbPath = path.join(__dirname, dbFile);
+    console.log("Database path:", dbPath);
 
     if (fs.existsSync(dbPath)) {
       try {
