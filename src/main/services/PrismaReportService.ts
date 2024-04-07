@@ -46,6 +46,7 @@ import { format } from "date-fns";
 import fs from "fs";
 import path from "path";
 import { exec } from "child_process";
+import { reports_5 } from "src/constants/Reports_5";
 
 const prisma = new PrismaClient();
 
@@ -75,10 +76,15 @@ export class PrismaReportService {
     report_id,
     report_name,
     release,
+    metric_types,
+    report_attributes,
+    exceptions,
+    reporting_period,
     institution_name,
     institution_id,
     created,
     created_by,
+    registry_record,
   }: Omit<Report, "id">): Promise<Report> {
     try {
       return await prisma.report.create({
@@ -86,10 +92,15 @@ export class PrismaReportService {
           report_id,
           report_name,
           release,
+          metric_types,
+          report_attributes,
+          exceptions,
+          reporting_period,
           institution_name,
           institution_id,
           created,
           created_by,
+          registry_record,
         },
       });
     } catch (error) {
@@ -887,11 +898,18 @@ export class PrismaReportService {
    * @returns {Promise<void>} - A promise that resolves when all the report information has been saved into the database.
    */
   async saveFetchedReport(report: IReport): Promise<void> {
+    console.log(report.Report_Header.Report_Filters);
+
     try {
       const savedReport = await this.createReport({
         report_id: report.Report_Header.Report_ID,
         report_name: report.Report_Header.Report_Name,
         release: report.Report_Header.Release,
+        metric_types: report.Report_Header.Metric_Types || "undefined",
+        report_attributes:
+          report.Report_Header.Report_Attributes || "undefined",
+        exceptions: report.Report_Header.Exceptions || "undefined",
+        reporting_period: report.Report_Header.Reporting_Period || "undefined",
         institution_name: report.Report_Header.Institution_Name || "undefined",
         institution_id:
           report.Report_Header.Institution_ID[0].Type +
@@ -899,19 +917,34 @@ export class PrismaReportService {
           report.Report_Header.Institution_ID[0].Value,
         created: report.Report_Header.Created,
         created_by: report.Report_Header.Created_By,
+        registry_record: report.Report_Header.Registry_Record || "undefined",
       });
 
-      for (const filter of report.Report_Header.Report_Filters) {
-        if (typeof filter === "string") return;
-        await this.createReportFilter({
-          reportId: savedReport.id,
-          filter_type: filter.Name,
-          value: filter.Value,
-        });
+      const filtersString = report.Report_Header.Report_Filters;
+      if (typeof filtersString === "string") {
+        const filtersArray = filtersString.split(";");
+        for (let filter of filtersArray) {
+          // If filter is a string like "Begin_Date=2024-01-01"
+          const [Name, Value] = filter.split("=");
+          await this.createReportFilter({
+            reportId: savedReport.id,
+            filter_type: Name,
+            value: Value,
+          });
+        }
+      } else if (Array.isArray(filtersString)) {
+        for (const filter of filtersString) {
+          await this.createReportFilter({
+            reportId: savedReport.id,
+            filter_type: filter.Name,
+            value: filter.Value,
+          });
+        }
       }
 
       if (report.Report_Header.Report_ID.includes("PR")) {
         for (const rawItem of report.Report_Items) {
+          console.log("Raw Item:", rawItem);
           const metricCounts = new Map<string, number>();
           const metricPeriods = new Map<
             string,
