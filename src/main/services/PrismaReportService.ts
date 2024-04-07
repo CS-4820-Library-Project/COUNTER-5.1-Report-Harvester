@@ -45,7 +45,7 @@ import { writeFile } from "fs-extra";
 import { format } from "date-fns";
 import fs from "fs";
 import path from "path";
-import { exec } from "child_process";
+import { execSync } from "child_process";
 import { reports_5 } from "src/constants/Reports_5";
 
 const prisma = new PrismaClient();
@@ -110,7 +110,7 @@ export class PrismaReportService {
   }
 
   async createReportFilter(
-    data: Omit<ReportFilter, "id">
+    data: Omit<ReportFilter, "id">,
   ): Promise<ReportFilter> {
     try {
       return await prisma.reportFilter.create({
@@ -898,8 +898,6 @@ export class PrismaReportService {
    * @returns {Promise<void>} - A promise that resolves when all the report information has been saved into the database.
    */
   async saveFetchedReport(report: IReport): Promise<void> {
-    console.log(report.Report_Header.Report_Filters);
-
     try {
       const savedReport = await this.createReport({
         report_id: report.Report_Header.Report_ID,
@@ -944,7 +942,6 @@ export class PrismaReportService {
 
       if (report.Report_Header.Report_ID.includes("PR")) {
         for (const rawItem of report.Report_Items) {
-          console.log("Raw Item:", rawItem);
           const metricCounts = new Map<string, number>();
           const metricPeriods = new Map<
             string,
@@ -1036,7 +1033,7 @@ export class PrismaReportService {
               null,
             publisher: drItem.Publisher,
             publisherId: drItem.Publisher_ID.map(
-              (id) => `${id.Type}:${id.Value}`
+              (id) => `${id.Type}:${id.Value}`,
             ).join(";"),
             platform: drItem.Platform,
           };
@@ -1128,7 +1125,7 @@ export class PrismaReportService {
             title: irItem.Title,
             publisher: irItem.Publisher,
             publisherId: irItem.Publisher_ID.map(
-              (id) => `${id.Type}:${id.Value}`
+              (id) => `${id.Type}:${id.Value}`,
             ).join(";"),
             platform: irItem.Platform,
             doi: irItem.Item_ID.find((id) => id.Type === "DOI")?.Value || null,
@@ -1223,7 +1220,7 @@ export class PrismaReportService {
             title: trItem.Title,
             publisher: trItem.Publisher,
             publisherId: trItem.Publisher_ID.map(
-              (id) => `${id.Type}:${id.Value}`
+              (id) => `${id.Type}:${id.Value}`,
             ).join(";"),
             platform: trItem.Platform,
             doi: trItem.Item_ID.find((id) => id.Type === "DOI")?.Value || null,
@@ -1419,7 +1416,7 @@ export class PrismaReportService {
     limit: number, // limit set to default 10 if not provided
     title?: string,
     issn?: string,
-    isbn?: string
+    isbn?: string,
   ): Promise<Report[]> {
     try {
       let whereClause: WhereClause = {};
@@ -1606,7 +1603,7 @@ export class PrismaReportService {
             default:
               return [];
           }
-        })
+        }),
       );
 
       // Flatten the array and map each item to its parent report
@@ -1643,7 +1640,7 @@ export class PrismaReportService {
 
     // Report Filters
     const reportFilters = report.ReportFilter?.map(
-      (filter: any) => `${filter.filter_type}=${filter.value}`
+      (filter: any) => `${filter.filter_type}=${filter.value}`,
     ).join(";");
     tsv += `Report_Filters\t${reportFilters}\n`;
 
@@ -1734,7 +1731,7 @@ export class PrismaReportService {
   async writeSearchedReportsToTSV(
     title?: string,
     issn?: string,
-    isbn?: string
+    isbn?: string,
   ): Promise<Report[]> {
     const reports = await this.searchReport(1, 250, title, issn, isbn);
 
@@ -1756,36 +1753,22 @@ export class PrismaReportService {
     return reports;
   }
 
-  // rebuilding database
   async rebuildDatabase() {
-    // specify the database file
-    const dbFile = process.env.DATABASE_FILE || "../../../prisma/search.db";
+    const dbFile = path.join(
+      __dirname,
+      process.env.DATABASE_FILE || "../../prisma/search.db",
+    );
 
-    // if the database file exists, delete the file
-    if (fs.existsSync(dbFile)) {
-      try {
+    try {
+      await prisma.$disconnect();
+      if (fs.existsSync(dbFile)) {
         await fs.promises.unlink(dbFile);
         console.log("Previous database file deleted.");
-      } catch (error) {
-        console.error("Error while deleting the database file:", error);
       }
-    }
 
-    // re-run the prisma migrations, which will create a new database file and apply the schema
-    try {
-      exec(
-        "npx prisma migrate dev --rebuild-database",
-        (error, stdout, stderr) => {
-          if (error) {
-            console.error("Error while running Prisma migrate:", error);
-            throw error;
-          } else if (stderr) {
-            console.warn("Warnings during Prisma migrate:", stderr);
-          } else {
-            console.log("Prisma migrate output:", stdout);
-          }
-        }
-      );
+      const stdout = execSync("npx prisma db push --force-reset").toString();
+
+      console.log("Prisma migrate output:", stdout);
     } catch (error) {
       console.error("Error while rebuilding the database:", error);
       throw error;
@@ -1794,7 +1777,6 @@ export class PrismaReportService {
 
   static async exportDatabase(exportPath: string) {
     const dbFile = process.env.DATABASE_FILE || "../../prisma/search.db";
-
     const dbPath = path.join(__dirname, dbFile);
 
     if (fs.existsSync(dbPath)) {
@@ -1804,7 +1786,7 @@ export class PrismaReportService {
 
         const exportFilePath = path.join(
           exportPath,
-          `CH_SearchDB_Export_${formattedDate}.db`
+          `CH_SearchDB_Export_${formattedDate}.db`,
         );
 
         fs.copyFileSync(dbPath, exportFilePath);
