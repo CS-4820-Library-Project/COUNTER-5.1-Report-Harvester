@@ -17,8 +17,54 @@ model Report {
   created          String
   created_by       String
   ReportFilter     ReportFilter[]
-  // MISSING HEADERS (REPORTING PERIOD, METRIC_TYPES, REPORT_ATTRIBUTES, )
-  ReportItem       ReportItem[]
+
+  // PR_Item
+  PR_Item PR_Item[]
+
+  // PR_P1_Item
+  PR_P1_Item PR_P1_Item[]
+
+  // DR_Item
+  DR_Item DR_Item[]
+
+  // DR_D1_Item
+  DR_D1_Item DR_D1_Item[]
+
+  // DR_D2_Item
+  DR_D2_Item DR_D2_Item[]
+
+  // TR_Item
+  TR_Item TR_Item[]
+
+  // TR_B1_Item
+  TR_B1_Item TR_B1_Item[]
+
+  // TR_B2_Item
+  TR_B2_Item TR_B2_Item[]
+
+  // TR_B3_Item
+  TR_B3_Item TR_B3_Item[]
+
+  // TR_J1_Item
+  TR_J1_Item TR_J1_Item[]
+
+  // TR_J2_Item
+  TR_J2_Item TR_J2_Item[]
+
+  // TR_J3_Item
+  TR_J3_Item TR_J3_Item[]
+
+  // TR_J4_Item
+  TR_J4_Item TR_J4_Item[]
+
+  // IR_Item
+  IR_Item IR_Item[]
+
+  // IR_A1_Item
+  IR_A1_Item IR_A1_Item[]
+
+  // IR_M1_Item
+  IR_M1_Item IR_M1_Item[]
 }
 
 model ReportFilter {
@@ -29,34 +75,440 @@ model ReportFilter {
   value       String
 }
 
-model ReportItem {
-  id             Int     @id @default(autoincrement())
-  reportId       Int
-  report         Report  @relation(fields: [reportId], references: [id])
-  title          String?
-  publisher      String?
-  publisher_id   String?
-  platform       String?
-  doi            String?
-  proprietary_id String?
-  isbn           String?
-  print_issn     String?
-  online_issn    String?
-  uri            String?
-  data_type      String?
-  metric_type    String?
-  // INCLUDE ALL COLUMNS POSISIBLE FILL AS NULL IF NOT AVAILABLE IN REPORT
-  // MISSING METRICS for each report type see counter types file to see all columns for each version
-
-  ReportMetric ReportMetric[]
+// PR_Item model
+model PR_Item {
+  id            Int             @id @default(autoincrement())
+  reportId      Int
+  report        Report          @relation(fields: [reportId], references: [id])
+  platform      String
+  metricType    String
+  periodTotal   Int
+  PR_ItemMetric PR_ItemMetric[]
 }
 
-model ReportMetric {
-  id           Int        @id @default(autoincrement())
+model PR_ItemMetric {
+  id           Int     @id @default(autoincrement())
   reportItemId Int
-  period       String // YYYY-MM
+  period       String
   value        Int
   metricType   String
-  //
-  reportItem   ReportItem @relation(fields: [reportItemId], references: [id])
+  PR_Item      PR_Item @relation(fields: [reportItemId], references: [id])
+}
+
+// PR P1 model
+model PR_P1_Item {
+  id                   Int                @id @default(autoincrement())
+  reportId             Int
+  report               Report             @relation(fields: [reportId], references: [id])
+  platform             String
+  metricType           String
+  reportingPeriodTotal Int
+  PR_P1_ItemMetric     PR_P1_ItemMetric[]
+}
+
+model PR_P1_ItemMetric {
+  id           Int        @id @default(autoincrement())
+  reportItemId Int
+  period       String
+  value        Int
+  metricType   String
+  PR_P1_Item   PR_P1_Item @relation(fields: [reportItemId], references: [id])
+}
+
+// DR_Item model
+model DR_Item {
+  id                   Int             @id @default(autoincrement())
+  reportId             Int
+  report               Report          @relation(fields: [reportId], references: [id])
+  database             String
+  proprietary          String?
+  publisher            String
+  publisherId          String?
+  platform             String
+  metricType           String
+  reportingPeriodTotal Int
+  DR_ItemMetric        DR_ItemMetric[]
+}
+
+model DR_ItemMetric {
+  id           Int     @id @default(autoincrement())
+  reportItemId Int
+  period       String
+  value        Int
+  metricType   String
+  DR_Item      DR_Item @relation(fields: [reportItemId], references: [id])
+}
+
+// DR_D1_Item model
+model DR_D1_Item {
+  id                   Int                @id @default(autoincrement())
+  reportId             Int
+  report               Report             @relation(fields: [reportId], references: [id])
+  database             String
+  proprietary          String?
+  publisher            String
+  publisherId          String?
+  platform             String
+  metricType           String
+  reportingPeriodTotal Int
+  DR_D1_ItemMetric     DR_D1_ItemMetric[]
+}
+
+model DR_D1_ItemMetric {
+  id           Int        @id @default(autoincrement())
+  reportItemId Int
+  period       String
+  value        Int
+  metricType   String
+  DR_D1_Item   DR_D1_Item @relation(fields: [reportItemId], references: [id])
+}
+
+// DR_D2_Item model
+model DR_D2_Item {
+  id                   Int                @id @default(autoincrement())
+  reportId             Int
+  report               Report             @relation(fields: [reportId], references: [id])
+  database             String
+  proprietary          String?
+  publisher            String
+  publisherId          String?
+  platform             String
+  metricType           String
+  reportingPeriodTotal Int
+  DR_D2_ItemMetric     DR_D2_ItemMetric[]
+}
+
+model DR_D2_ItemMetric {
+  id           Int        @id @default(autoincrement())
+  reportItemId Int
+  period       String
+  value        Int
+  metricType   String
+  DR_D2_Item   DR_D2_Item @relation(fields: [reportItemId], references: [id])
+}
+
+// TR_Item model
+model TR_Item {
+  id                   Int             @id @default(autoincrement())
+  reportId             Int
+  report               Report          @relation(fields: [reportId], references: [id])
+  title                String
+  publisher            String
+  publisherId          String?
+  platform             String
+  doi                  String?
+  yop                  String?
+  proprietaryId        String?
+  isbn                 String?
+  printIssn            String?
+  onlineIssn           String?
+  uri                  String?
+  dataType             String?
+  metricType           String
+  reportingPeriodTotal Int
+  TR_ItemMetric        TR_ItemMetric[]
+}
+
+model TR_ItemMetric {
+  id           Int     @id @default(autoincrement())
+  reportItemId Int
+  period       String
+  value        Int
+  metricType   String
+  TR_Item      TR_Item @relation(fields: [reportItemId], references: [id])
+}
+
+// TR_B1_Item model
+model TR_B1_Item {
+  id                   Int                @id @default(autoincrement())
+  reportId             Int
+  report               Report             @relation(fields: [reportId], references: [id])
+  title                String
+  publisher            String
+  publisherId          String?
+  platform             String
+  doi                  String?
+  yop                  String?
+  proprietaryId        String?
+  isbn                 String?
+  printIssn            String?
+  onlineIssn           String?
+  uri                  String?
+  dataType             String?
+  metricType           String
+  reportingPeriodTotal Int
+  TR_B1_ItemMetric     TR_B1_ItemMetric[]
+}
+
+model TR_B1_ItemMetric {
+  id           Int        @id @default(autoincrement())
+  reportItemId Int
+  period       String
+  value        Int
+  metricType   String
+  TR_B1_Item   TR_B1_Item @relation(fields: [reportItemId], references: [id])
+}
+
+// TR_B2_Item model
+model TR_B2_Item {
+  id                   Int                @id @default(autoincrement())
+  reportId             Int
+  report               Report             @relation(fields: [reportId], references: [id])
+  title                String
+  publisher            String
+  publisherId          String?
+  platform             String
+  doi                  String?
+  yop                  String?
+  proprietaryId        String?
+  isbn                 String?
+  printIssn            String?
+  onlineIssn           String?
+  uri                  String?
+  dataType             String?
+  metricType           String
+  reportingPeriodTotal Int
+  TR_B2_ItemMetric     TR_B2_ItemMetric[]
+}
+
+model TR_B2_ItemMetric {
+  id           Int        @id @default(autoincrement())
+  reportItemId Int
+  period       String
+  value        Int
+  metricType   String
+  TR_B2_Item   TR_B2_Item @relation(fields: [reportItemId], references: [id])
+}
+
+// TR_B3_Item model
+model TR_B3_Item {
+  id                   Int                @id @default(autoincrement())
+  reportId             Int
+  report               Report             @relation(fields: [reportId], references: [id])
+  title                String
+  publisher            String
+  publisherId          String?
+  platform             String
+  doi                  String?
+  yop                  String?
+  proprietaryId        String?
+  isbn                 String?
+  printIssn            String?
+  onlineIssn           String?
+  uri                  String?
+  dataType             String?
+  metricType           String
+  reportingPeriodTotal Int
+  TR_B3_ItemMetric     TR_B3_ItemMetric[]
+}
+
+model TR_B3_ItemMetric {
+  id           Int        @id @default(autoincrement())
+  reportItemId Int
+  period       String
+  value        Int
+  metricType   String
+  TR_B3_Item   TR_B3_Item @relation(fields: [reportItemId], references: [id])
+}
+
+// TR_J1_Item model
+model TR_J1_Item {
+  id                   Int                @id @default(autoincrement())
+  reportId             Int
+  report               Report             @relation(fields: [reportId], references: [id])
+  title                String
+  publisher            String
+  publisherId          String?
+  platform             String
+  doi                  String?
+  yop                  String?
+  proprietaryId        String?
+  isbn                 String?
+  printIssn            String?
+  onlineIssn           String?
+  uri                  String?
+  dataType             String?
+  metricType           String
+  reportingPeriodTotal Int
+  TR_J1_ItemMetric     TR_J1_ItemMetric[]
+}
+
+model TR_J1_ItemMetric {
+  id           Int        @id @default(autoincrement())
+  reportItemId Int
+  period       String
+  value        Int
+  metricType   String
+  TR_J1_Item   TR_J1_Item @relation(fields: [reportItemId], references: [id])
+}
+
+// TR_J2_Item model
+model TR_J2_Item {
+  id                   Int                @id @default(autoincrement())
+  reportId             Int
+  report               Report             @relation(fields: [reportId], references: [id])
+  title                String
+  publisher            String
+  publisherId          String?
+  platform             String
+  doi                  String?
+  yop                  String?
+  proprietaryId        String?
+  isbn                 String?
+  printIssn            String?
+  onlineIssn           String?
+  uri                  String?
+  dataType             String?
+  metricType           String
+  reportingPeriodTotal Int
+  TR_J2_ItemMetric     TR_J2_ItemMetric[]
+}
+
+model TR_J2_ItemMetric {
+  id           Int        @id @default(autoincrement())
+  reportItemId Int
+  period       String
+  value        Int
+  metricType   String
+  TR_J2_Item   TR_J2_Item @relation(fields: [reportItemId], references: [id])
+}
+
+// TR_J3_Item model
+model TR_J3_Item {
+  id                   Int                @id @default(autoincrement())
+  reportId             Int
+  report               Report             @relation(fields: [reportId], references: [id])
+  title                String
+  publisher            String
+  publisherId          String?
+  platform             String
+  doi                  String?
+  yop                  String?
+  proprietaryId        String?
+  isbn                 String?
+  printIssn            String?
+  onlineIssn           String?
+  uri                  String?
+  dataType             String?
+  metricType           String
+  reportingPeriodTotal Int
+  TR_J3_ItemMetric     TR_J3_ItemMetric[]
+}
+
+model TR_J3_ItemMetric {
+  id           Int        @id @default(autoincrement())
+  reportItemId Int
+  period       String
+  value        Int
+  metricType   String
+  TR_J3_Item   TR_J3_Item @relation(fields: [reportItemId], references: [id])
+}
+
+// TR_J4_Item model
+model TR_J4_Item {
+  id                   Int                @id @default(autoincrement())
+  reportId             Int
+  report               Report             @relation(fields: [reportId], references: [id])
+  title                String
+  publisher            String
+  publisherId          String?
+  platform             String
+  doi                  String?
+  yop                  String?
+  proprietaryId        String?
+  isbn                 String?
+  printIssn            String?
+  onlineIssn           String?
+  uri                  String?
+  dataType             String?
+  metricType           String
+  reportingPeriodTotal Int
+  TR_J4_ItemMetric     TR_J4_ItemMetric[]
+}
+
+model TR_J4_ItemMetric {
+  id           Int        @id @default(autoincrement())
+  reportItemId Int
+  period       String
+  value        Int
+  metricType   String
+  TR_J4_Item   TR_J4_Item @relation(fields: [reportItemId], references: [id])
+}
+
+// IR_Item model
+model IR_Item {
+  id                   Int             @id @default(autoincrement())
+  reportId             Int
+  report               Report          @relation(fields: [reportId], references: [id])
+  title                String?
+  publisher            String
+  publisherId          String?
+  platform             String
+  doi                  String?
+  item                 String?
+  yop                  String?
+  metricType           String
+  reportingPeriodTotal Int
+  IR_ItemMetric        IR_ItemMetric[]
+}
+
+model IR_ItemMetric {
+  id           Int     @id @default(autoincrement())
+  reportItemId Int
+  period       String
+  value        Int
+  metricType   String
+  IR_Item      IR_Item @relation(fields: [reportItemId], references: [id])
+}
+
+// IR_A1_Item model
+model IR_A1_Item {
+  id                   Int                @id @default(autoincrement())
+  reportId             Int
+  report               Report             @relation(fields: [reportId], references: [id])
+  title                String?
+  publisher            String
+  publisherId          String?
+  platform             String
+  doi                  String?
+  item                 String?
+  yop                  String?
+  metricType           String
+  reportingPeriodTotal Int
+  IR_A1_ItemMetric     IR_A1_ItemMetric[]
+}
+
+model IR_A1_ItemMetric {
+  id           Int        @id @default(autoincrement())
+  reportItemId Int
+  period       String
+  value        Int
+  metricType   String
+  IR_A1_Item   IR_A1_Item @relation(fields: [reportItemId], references: [id])
+}
+
+// IR_M1_Item model
+model IR_M1_Item {
+  id                   Int                @id @default(autoincrement())
+  reportId             Int
+  report               Report             @relation(fields: [reportId], references: [id])
+  title                String?
+  publisher            String
+  publisherId          String?
+  platform             String
+  doi                  String?
+  item                 String?
+  yop                  String?
+  metricType           String
+  reportingPeriodTotal Int
+  IR_M1_ItemMetric     IR_M1_ItemMetric[]
+}
+
+model IR_M1_ItemMetric {
+  id           Int        @id @default(autoincrement())
+  reportItemId Int
+  period       String
+  value        Int
+  metricType   String
+  IR_M1_Item   IR_M1_Item @relation(fields: [reportItemId], references: [id])
 }
