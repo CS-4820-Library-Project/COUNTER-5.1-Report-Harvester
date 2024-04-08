@@ -267,6 +267,7 @@ export class ReportService {
 
       // This collects all Item_ID types and turns them into parts of the TSV header
       report.Report_Items?.forEach((reportItem) => {
+        console.log("Report Items", reportItem.Item_ID);
         release === "5"
           ? reportItem.Item_ID?.forEach((itemID) => {
               if (!itemIdHeaders.includes(itemID.Type))
@@ -378,11 +379,14 @@ export class ReportService {
 
             // This will match all Item_ID values to the headers that are collected above
             itemIdHeaders?.forEach((itemIdHeader) => {
-              item.Item_ID?.forEach((itemId) => {
-                if (itemIdHeader == itemId.Type) {
-                  rowData += itemId.Value;
-                }
-              });
+              release === "5"
+                ? item.Item_ID?.forEach((itemID) => {
+                    if (itemIdHeader == itemID.Type) rowData += itemID.Value;
+                  })
+                : Object.entries(item.Item_ID).forEach(([itemID, value]) => {
+                    if (!itemIdHeaders.includes(itemID)) rowData += value;
+                  });
+
               rowData += `\t`;
             });
 
