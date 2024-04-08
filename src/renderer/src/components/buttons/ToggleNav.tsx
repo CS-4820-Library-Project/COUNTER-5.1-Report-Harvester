@@ -102,7 +102,7 @@ const ToggleNav = ({
           }}
           disabled={disabled}
         >
-          {isSelected ? <CheckCircle /> : <Circle />}
+          {isSelected && !disabled ? <CheckCircle /> : <Circle />}
         </Button>
 
         {/* Right Side */}
