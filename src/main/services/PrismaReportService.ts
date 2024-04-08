@@ -1471,8 +1471,8 @@ export class PrismaReportService {
                     },
                   },
                 },
-                // skip: (page - 1) * limit, // This will skip the items of previous pages
-                // take: limit, // This will limit the number of items returned
+                skip: (page - 1) * limit, // This will skip the items of previous pages
+                take: limit, // This will limit the number of items returned
               });
             case "TR_B1_Item":
               return prisma.tR_B1_Item.findMany({
@@ -1489,8 +1489,8 @@ export class PrismaReportService {
                     },
                   },
                 },
-                // skip: (page - 1) * limit, // This will skip the items of previous pages
-                // take: limit, // This will limit the number of items returned
+                skip: (page - 1) * limit, // This will skip the items of previous pages
+                take: limit, // This will limit the number of items returned
               });
             case "TR_B2_Item":
               return prisma.tR_B2_Item.findMany({
@@ -1507,8 +1507,8 @@ export class PrismaReportService {
                     },
                   },
                 },
-                // skip: (page - 1) * limit, // This will skip the items of previous pages
-                // take: limit, // This will limit the number of items returned
+                skip: (page - 1) * limit, // This will skip the items of previous pages
+                take: limit, // This will limit the number of items returned
               });
             case "TR_B3_Item":
               return prisma.tR_B3_Item.findMany({
@@ -1525,8 +1525,8 @@ export class PrismaReportService {
                     },
                   },
                 },
-                // skip: (page - 1) * limit, // This will skip the items of previous pages
-                // take: limit, // This will limit the number of items returned
+                skip: (page - 1) * limit, // This will skip the items of previous pages
+                take: limit, // This will limit the number of items returned
               });
             case "TR_J1_Item":
               return prisma.tR_J1_Item.findMany({
@@ -1543,8 +1543,8 @@ export class PrismaReportService {
                     },
                   },
                 },
-                // skip: (page - 1) * limit, // This will skip the items of previous pages
-                // take: limit, // This will limit the number of items returned
+                skip: (page - 1) * limit, // This will skip the items of previous pages
+                take: limit, // This will limit the number of items returned
               });
             case "TR_J2_Item":
               return prisma.tR_J2_Item.findMany({
@@ -1561,8 +1561,8 @@ export class PrismaReportService {
                     },
                   },
                 },
-                // skip: (page - 1) * limit, // This will skip the items of previous pages
-                // take: limit, // This will limit the number of items returned
+                skip: (page - 1) * limit, // This will skip the items of previous pages
+                take: limit, // This will limit the number of items returned
               });
             case "TR_J3_Item":
               return prisma.tR_J3_Item.findMany({
@@ -1579,8 +1579,8 @@ export class PrismaReportService {
                     },
                   },
                 },
-                // skip: (page - 1) * limit, // This will skip the items of previous pages
-                // take: limit, // This will limit the number of items returned
+                skip: (page - 1) * limit, // This will skip the items of previous pages
+                take: limit, // This will limit the number of items returned
               });
             case "TR_J4_Item":
               return prisma.tR_J4_Item.findMany({
