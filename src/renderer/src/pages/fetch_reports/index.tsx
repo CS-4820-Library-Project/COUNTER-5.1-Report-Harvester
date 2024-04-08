@@ -136,6 +136,7 @@ const FetchReportsPage = () => {
 
   useEffect(() => {
     setSelectedReports([]);
+    setSelectedVendors([]);
     version === "5.1" ? setReports(reports_5_1) : setReports(reports_5);
   }, [version]);
 
