@@ -107,9 +107,9 @@ export class ReportService {
         }
         // Process IR Report
         else if (reportId.includes("IR")) {
-          const irItem = item as I_IR_ReportItem;
-          const reportItem = item as I_IR_ReportItem;
-          reportItem["Item"] = irItem.Item;
+          const irItem = item as ITRIRReportItem;
+          const reportItem = item as ITRIRReportItem;
+          reportItem["Title"] = irItem.Title;
           reportItem["Item_ID"] = [
             {
               Type: "DOI",
@@ -162,6 +162,11 @@ export class ReportService {
     }
   }
 
+  /**
+   *  Converts a 5.1 IR report from JSON into an **IReport** object.
+   * @param data
+   * @returns  An **IReport** object.
+   */
   static get51IRFromJSON(data: any): IReport | null {
     const reportItems: ITRIRReportItem[] = [];
 
