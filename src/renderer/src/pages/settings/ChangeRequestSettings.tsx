@@ -185,9 +185,9 @@ const ChangeRequestSettings: React.FC = () => {
     });
 
     if (isSaved) {
-      // console.log("Settings saved successfully");
+      console.log("Settings saved successfully");
     } else {
-      // console.error("Error saving the settings");
+      console.error("Error saving the settings");
     }
   };
 
@@ -216,13 +216,15 @@ const ChangeRequestSettings: React.FC = () => {
       <FieldLabel>Request Interval (seconds)</FieldLabel>
       <Counter
         value={reportRequestInterval}
-        onDecrease={() => setReportRequestInterval(reportRequestInterval - 1)}
+        onDecrease={() =>
+          setReportRequestInterval(Math.max(reportRequestInterval - 1, 0))
+        }
         onIncrease={() => setReportRequestInterval(reportRequestInterval + 1)}
       />
       <FieldLabel>Request Timeout (seconds)</FieldLabel>
       <Counter
         value={requestTimeout}
-        onDecrease={() => setRequestTimeout(requestTimeout - 1)}
+        onDecrease={() => setRequestTimeout(Math.max(requestTimeout - 1, 0))}
         onIncrease={() => setRequestTimeout(requestTimeout + 1)}
       />
       {/*
