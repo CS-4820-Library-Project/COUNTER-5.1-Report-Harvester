@@ -267,13 +267,7 @@ export class ReportService {
       // PARSE REPORT ITEMS
       const reportItems = report.Report_Items;
 
-      // TODO: Find if is necessary to stop the function othewise skip items
       if (!reportItems) return tsv;
-      // throw (
-      //   "Report Items are missing\t" +
-      //   "Exceptions Found: " +
-      //   JSON.stringify(report.Report_Header?.Exceptions || "None")
-      // );
 
       const uniqueMonths: Set<string> = new Set();
       report.Report_Items.forEach((item) => {
@@ -301,7 +295,6 @@ export class ReportService {
           const metricCounts: { [metricType: string]: number[] } = {};
 
           if (!item.Performance) return tsv;
-          // throw "Performance is missing\t" + JSON.stringify(item);
 
           item.Performance.forEach((performance) => {
             if (!performance) return tsv;
