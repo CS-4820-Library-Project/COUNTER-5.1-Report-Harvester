@@ -29,7 +29,13 @@ export class ReportService {
 
     return {
       Report_Header: ReportService.getHeaderObjectFromJSON(data.Report_Header),
-      Report_Items: data.Report_Items,
+      Report_Items: data.Report_Items.map((reportItem) => {
+        if (data.Report_Header.Report_ID.includes("IR")) {
+          reportItem.Title = reportItem["Item"];
+          delete reportItem["Item"];
+        }
+        return reportItem;
+      }),
     } as IReport;
   }
 
@@ -173,7 +179,7 @@ export class ReportService {
             ).getDate();
 
             const reportItem: ITRIRReportItem = {
-              Title: item.Title ?? "",
+              Title: item.Item ?? "",
               Item: subItem.Item ?? "",
               Platform: item.Platform ?? "",
               Publisher_ID: subItem.Publisher_ID ?? "",
@@ -271,6 +277,7 @@ export class ReportService {
 
       // PARSE REPORT ITEMS
       const reportItems = report.Report_Items;
+
       if (!reportItems) return tsv;
 
       const uniqueMonths: Set<string> = new Set();
