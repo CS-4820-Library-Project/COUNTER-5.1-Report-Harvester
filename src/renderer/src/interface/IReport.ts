@@ -46,6 +46,7 @@ export interface IReportFilter {
  */
 export interface IReportItem {
   Platform: string;
+  Item_ID: IItemId[];
   Performance: IPerformance[];
 }
 
@@ -55,7 +56,6 @@ export interface IReportItem {
 export interface IItemPubReportItem extends IReportItem {
   Publisher_ID: IPublisherId[];
   Publisher: string;
-  Item_ID: IItemId[];
 }
 
 /**
