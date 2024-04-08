@@ -1,9 +1,8 @@
-import { MainReportIDs, Report_Id } from "src/types/counter";
+const createHeaderRow = (headers: Array<string>) => headers.join("\t");
 
-const TSVHeaderSuffix = "\tMetric_Type\tReporting_Period_Total\t";
+/** A generic suffix for TSV report item headers */
 
-const createHeaderRow = (headers: Array<string>) =>
-  headers.join("\t") + TSVHeaderSuffix;
+export const TSVHeaderSuffix = `${TSVHeaders.METRIC_TYPE}\t${TSVHeaders.REPORTING_PERIOD_TOTAL}\t`;
 
 /** An enum containing all different possible headers for a column in a TSV file */
 
@@ -27,7 +26,6 @@ export enum TSVHeaders {
   // Report Items
 
   TITLE = "Title",
-  ITEM = "Item",
   PUBLISHER = "Publisher",
   PUBLISHER_ID = "Publisher_ID",
   PLATFORM = "Platform",
@@ -40,43 +38,28 @@ export enum TSVHeaders {
   DATA_TYPE = "Data_Type",
   DATABASE = "Database",
   YOP = "YOP",
+  AUTHORS = "Authors",
+  PUBLICATION_DATE = "Publication_Date",
+  ARTICLE_VERSION = "Article_Version",
+  ACCESS_TYPE = "Access_Type",
+  ACCESS_METHOD = "Access_Method",
+  METRIC_TYPE = "Metric_Type",
+  REPORTING_PERIOD_TOTAL = "Reporting_Period_Total",
 }
 
-/** An array of all Item ID - related TSV headers for TRs */
-
-export const TRItemIdHeaders = [
-  TSVHeaders.DOI,
-  TSVHeaders.YOP,
-  TSVHeaders.PROPRIETARY_ID,
-  TSVHeaders.ISBN,
-  TSVHeaders.PRINT_ISSN,
-  TSVHeaders.ONLINE_ISSN,
-  TSVHeaders.URI,
-  TSVHeaders.DATA_TYPE,
+const DRTRIRSharedHeaders = [
+  TSVHeaders.PUBLISHER,
+  TSVHeaders.PUBLISHER_ID,
+  TSVHeaders.PLATFORM,
 ];
+
+const TRIRSharedHeaders = [TSVHeaders.TITLE, ...DRTRIRSharedHeaders];
 
 /** A dictionary mapping Report IDs (report types) to their respective TSV headers */
 
-export const ReportIDTSVHeaderDict = (
-  ReportID: MainReportIDs,
-  version: string
-): string => {
-  const headers = {
-    TR: createHeaderRow([
-      TSVHeaders.TITLE,
-      TSVHeaders.PUBLISHER,
-      TSVHeaders.PUBLISHER_ID,
-      TSVHeaders.PLATFORM,
-      ...TRItemIdHeaders,
-    ]),
-    PR: createHeaderRow([TSVHeaders.PLATFORM]),
-    IR: createHeaderRow([
-      version === "5" ? TSVHeaders.ITEM : TSVHeaders.TITLE,
-      TSVHeaders.PLATFORM,
-      TSVHeaders.DOI,
-      TSVHeaders.YOP,
-    ]),
-    DR: createHeaderRow([TSVHeaders.DATABASE, TSVHeaders.PLATFORM]),
-  };
-  return headers[ReportID];
+export const ReportIDTSVHeaderDict: Record<string, string> = {
+  TR: createHeaderRow([...TRIRSharedHeaders]),
+  PR: createHeaderRow([TSVHeaders.PLATFORM]),
+  IR: createHeaderRow([...TRIRSharedHeaders]),
+  DR: createHeaderRow([TSVHeaders.DATABASE, ...DRTRIRSharedHeaders]),
 };

@@ -11,8 +11,8 @@ import {
 } from "../../renderer/src/interface/IReport";
 import {
   ReportIDTSVHeaderDict,
-  TRItemIdHeaders,
   TSVHeaders as THd,
+  TSVHeaderSuffix,
 } from "../../renderer/src/const/TSVStrings";
 import { CounterVersion } from "../../renderer/src/const/CounterVersion";
 import { NameValue, TypeValue } from "src/types/reports";
@@ -82,6 +82,7 @@ export class ReportService {
 
         const reportItem: IReportItem = {
           Platform: item.Platform,
+          Item_ID: item.Item_ID,
           Performance: Array.from(performanceMap.values()),
         };
 
@@ -102,9 +103,7 @@ export class ReportService {
           reportItem["Publisher"] = trItem.Publisher;
           reportItem["Item_ID"] = Object.keys(trItem.Item_ID)?.map((key) => ({
             Type: key,
-            Value: trItem.Item_ID[
-              key as unknown as number
-            ] as unknown as string,
+            Value: trItem.Item_ID[key],
           }));
         }
         // Process IR Report
@@ -114,20 +113,10 @@ export class ReportService {
 
           reportItem["Item"] = irItem.Item;
 
-          reportItem["Item_ID"] = [
-            {
-              Type: "DOI",
-              Value: irItem.Item_ID[
-                "DOI" as unknown as number
-              ] as unknown as string,
-            },
-            {
-              Type: "YOP",
-              Value: irItem.Item_ID[
-                "YOP" as unknown as number
-              ] as unknown as string,
-            },
-          ];
+          reportItem["Item_ID"] = Object.keys(irItem.Item_ID)?.map((key) => ({
+            Type: key,
+            Value: irItem.Item_ID[key],
+          }));
         }
         // Process DR Report
         else if (reportId.includes("DR")) {
@@ -139,16 +128,12 @@ export class ReportService {
           reportItem["Publisher_ID"] = Object.keys(drItem.Publisher_ID)?.map(
             (key) => ({
               Type: key,
-              Value: drItem.Publisher_ID[
-                key as unknown as number
-              ] as unknown as string,
+              Value: drItem.Publisher_ID[key],
             })
           );
           reportItem["Item_ID"] = Object.keys(drItem.Item_ID)?.map((key) => ({
             Type: key,
-            Value: drItem.Item_ID[
-              key as unknown as number
-            ] as unknown as string,
+            Value: drItem.Item_ID[key],
           }));
         }
 
@@ -266,11 +251,21 @@ export class ReportService {
         tsv += `${THd.REGISTRY_RECORD}\t${header.Registry_Record ?? ""}\n`;
 
       tsv += "\n";
-      tsv +=
-        ReportIDTSVHeaderDict(
-          header.Report_ID.substring(0, 2) as MainReportIDs,
-          header.Release
-        ) ?? "";
+      tsv += ReportIDTSVHeaderDict[header.Report_ID.substring(0, 2)] ?? "";
+      tsv += "\t";
+
+      const itemIdHeaders: string[] = [];
+
+      // This collects all Item_ID types and turns them into parts of the TSV header
+      report.Report_Items.forEach((reportItem) => {
+        reportItem.Item_ID.forEach((itemID) => {
+          if (!itemIdHeaders.includes(itemID.Type))
+            itemIdHeaders.push(itemID.Type);
+        });
+      });
+
+      tsv += itemIdHeaders.join("\t") + "\t";
+      tsv += TSVHeaderSuffix;
 
       // PARSE REPORT ITEMS
       const reportItems = report.Report_Items;
@@ -342,57 +337,41 @@ export class ReportService {
                 (id: TypeValue) => `${id.Type}:${id.Value}`
               ).join(";");
               rowData += `${publisherIDs}\t${trItem.Platform}\t`;
-
-              // Get Item_IDs from Item
-              const itemIDs = trItem.Item_ID?.reduce(
-                (acc: { [key: string]: string }, id: TypeValue) => {
-                  //
-                  const isTRHeader = TRItemIdHeaders?.map(
-                    (h) => h as string
-                  ).includes(id.Type);
-
-                  if (isTRHeader) acc[id.Type] = id.Value;
-                  return acc;
-                },
-                {}
-              );
-
-              TRItemIdHeaders?.forEach((header) => {
-                if (!itemIDs) return "";
-                else rowData += `${itemIDs[header] || ``}\t`;
-              });
             }
 
             if (header.Report_ID.includes("IR")) {
-              const irItem = item as I_IR_ReportItem;
+              let irItem = item as ITRIRReportItem;
+              rowData += `${irItem.Title}\t${irItem.Publisher}\t`;
 
-              if (Array.isArray(irItem.Item_ID)) {
-                const doi =
-                  irItem.Item_ID.find((id: TypeValue) => id.Type === THd.DOI)
-                    ?.Value || "";
-                const yop =
-                  irItem.Item_ID.find((id: TypeValue) => id.Type === THd.YOP)
-                    ?.Value || "";
-
-                rowData += `${irItem.Item}\t${irItem.Platform}\t${doi}\t${yop}`;
-              } else {
-                rowData += `${irItem.Item}\t${irItem.Platform}\t\t`;
-              }
+              const publisherIDs = irItem.Publisher_ID?.map(
+                (id) => `${id.Type}:${id.Value}`
+              ).join(";");
+              rowData += `${publisherIDs}\t${irItem.Platform}\t`;
             }
 
             if (header.Report_ID.includes("DR")) {
-              const drItem = item as IDRReportItem;
+              let drItem = item as IDRReportItem;
+              rowData += `${drItem.Database}\t${drItem.Publisher}\t`;
 
-              if (!drItem.Item_ID) return tsv;
-
-              const propId =
-                drItem.Item_ID.find((id) => id.Type === THd.PROPRIETARY_ID)
-                  ?.Value || "";
-              rowData += `${drItem.Database}\t${drItem.Platform}\t${propId}\t`;
+              const publisherIDs = drItem.Publisher_ID?.map(
+                (id) => `${id.Type}:${id.Value}`
+              ).join(";");
+              rowData += `${publisherIDs}\t${drItem.Platform}\t`;
             }
 
-            if (header.Report_ID.includes("PR"))
+            if (header.Report_ID.includes("PR")) {
               rowData += `${item.Platform}\t`;
+            }
+
+            // This will match all Item_ID values to the headers that are collected above
+            itemIdHeaders.forEach((itemIdHeader) => {
+              item.Item_ID.forEach((itemId) => {
+                if (itemIdHeader == itemId.Type) {
+                  rowData += itemId.Value;
+                }
+              });
+              rowData += `\t`;
+            });
 
             rowData += `${metricType}\t${this.getSum(metricCounts[metricType])}\t`;
             rowData += `${metricCounts[metricType].join("\t")}\n`;
