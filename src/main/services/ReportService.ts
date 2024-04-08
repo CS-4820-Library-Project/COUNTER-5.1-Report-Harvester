@@ -10,14 +10,12 @@ import {
   I_IR_ReportItem,
 } from "../../renderer/src/interface/IReport";
 import {
-  getReportItemHeaders,
-  TRItemIdHeaders,
+  ReportIDTSVHeaderDict,
   TSVHeaders as THd,
   TSVHeaderSuffix,
 } from "../../renderer/src/const/TSVStrings";
 import { CounterVersion } from "../../renderer/src/const/CounterVersion";
 import { NameValue, TypeValue } from "src/types/reports";
-import { MainReportIDs } from "src/types/counter";
 
 /** The main service for cleansing, coercing, and analyzing Reports from SUSHI APIs. */
 
@@ -203,17 +201,8 @@ export class ReportService {
       });
     });
 
-    console.log(
-      JSON.stringify({
-        // Report_Header: ReportService.getHeaderObjectFromJSON(
-        //   data.Report_Header
-        // ),
-        Report_Items: reportItems[0],
-      })
-    );
-
     return {
-      Report_Header: ReportService.getHeaderObjectFromJSON(data.Report_Header), // direct call to self as `this` is lost in promise
+      Report_Header: ReportService.getHeaderObjectFromJSON(data.Report_Header),
       Report_Items: reportItems,
     } as IReport;
   }

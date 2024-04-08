@@ -1,9 +1,5 @@
 const createHeaderRow = (headers: Array<string>) => headers.join("\t");
 
-/** A generic suffix for TSV report item headers */
-
-export const TSVHeaderSuffix = `${TSVHeaders.METRIC_TYPE}\t${TSVHeaders.REPORTING_PERIOD_TOTAL}\t`;
-
 /** An enum containing all different possible headers for a column in a TSV file */
 
 export enum TSVHeaders {
@@ -63,3 +59,7 @@ export const ReportIDTSVHeaderDict: Record<string, string> = {
   IR: createHeaderRow([...TRIRSharedHeaders]),
   DR: createHeaderRow([TSVHeaders.DATABASE, ...DRTRIRSharedHeaders]),
 };
+
+/** A generic suffix for TSV report item headers */
+
+export const TSVHeaderSuffix = `${TSVHeaders.METRIC_TYPE}\t${TSVHeaders.REPORTING_PERIOD_TOTAL}\t`;
