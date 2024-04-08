@@ -58,22 +58,22 @@ const HelpMessages = {
   },
   vendorsPage: {
     Help: {
-      url: "https://github.com/CS-4820-Library-Project/COUNTER-5.1-Report-Harvester/blob/main/README.md",
+      url: "https://github.com/CS-4820-Library-Project/COUNTER-5.1-Report-Harvester/wiki/Vendors",
     },
   },
   fetchReportsPage: {
     Help: {
-      url: "https://github.com/CS-4820-Library-Project/COUNTER-5.1-Report-Harvester/blob/main/README.md",
+      url: "https://github.com/CS-4820-Library-Project/COUNTER-5.1-Report-Harvester/wiki/Fetch-Reports-Page",
     },
   },
   settingsPage: {
     Help: {
-      url: "https://github.com/CS-4820-Library-Project/COUNTER-5.1-Report-Harvester/blob/main/README.md",
+      url: "https://github.com/CS-4820-Library-Project/COUNTER-5.1-Report-Harvester/wiki/Settings",
     },
   },
   searchReportsPage: {
     Help: {
-      url: "https://github.com/CS-4820-Library-Project/COUNTER-5.1-Report-Harvester/blob/main/README.md",
+      url: "https://github.com/CS-4820-Library-Project/COUNTER-5.1-Report-Harvester/wiki/Search-Title-Report-Page",
     },
   },
 };
