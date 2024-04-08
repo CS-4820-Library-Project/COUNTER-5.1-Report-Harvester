@@ -57,7 +57,7 @@ export const TRItemIdHeaders = [
 
 /** A dictionary mapping Report IDs (report types) to their respective TSV headers */
 
-export const ReportIDTSVHeaderDict = (
+export const getReportItemHeaders = (
   ReportID: MainReportIDs,
   version: string
 ): string => {
@@ -71,7 +71,7 @@ export const ReportIDTSVHeaderDict = (
     ]),
     PR: createHeaderRow([TSVHeaders.PLATFORM]),
     IR: createHeaderRow([
-      version === "5" ? TSVHeaders.ITEM : TSVHeaders.TITLE,
+      TSVHeaders.ITEM,
       TSVHeaders.PLATFORM,
       TSVHeaders.DOI,
       TSVHeaders.YOP,

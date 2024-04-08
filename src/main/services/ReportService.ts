@@ -10,7 +10,7 @@ import {
   I_IR_ReportItem,
 } from "../../renderer/src/interface/IReport";
 import {
-  ReportIDTSVHeaderDict,
+  getReportItemHeaders,
   TRItemIdHeaders,
   TSVHeaders as THd,
 } from "../../renderer/src/const/TSVStrings";
@@ -109,7 +109,7 @@ export class ReportService {
         else if (reportId.includes("IR")) {
           const irItem = item as ITRIRReportItem;
           const reportItem = item as ITRIRReportItem;
-          reportItem["Title"] = irItem.Title;
+          reportItem["Item"] = irItem.Item ?? "";
           reportItem["Item_ID"] = [
             {
               Type: "DOI",
@@ -187,11 +187,12 @@ export class ReportService {
             ).getDate();
 
             const reportItem: ITRIRReportItem = {
-              Title: item.Title,
+              Title: item.Title ?? "",
+              Item: subItem.Item ?? "",
               Platform: item.Platform ?? "",
-              Publisher_ID: subItem.Publisher_ID,
-              Publisher: subItem.Publisher,
-              Item_ID: item.Item_ID,
+              Publisher_ID: subItem.Publisher_ID ?? "",
+              Publisher: subItem.Publisher ?? "",
+              Item_ID: item.Item_ID ?? "",
               Performance: [
                 {
                   Period: {
@@ -213,6 +214,15 @@ export class ReportService {
         });
       });
     });
+
+    console.log(
+      JSON.stringify({
+        // Report_Header: ReportService.getHeaderObjectFromJSON(
+        //   data.Report_Header
+        // ),
+        Report_Items: reportItems[0],
+      })
+    );
 
     return {
       Report_Header: ReportService.getHeaderObjectFromJSON(data.Report_Header), // direct call to self as `this` is lost in promise
@@ -267,7 +277,7 @@ export class ReportService {
 
       tsv += "\n";
       tsv +=
-        ReportIDTSVHeaderDict(
+        getReportItemHeaders(
           header.Report_ID.substring(0, 2) as MainReportIDs,
           header.Release
         ) ?? "";
@@ -302,7 +312,6 @@ export class ReportService {
           const metricCounts: { [metricType: string]: number[] } = {};
 
           if (!item.Performance) return tsv;
-          // throw "Performance is missing\t" + JSON.stringify(item);
 
           item.Performance.forEach((performance) => {
             if (!performance) return tsv;
@@ -364,7 +373,7 @@ export class ReportService {
             }
 
             if (header.Report_ID.includes("IR")) {
-              const irItem = item as I_IR_ReportItem;
+              const irItem = item as ITRIRReportItem;
 
               if (Array.isArray(irItem.Item_ID)) {
                 const doi =
@@ -374,9 +383,9 @@ export class ReportService {
                   irItem.Item_ID.find((id: TypeValue) => id.Type === THd.YOP)
                     ?.Value || "";
 
-                rowData += `${irItem.Item}\t${irItem.Platform}\t${doi}\t${yop}`;
+                rowData += `${irItem.Item ?? ""}\t${irItem.Platform ?? ""}\t${doi}\t${yop}`;
               } else {
-                rowData += `${irItem.Item}\t${irItem.Platform}\t\t`;
+                rowData += `${irItem.Item ?? ""}\t${irItem.Platform ?? ""}\t\t`;
               }
             }
 
