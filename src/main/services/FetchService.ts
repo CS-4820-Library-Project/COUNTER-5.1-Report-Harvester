@@ -112,7 +112,6 @@ export class FetchService {
       ) => {
         const report = { reportId, success, errors, warnings };
 
-        // Determine if the vendor is 'main' or 'custom'
         const reportType = custom ? "custom" : "main";
 
         const vendor = acc[reportType].vendors.find(
@@ -223,14 +222,6 @@ export class FetchService {
             await new Promise((resolve) =>
               setTimeout(resolve, requestInterval)
             );
-
-            // TODO: Remove console log
-            // console.log(
-            //   "\nThrottling requests for",
-            //   vendor.name,
-            //   "... With Interval",
-            //   requestInterval
-            // );
 
             const result = await FetchService.fetchReport(
               vendor,
@@ -366,12 +357,9 @@ export class FetchService {
         endDate
       );
 
-      // TODO: THROWS MANY ERRORS
       TSVService.writeTSVReport(tsvFilename, tsv, isCustomReport);
 
-      // TODO: DATABASE CRASHING
-      // if (reportSettings.id === "TR")
-      // await prismaReportService.saveFetchedReport(report);
+      await prismaReportService.saveFetchedReport(report);
 
       fetchResult.success = true;
       fetchResult.timestamp = new Date().toISOString();
@@ -383,7 +371,7 @@ export class FetchService {
       let errorMessage = logHeader + error;
       errorMessage += error;
 
-      // console.log(errorMessage);
+      console.log(errorMessage);
 
       logger.log(errorMessage);
 
@@ -481,7 +469,7 @@ export class FetchService {
     if (response.headers.get("content-type")?.includes("application/json")) {
       data = await response.json().catch(() => {
         fetchingError +=
-          "Invalid JSON Format ( " + JSON.stringify(response) + " ):\n";
+          "Invalid JSON Format ( " + JSON.stringify(response) + " ):";
 
         throw fetchingError;
       });

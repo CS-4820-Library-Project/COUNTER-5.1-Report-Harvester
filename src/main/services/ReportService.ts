@@ -28,15 +28,10 @@ export class ReportService {
       return null;
     }
 
-    if (data.Report_Header?.Report_ID.includes("IR"))
-      return {
-        Report_Header: ReportService.getHeaderObjectFromJSON(
-          data.Report_Header
-        ),
-        Report_Items: data.Report_Items,
-      } as IReport;
-
-    return null;
+    return {
+      Report_Header: ReportService.getHeaderObjectFromJSON(data.Report_Header),
+      Report_Items: data.Report_Items,
+    } as IReport;
   }
 
   /** Converts a 5.1 report from JSON into an **IReport** object. */
@@ -541,7 +536,7 @@ export class ReportService {
       // Get Reporting_Period from filters
       if (member === "Reporting_Period") {
         return jsonHeader["Report_Filters"]
-          .filter((filter: NameValue) =>
+          ?.filter((filter: NameValue) =>
             ["Begin_Date", "End_Date"].includes(filter.Name)
           )
           .sort((a: NameValue, b: NameValue) => a.Name.localeCompare(b.Name))
