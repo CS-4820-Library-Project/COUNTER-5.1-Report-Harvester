@@ -264,8 +264,8 @@ export class ReportService {
       const itemIdHeaders: string[] = [];
 
       // This collects all Item_ID types and turns them into parts of the TSV header
-      report.Report_Items.forEach((reportItem) => {
-        reportItem.Item_ID.forEach((itemID) => {
+      report.Report_Items?.forEach((reportItem) => {
+        reportItem.Item_ID?.forEach((itemID) => {
           if (!itemIdHeaders.includes(itemID.Type))
             itemIdHeaders.push(itemID.Type);
         });
@@ -280,10 +280,10 @@ export class ReportService {
       if (!reportItems) return tsv;
 
       const uniqueMonths: Set<string> = new Set();
-      report.Report_Items.forEach((item) => {
+      report.Report_Items?.forEach((item) => {
         if (!item) return tsv;
 
-        item.Performance.forEach((performance) => {
+        item.Performance?.forEach((performance) => {
           if (!performance) return tsv;
 
           const startDate = performance.Period.Begin_Date;
@@ -299,17 +299,17 @@ export class ReportService {
       tsv += monthHeaders.join("\t") + "\n";
 
       if (report.Report_Items)
-        report.Report_Items.forEach((item) => {
+        report.Report_Items?.forEach((item) => {
           if (!item || !item.Performance) return tsv;
 
           const metricCounts: { [metricType: string]: number[] } = {};
 
           if (!item.Performance) return tsv;
 
-          item.Performance.forEach((performance) => {
+          item.Performance?.forEach((performance) => {
             if (!performance) return tsv;
 
-            performance.Instance.forEach((instance) => {
+            performance.Instance?.forEach((instance) => {
               if (!metricCounts[instance.Metric_Type]) {
                 metricCounts[instance.Metric_Type] = new Array(
                   monthHeaders.length
@@ -371,8 +371,8 @@ export class ReportService {
             }
 
             // This will match all Item_ID values to the headers that are collected above
-            itemIdHeaders.forEach((itemIdHeader) => {
-              item.Item_ID.forEach((itemId) => {
+            itemIdHeaders?.forEach((itemIdHeader) => {
+              item.Item_ID?.forEach((itemId) => {
                 if (itemIdHeader == itemId.Type) {
                   rowData += itemId.Value;
                 }
