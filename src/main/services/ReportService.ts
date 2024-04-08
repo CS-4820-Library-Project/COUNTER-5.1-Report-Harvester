@@ -27,7 +27,13 @@ export class ReportService {
     }
     return {
       Report_Header: ReportService.getHeaderObjectFromJSON(data.Report_Header),
-      Report_Items: data.Report_Items,
+      Report_Items: data.Report_Items.map(reportItem => {
+        if (data.Report_Header.Report_ID.includes("IR")) {
+          reportItem.Title = reportItem["Item"]
+          delete reportItem["Item"];
+        }
+        return reportItem;
+      }),
     } as IReport;
   }
 
@@ -36,7 +42,7 @@ export class ReportService {
   static get51ReportFromJson(data: any): IReport | null {
     try {
       if (data.Report_Header.Report_ID.includes("IR"))
-        return ReportService.get51IRFromJSON(data); // direct call to self as `this` is lost in promise
+        return ReportService.get51IRFromJSON(data);
 
       const reportId = data.Report_Header.Report_ID;
       const reportItems = data.Report_Items?.map((item: any) => {
@@ -170,7 +176,7 @@ export class ReportService {
             ).getDate();
 
             const reportItem: ITRIRReportItem = {
-              Title: item.Title,
+              Title: item.Item,
               Platform: item.Platform ?? "",
               Publisher_ID: subItem.Publisher_ID,
               Publisher: subItem.Publisher,
