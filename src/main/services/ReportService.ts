@@ -272,7 +272,7 @@ export class ReportService {
       });
 
       tsv += itemIdHeaders.join("\t") + "\t";
-      tsv += TSVHeaderSuffix;
+      // tsv += TSVHeaderSuffix;
 
       // PARSE REPORT ITEMS
       const reportItems = report.Report_Items;
