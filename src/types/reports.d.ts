@@ -47,3 +47,13 @@ export type FetchResults = {
   failed: number;
   log: string;
 };
+
+export type NameValue = {
+  Name: string;
+  Value: string;
+};
+
+export type TypeValue = {
+  Type: string;
+  Value: string;
+};

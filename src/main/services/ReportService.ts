@@ -6,6 +6,8 @@ import {
   IReportHeader,
   IReportItem,
   ITRIRReportItem,
+  ITRReportItem,
+  I_IR_ReportItem,
 } from "../../renderer/src/interface/IReport";
 import {
   ReportIDTSVHeaderDict,
@@ -13,8 +15,8 @@ import {
   TSVHeaders as THd,
 } from "../../renderer/src/const/TSVStrings";
 import { CounterVersion } from "../../renderer/src/const/CounterVersion";
-import { json } from "express";
-import { Count } from "@prisma/client/runtime/library";
+import { NameValue, TypeValue } from "src/types/reports";
+import { MainReportIDs } from "src/types/counter";
 
 /** The main service for cleansing, coercing, and analyzing Reports from SUSHI APIs. */
 
@@ -25,10 +27,16 @@ export class ReportService {
     if (!(data && data.Report_Header && data.Report_Items)) {
       return null;
     }
-    return {
-      Report_Header: ReportService.getHeaderObjectFromJSON(data.Report_Header),
-      Report_Items: data.Report_Items,
-    } as IReport;
+
+    if (data.Report_Header?.Report_ID.includes("IR"))
+      return {
+        Report_Header: ReportService.getHeaderObjectFromJSON(
+          data.Report_Header
+        ),
+        Report_Items: data.Report_Items,
+      } as IReport;
+
+    return null;
   }
 
   /** Converts a 5.1 report from JSON into an **IReport** object. */
@@ -106,10 +114,10 @@ export class ReportService {
         }
         // Process IR Report
         else if (reportId.includes("IR")) {
-          const irItem = item as ITRIRReportItem;
-          const reportItem = item as ITRIRReportItem;
+          const irItem = item as I_IR_ReportItem;
+          const reportItem = item as I_IR_ReportItem;
 
-          reportItem["Title"] = irItem.Title;
+          reportItem["Item"] = irItem.Item;
 
           reportItem["Item_ID"] = [
             {
@@ -160,7 +168,7 @@ export class ReportService {
       } as IReport;
     } catch (error) {
       const logHeader = `Processing Report Data\t`;
-      console.log(logHeader + error);
+      // console.log(logHeader + error);
       throw logHeader + error;
     }
   }
@@ -227,8 +235,6 @@ export class ReportService {
 
     try {
       // PARSE REPORT HEADERS
-
-      console.log(JSON.stringify(report.Report_Header));
       const header = report.Report_Header;
       if (!header)
         throw (
@@ -260,20 +266,20 @@ export class ReportService {
 
       tsv += `${THd.CREATED}\t${header.Created}\n`;
       tsv += `${THd.CREATED_BY}\t${header.Created_By}\n`;
-      tsv += `${THd.REGISTRY_RECORD}\t${header.Registry_Record ?? ""}\n`;
+
+      if (header.Release == "5.1")
+        tsv += `${THd.REGISTRY_RECORD}\t${header.Registry_Record ?? ""}\n`;
+
       tsv += "\n";
-      tsv += ReportIDTSVHeaderDict[header.Report_ID.substring(0, 2)] ?? "";
+      tsv +=
+        ReportIDTSVHeaderDict(
+          header.Report_ID.substring(0, 2) as MainReportIDs,
+          header.Release
+        ) ?? "";
 
       // PARSE REPORT ITEMS
       const reportItems = report.Report_Items;
-
-      // TODO: Find if is necessary to stop the function othewise skip items
       if (!reportItems) return tsv;
-      // throw (
-      //   "Report Items are missing\t" +
-      //   "Exceptions Found: " +
-      //   JSON.stringify(report.Report_Header?.Exceptions || "None")
-      // );
 
       const uniqueMonths: Set<string> = new Set();
       report.Report_Items.forEach((item) => {
@@ -334,17 +340,17 @@ export class ReportService {
             let rowData = ``;
 
             if (header.Report_ID.includes("TR")) {
-              let trItem = item as ITRIRReportItem;
+              let trItem = item as ITRReportItem;
               rowData += `${trItem.Title}\t${trItem.Publisher}\t`;
 
               const publisherIDs = trItem.Publisher_ID?.map(
-                (id) => `${id.Type}:${id.Value}`
+                (id: TypeValue) => `${id.Type}:${id.Value}`
               ).join(";");
               rowData += `${publisherIDs}\t${trItem.Platform}\t`;
 
               // Get Item_IDs from Item
               const itemIDs = trItem.Item_ID?.reduce(
-                (acc: { [key: string]: string }, id) => {
+                (acc: { [key: string]: string }, id: TypeValue) => {
                   //
                   const isTRHeader = TRItemIdHeaders?.map(
                     (h) => h as string
@@ -363,17 +369,19 @@ export class ReportService {
             }
 
             if (header.Report_ID.includes("IR")) {
-              const irItem = item as ITRIRReportItem;
+              const irItem = item as I_IR_ReportItem;
 
               if (Array.isArray(irItem.Item_ID)) {
                 const doi =
-                  irItem.Item_ID.find((id) => id.Type === THd.DOI)?.Value || "";
+                  irItem.Item_ID.find((id: TypeValue) => id.Type === THd.DOI)
+                    ?.Value || "";
                 const yop =
-                  irItem.Item_ID.find((id) => id.Type === THd.YOP)?.Value || "";
+                  irItem.Item_ID.find((id: TypeValue) => id.Type === THd.YOP)
+                    ?.Value || "";
 
-                rowData += `${irItem.Title}\t${irItem.Platform}\t${doi}\t${yop}`;
+                rowData += `${irItem.Item}\t${irItem.Platform}\t${doi}\t${yop}`;
               } else {
-                rowData += `${irItem.Title}\t${irItem.Platform}\t\t`;
+                rowData += `${irItem.Item}\t${irItem.Platform}\t\t`;
               }
             }
 
@@ -402,7 +410,7 @@ export class ReportService {
     } catch (error) {
       let logMessage = `Converting Report to TSV\t`;
       logMessage += error;
-      console.log(logMessage);
+      // console.log(logMessage);
       throw logMessage;
     }
   }
@@ -508,7 +516,7 @@ export class ReportService {
           : Object.keys(jsonHeader.Institution_ID)?.map((key) => ({
               Type: key,
               Value: jsonHeader.Institution_ID[key],
-            })),
+            })) || "",
       Created: jsonHeader.Created,
       Created_By: jsonHeader.Created_By,
       Registry_Record: jsonHeader.Registry_Record ?? "",
@@ -519,21 +527,49 @@ export class ReportService {
     member: string,
     jsonHeader: { [key: string]: any }
   ): string {
-    if (!jsonHeader[member]) return "";
+    let filters = jsonHeader[member];
+
+    if (!filters && member !== "Reporting_Period") return "";
 
     if (jsonHeader.Release == "5") {
-      return jsonHeader[member]
-        .map((filter) => {
+      // Remove Begin_Date and End_Date from filters
+      if (member === "Report_Filters")
+        filters = filters.filter((filter: any) => {
+          return filter.Name !== "Begin_Date" && filter.Name !== "End_Date";
+        });
+
+      // Get Reporting_Period from filters
+      if (member === "Reporting_Period") {
+        return jsonHeader["Report_Filters"]
+          .filter((filter: NameValue) =>
+            ["Begin_Date", "End_Date"].includes(filter.Name)
+          )
+          .sort((a: NameValue, b: NameValue) => a.Name.localeCompare(b.Name))
+          .map((filter: NameValue) => `${filter.Name}=${filter.Value}`)
+          .join(";");
+      }
+
+      return filters
+        .map((filter: any) => {
+          //
+          if (member === "Exceptions") {
+            let exceptionString = `${filter.Code}=${filter.Message}`;
+            if (filter.Data) exceptionString += `(${filter.Data})`;
+
+            return exceptionString;
+          }
+
           if (Array.isArray(filter.Value)) {
             return `${filter.Name}=${(filter.Value as string[]).join("|")}`;
-          } else {
-            return `${filter.Name}=${filter.Value}`;
           }
+          //
+          else return `${filter.Name}=${filter.Value}`;
         })
         .join(";");
     }
 
-    return Object.keys(jsonHeader[member])
+    // For 5.1
+    return Object.keys(filters)
       ?.map((key) => {
         let result = `${key}=`;
         let memberValue = jsonHeader[member][key];

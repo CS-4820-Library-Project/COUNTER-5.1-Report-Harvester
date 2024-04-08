@@ -371,7 +371,7 @@ export class FetchService {
 
       // TODO: DATABASE CRASHING
       // if (reportSettings.id === "TR")
-      await prismaReportService.saveFetchedReport(report);
+      // await prismaReportService.saveFetchedReport(report);
 
       fetchResult.success = true;
       fetchResult.timestamp = new Date().toISOString();
