@@ -12,7 +12,6 @@ import {
 import {
   ReportIDTSVHeaderDict,
   TSVHeaders as THd,
-  TSVHeaderSuffix,
 } from "../../renderer/src/const/TSVStrings";
 import { CounterVersion } from "../../renderer/src/const/CounterVersion";
 import { NameValue, TypeValue } from "src/types/reports";
