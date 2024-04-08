@@ -228,9 +228,11 @@ export class ReportService {
           JSON.stringify(report)
         );
 
+      const release = header.Release;
+
       tsv += `${THd.REPORT_NAME}\t${header.Report_Name}\n`;
       tsv += `${THd.REPORT_ID}\t${header.Report_ID}\n`;
-      tsv += `${THd.RELEASE}\t${header.Release}\n`;
+      tsv += `${THd.RELEASE}\t${release}\n`;
       tsv += `${THd.INST_NAME}\t${header.Institution_Name}\n`;
 
       // Convert Institution_ID to string
@@ -254,7 +256,7 @@ export class ReportService {
       tsv += `${THd.CREATED}\t${header.Created}\n`;
       tsv += `${THd.CREATED_BY}\t${header.Created_By}\n`;
 
-      if (header.Release == "5.1")
+      if (release == "5.1")
         tsv += `${THd.REGISTRY_RECORD}\t${header.Registry_Record ?? ""}\n`;
 
       tsv += "\n";
@@ -265,10 +267,14 @@ export class ReportService {
 
       // This collects all Item_ID types and turns them into parts of the TSV header
       report.Report_Items?.forEach((reportItem) => {
-        reportItem.Item_ID?.forEach((itemID) => {
-          if (!itemIdHeaders.includes(itemID.Type))
-            itemIdHeaders.push(itemID.Type);
-        });
+        release === "5"
+          ? reportItem.Item_ID?.forEach((itemID) => {
+              if (!itemIdHeaders.includes(itemID.Type))
+                itemIdHeaders.push(itemID.Type);
+            })
+          : Object.keys(reportItem.Item_ID).forEach((key) => {
+              if (!itemIdHeaders.includes(key)) itemIdHeaders.push(key);
+            });
       });
 
       tsv += itemIdHeaders.join("\t") + "\t";
@@ -605,7 +611,7 @@ export class ReportService {
         .join(";");
     } catch (error) {
       let logMessage = `Getting Semicolon Delimited String 5.1\t`;
-      console.log(logMessage, error);
+      // console.log(logMessage, error);
       throw logMessage;
     }
   }
