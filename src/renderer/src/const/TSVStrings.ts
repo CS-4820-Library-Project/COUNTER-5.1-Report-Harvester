@@ -1,7 +1,8 @@
-const TSVHeaderSuffix = '\tMetric_Type\tReporting_Period_Total\t';
+const createHeaderRow = (headers: Array<string>) => headers.join('\t')
 
-const createHeaderRow = (headers: Array<string>) => headers.join('\t') + TSVHeaderSuffix;
+/** A generic suffix for TSV report item headers */
 
+export const TSVHeaderSuffix = `${TSVHeaders.METRIC_TYPE}\t${TSVHeaders.REPORTING_PERIOD_TOTAL}\t`;
 
 /** An enum containing all different possible headers for a column in a TSV file */
 
@@ -37,27 +38,40 @@ export enum TSVHeaders {
     URI = "URI",
     DATA_TYPE = "Data_Type",
     DATABASE = "Database",
-    YOP = "YOP"
+    YOP = "YOP",
+    AUTHORS = "Authors",
+    PUBLICATION_DATE = "Publication_Date",
+    ARTICLE_VERSION = "Article_Version",
+    ACCESS_TYPE = "Access_Type",
+    ACCESS_METHOD = "Access_Method",
+    METRIC_TYPE = "Metric_Type",
+    REPORTING_PERIOD_TOTAL = "Reporting_Period_Total"
 }
 
+const DRTRIRSharedHeaders = [
+    TSVHeaders.PUBLISHER, TSVHeaders.PUBLISHER_ID, TSVHeaders.PLATFORM
+]
 
-/** An array of all Item ID - related TSV headers for TRs */
-
-export const TRItemIdHeaders = [
-    TSVHeaders.DOI, TSVHeaders.YOP, TSVHeaders.PROPRIETARY_ID, TSVHeaders.ISBN, TSVHeaders.PRINT_ISSN,
-    TSVHeaders.ONLINE_ISSN, TSVHeaders.URI, TSVHeaders.DATA_TYPE
-];
-
+const TRIRSharedHeaders = [
+    TSVHeaders.TITLE, ...DRTRIRSharedHeaders
+]
 
 /** A dictionary mapping Report IDs (report types) to their respective TSV headers */
 
 export const ReportIDTSVHeaderDict: Record<string, string> = {
     "TR": createHeaderRow([
-        TSVHeaders.TITLE, TSVHeaders.PUBLISHER, TSVHeaders.PUBLISHER_ID,
-        TSVHeaders.PLATFORM, ...TRItemIdHeaders
+        ...TRIRSharedHeaders
     ]),
-    "PR": createHeaderRow([TSVHeaders.PLATFORM]),
-    "IR": createHeaderRow([TSVHeaders.TITLE, TSVHeaders.PLATFORM, TSVHeaders.DOI, TSVHeaders.YOP]),
-    "DR": createHeaderRow([TSVHeaders.DATABASE, TSVHeaders.PLATFORM])
+    "PR": createHeaderRow([
+        TSVHeaders.PLATFORM
+    ]),
+    "IR": createHeaderRow([
+        ...TRIRSharedHeaders
+    ]),
+    "DR": createHeaderRow([
+        TSVHeaders.DATABASE, ...DRTRIRSharedHeaders
+    ])
 }
+
+
 
