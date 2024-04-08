@@ -37,6 +37,7 @@ import {
 } from "@prisma/client";
 import {
   IDRReportItem,
+  IInstitutionId,
   IReport,
   ITRIRReportItem,
 } from "src/renderer/src/interface/IReport";
@@ -45,7 +46,6 @@ import { format } from "date-fns";
 import fs from "fs";
 import path from "path";
 import { execSync } from "child_process";
-import { reports_5 } from "src/constants/Reports_5";
 import { writeFile } from "../utils/files";
 import { TypeValue } from "src/types/reports";
 
@@ -900,22 +900,23 @@ export class PrismaReportService {
    */
   async saveFetchedReport(report: IReport): Promise<void> {
     try {
+      const header = report.Report_Header;
       const savedReport = await this.createReport({
-        report_id: report.Report_Header.Report_ID,
-        report_name: report.Report_Header.Report_Name,
-        release: report.Report_Header.Release,
-        metric_types: report.Report_Header.Metric_Types || "",
-        report_attributes: report.Report_Header.Report_Attributes || "",
-        exceptions: report.Report_Header.Exceptions || "",
-        reporting_period: report.Report_Header.Reporting_Period || "",
-        institution_name: report.Report_Header.Institution_Name || "",
+        report_id: header.Report_ID,
+        report_name: header.Report_Name,
+        release: header.Release,
+        metric_types: header.Metric_Types || "",
+        report_attributes: header.Report_Attributes || "",
+        exceptions: header.Exceptions || "",
+        reporting_period: header.Reporting_Period || "",
+        institution_name: header.Institution_Name || "",
         institution_id:
-          report.Report_Header.Institution_ID[0].Type +
+          (header.Institution_ID[0] as IInstitutionId).Type +
           ":" +
-          report.Report_Header.Institution_ID[0].Value,
-        created: report.Report_Header.Created,
-        created_by: report.Report_Header.Created_By,
-        registry_record: report.Report_Header.Registry_Record || "",
+          (header.Institution_ID[0] as IInstitutionId).Value,
+        created: header.Created,
+        created_by: header.Created_By,
+        registry_record: header.Registry_Record || "",
       });
 
       const filtersString = report.Report_Header.Report_Filters;
@@ -1772,6 +1773,7 @@ export class PrismaReportService {
         // console.log("Previous database file deleted.");
       }
 
+      // TODO: Review
       const stdout = execSync("npx prisma db push --force-reset").toString();
 
       // console.log("Prisma migrate output:", stdout);

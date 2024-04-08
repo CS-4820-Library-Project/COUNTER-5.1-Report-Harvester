@@ -66,7 +66,8 @@ export interface ITRReportItem extends IItemPubReportItem {
 }
 
 export interface ITRIRReportItem extends IItemPubReportItem {
-  Title: string;
+  Title?: string;
+  Item?: string;
 }
 
 export interface I_IR_ReportItem extends IItemPubReportItem {

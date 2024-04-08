@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Typography, Box, useTheme, Button } from "@mui/material";
 import {
   FlexBetween,
@@ -29,8 +29,8 @@ const SearchReportsPage = () => {
   const [searchValue, setSearchValue] = useState<string>("");
 
   useEffect(() => {
-    function handleKeyDown(e) {
-      if (e.keyCode === 13) {
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === "Enter") {
         document.getElementById("hiddenButton")?.click(); // Implemented like this to avoid dealing with state issues
       }
     }
@@ -60,7 +60,7 @@ const SearchReportsPage = () => {
       const results = await window.database.writeSearchedReportsToTSV(
         activeButton === "Title" ? searchValue : "",
         activeButton === "ISSN" ? searchValue : "",
-        activeButton === "ISBN" ? searchValue : "",
+        activeButton === "ISBN" ? searchValue : ""
       );
 
       console.log(results);
@@ -229,8 +229,8 @@ const SearchReportsPage = () => {
               {/* Used to handle Enter key press, implemented in such a way to avoid issues with state */}
               <button
                 id="hiddenButton"
-                style={{ display: "none" }}
                 onClick={handleSearchButtonClick}
+                hidden
               ></button>
             </Box>
           </Box>
