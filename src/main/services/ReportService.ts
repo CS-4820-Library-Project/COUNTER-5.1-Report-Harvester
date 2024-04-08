@@ -1,6 +1,7 @@
 import {
   IDRReportItem,
   IInstitutionId,
+  IItemId,
   IPerformance,
   IPublisherId,
   IReport,
@@ -86,9 +87,17 @@ export class ReportService {
           });
         });
 
+        console.log(item.Item_ID);
+        const itemID = item.Item_ID
+          ? Object.entries(item.Item_ID)?.map(([Type, Value]) => ({
+              Type,
+              Value,
+            }))
+          : [];
+
         const reportItem: IReportItem = {
           Platform: item.Platform,
-          Item_ID: item.Item_ID,
+          Item_ID: itemID as IItemId[],
           Performance: Array.from(performanceMap.values()),
         };
         // Process TR Report
@@ -173,13 +182,24 @@ export class ReportService {
               0
             ).getDate();
 
+            const itemID = item.Item_ID
+              ? Object.entries(item.Item_ID)?.map(([Type, Value]) => ({
+                  Type,
+                  Value,
+                }))
+              : [];
+
+            const publisherID = Object.entries(subItem.Publisher_ID)?.flatMap(
+              ([Type, Values]) => Values.map((Value) => ({ Type, Value }))
+            );
+
             const reportItem: ITRIRReportItem = {
               Title: item.Item ?? "",
               Item: subItem.Item ?? "",
               Platform: item.Platform ?? "",
-              Publisher_ID: subItem.Publisher_ID ?? "",
+              Publisher_ID: publisherID ?? "",
               Publisher: subItem.Publisher ?? "",
-              Item_ID: item.Item_ID ?? "",
+              Item_ID: (itemID as IItemId[]) ?? "",
               Performance: [
                 {
                   Period: {

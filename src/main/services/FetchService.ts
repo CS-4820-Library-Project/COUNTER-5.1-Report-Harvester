@@ -359,7 +359,7 @@ export class FetchService {
 
       TSVService.writeTSVReport(tsvFilename, tsv, isCustomReport);
 
-      await prismaReportService.saveFetchedReport(report);
+      // await prismaReportService.saveFetchedReport(report);
 
       fetchResult.success = true;
       fetchResult.timestamp = new Date().toISOString();
