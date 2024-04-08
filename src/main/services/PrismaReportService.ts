@@ -1412,7 +1412,7 @@ export class PrismaReportService {
       }
     } catch (error) {
       // console.log("There was an error while saving reports:", error);
-      throw new Error("Failed to save report.");
+      throw new Error("Failed to save report in database.");
     }
   }
 

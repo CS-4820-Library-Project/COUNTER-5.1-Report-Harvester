@@ -359,7 +359,7 @@ export class FetchService {
 
       TSVService.writeTSVReport(tsvFilename, tsv, isCustomReport);
 
-      await prismaReportService.saveFetchedReport(report);
+      // await prismaReportService.saveFetchedReport(report);
 
       fetchResult.success = true;
       fetchResult.timestamp = new Date().toISOString();
@@ -405,16 +405,6 @@ export class FetchService {
     let response = null;
 
     for (let i = 0; i < attempts; i++) {
-      // TODO: Remove Console Log
-      // if (attempts > 1)
-      //   console.log(
-      //     vendorInfo.baseURL + " Attempt ",
-      //     i + 1,
-      //     " TimeOut ",
-      //     requestTimeout,
-      //     new Date().toISOString()
-      //   );
-
       const responsePromise = fetch(reportUrl);
       const timeoutPromise = new Promise((_, reject) => {
         setTimeout(
@@ -440,11 +430,8 @@ export class FetchService {
         response instanceof Response &&
         response.status === 429 &&
         i < attempts - 1
-      ) {
-        // TODO: Remove Console Log
-        // console.log("Rate limit exceeded, waiting for 3 seconds...");
+      )
         await new Promise((resolve) => setTimeout(resolve, 3000));
-      }
     }
 
     return response;
