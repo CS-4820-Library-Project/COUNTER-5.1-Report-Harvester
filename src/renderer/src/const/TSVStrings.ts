@@ -27,6 +27,7 @@ export enum TSVHeaders {
     // Report Items
 
     TITLE = "Title",
+    ITEM = "Item",
     PUBLISHER = "Publisher",
     PUBLISHER_ID = "Publisher_ID",
     PLATFORM = "Platform",
@@ -52,21 +53,17 @@ const DRTRIRSharedHeaders = [
     TSVHeaders.PUBLISHER, TSVHeaders.PUBLISHER_ID, TSVHeaders.PLATFORM
 ]
 
-const TRIRSharedHeaders = [
-    TSVHeaders.TITLE, ...DRTRIRSharedHeaders
-]
-
 /** A dictionary mapping Report IDs (report types) to their respective TSV headers */
 
 export const ReportIDTSVHeaderDict: Record<string, string> = {
     "TR": createHeaderRow([
-        ...TRIRSharedHeaders
+        TSVHeaders.TITLE, ...DRTRIRSharedHeaders
     ]),
     "PR": createHeaderRow([
         TSVHeaders.PLATFORM
     ]),
     "IR": createHeaderRow([
-        ...TRIRSharedHeaders
+        TSVHeaders.ITEM, ...DRTRIRSharedHeaders
     ]),
     "DR": createHeaderRow([
         TSVHeaders.DATABASE, ...DRTRIRSharedHeaders
