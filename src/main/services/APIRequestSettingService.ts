@@ -2,8 +2,8 @@ import { IRequestSetting } from "src/renderer/src/interface/IRequestSetting";
 import * as fs from "fs";
 import { promisify } from "util";
 import { DirectorySettingService } from "./DirectorySettingService";
+import { writeFile } from "../utils/files";
 
-const writeFileAsync = promisify(fs.writeFile);
 const readFileAsync = promisify(fs.readFile);
 /**
  * Service class for managing API request settings.
@@ -23,7 +23,7 @@ export class APIRequestSettingService {
   async saveSettings(settings: IRequestSetting): Promise<void> {
     const data = JSON.stringify(settings, null, 2);
     try {
-      await writeFileAsync(this.reqSettingsDir, data);
+      await writeFile(this.reqSettingsDir, data);
     } catch (err) {
       console.error("There was an error writing the file", err);
       throw err;

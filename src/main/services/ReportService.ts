@@ -141,7 +141,6 @@ export class ReportService {
             ([Type, Value]) => ({ Type, Value })
           );
         }
-
         return reportItem;
       });
 
@@ -221,6 +220,15 @@ export class ReportService {
         });
       });
     });
+
+    console.log(
+      JSON.stringify({
+        // Report_Header: ReportService.getHeaderObjectFromJSON(
+        //   data.Report_Header
+        // ),
+        Report_Items: reportItems[0],
+      })
+    );
 
     return {
       Report_Header: ReportService.getHeaderObjectFromJSON(data.Report_Header),
