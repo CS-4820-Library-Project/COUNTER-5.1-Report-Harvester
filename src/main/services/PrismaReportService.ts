@@ -1375,6 +1375,7 @@ export class PrismaReportService {
         });
       }
 
+      // PR Report
       if (report.Report_Header.Report_ID.includes("PR")) {
         for (const rawItem of report.Report_Items) {
           const metricCounts = new Map<string, number>();
@@ -1457,6 +1458,7 @@ export class PrismaReportService {
         }
       }
 
+      // DR Report
       if (report.Report_Header.Report_ID.includes("DR")) {
         for (const rawItem of report.Report_Items) {
           console.log("rawItem", rawItem);
