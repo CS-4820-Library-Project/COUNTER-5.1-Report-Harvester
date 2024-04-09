@@ -1467,16 +1467,17 @@ export class PrismaReportService {
           const drItem = rawItem as IDRReportItem;
           let reportItemDetails: any = {
             reportId: savedReport.id,
-            database: drItem.Database,
+            database: drItem.Database || "undefined",
             proprietary:
-              drItem.Item_ID.find((id) => id.Type === "Proprietary")?.Value ||
-              null,
-            publisher: drItem.Publisher,
+              (Array.isArray(drItem.Item_ID) ? drItem.Item_ID : []).find(
+                (id) => id.Type === "Proprietary",
+              )?.Value || null,
+            publisher: drItem.Publisher || "undefined",
             publisherId:
               (drItem.Publisher_ID || [])
                 .map((id) => `${id.Type}:${id.Value}`)
                 .join(";") || null,
-            platform: drItem.Platform,
+            platform: drItem.Platform || "undefined",
           };
 
           const metricCounts = new Map<string, number>();
@@ -1571,7 +1572,7 @@ export class PrismaReportService {
               (irItem.Publisher_ID || [])
                 .map((id) => `${id.Type}:${id.Value}`)
                 .join(";") || null,
-            platform: irItem.Platform,
+            platform: irItem.Platform || "undefined",
             doi:
               (Array.isArray(irItem.Item_ID) ? irItem.Item_ID : []).find(
                 (id) => id.Type === "DOI",
