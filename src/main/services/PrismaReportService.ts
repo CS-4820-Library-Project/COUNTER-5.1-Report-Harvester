@@ -2248,7 +2248,7 @@ export class PrismaReportService {
     issn?: string,
     isbn?: string,
   ): Promise<Report[]> {
-    const reports = await this.searchReport(1, 250, title, issn, isbn);
+    const reports = await this.searchReport(1, 200, title, issn, isbn);
 
     let tsv = "";
     tsv += `Title\tPublisher\tPublisher_ID\tPlatform\tDOI\tYOP\tProprietary_ID\tISBN\tPrint_ISSN\tOnline_ISSN\tURI\tData_Type\tMetric_Type\tReporting_Period_Total\n`;
