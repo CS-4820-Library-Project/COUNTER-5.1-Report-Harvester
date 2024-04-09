@@ -24,6 +24,7 @@ type Props = {
   version: VendorVersions;
   reports: Reports;
   availableReports: string[]; // When there is one Selected Vendor
+  resetOptions: boolean;
 };
 
 /**
@@ -44,6 +45,7 @@ const ReportOptions = ({
   selectedReports,
   version,
   reports,
+  resetOptions,
 }: Props) => {
   const { palette } = useTheme();
 
@@ -297,13 +299,17 @@ const ReportOptions = ({
     }
   };
 
-  // Reset Reports on version change
-  useEffect(() => {
+  // Handler to reset the options
+  const handleResetOptions = () => {
     setSelectedReports([]);
     setSelectedAttribute(undefined);
     setCustomReport(undefined);
     setActiveReport(undefined);
-  }, [version]);
+  };
+
+  useEffect(handleResetOptions, [resetOptions]);
+
+  useEffect(handleResetOptions, [version]);
 
   useEffect(handleCustomize, [customize]);
 
@@ -323,9 +329,9 @@ const ReportOptions = ({
 
   /* Debugging Logs - Keep for peace of mind :) */
 
-  useEffect(() => {
-    console.log("Active Report", activeReport);
-  }, [activeReport]);
+  // useEffect(() => {
+  //   console.log("Active Report", activeReport);
+  // }, [activeReport]);
 
   // useEffect(() => {
   //   console.log("Custom Report", customReport);

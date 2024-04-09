@@ -59,6 +59,7 @@ const FetchReportsPage = () => {
   const [availableReports, setAvailableReports] =
     useState<string[]>(reportsIds);
   const [selectedReports, setSelectedReports] = useState<Report[]>([]);
+  const [resetReportOptions, setResetReportOptions] = useState<boolean>(false);
 
   const [filtersPopUp, setFiltersPopUp] = useState(false);
   const [query, setQuery] = useState<string | null>(null);
@@ -93,7 +94,12 @@ const FetchReportsPage = () => {
     });
   };
 
-  const cancelFetch = () => setFetching(false);
+  const handleResetReportOptions = () => setResetReportOptions((prev) => !prev);
+
+  const cancelFetch = () => {
+    setFetching(false);
+    handleResetReportOptions();
+  };
 
   const openFilters = () => setFiltersPopUp(!filtersPopUp);
 
@@ -131,7 +137,7 @@ const FetchReportsPage = () => {
     console.log(allResults);
 
     setFetchResults(allResults);
-    setSelectedReports([]);
+    handleResetReportOptions();
   };
 
   useEffect(() => {
@@ -260,6 +266,7 @@ const FetchReportsPage = () => {
 
         <ReportOptions
           reports={reports}
+          resetOptions={resetReportOptions}
           version={version as VendorVersions}
           setSelectedReports={setSelectedReports}
           selectedReports={selectedReports}
