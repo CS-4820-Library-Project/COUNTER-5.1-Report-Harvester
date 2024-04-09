@@ -66,10 +66,10 @@ const SettingsPage: React.FC = () => {
       {/* Help button positioned at top right corner */}
       <Box
         sx={{
-          position: "fixed",
+          position: "absolute",
           top: 5,
           right: "4rem", // Adjusted the right position
-          zIndex: 9999, // Ensure it's above other elements
+          zIndex: 9, // Ensure it's above other elements
           padding: "1rem",
         }}
       >

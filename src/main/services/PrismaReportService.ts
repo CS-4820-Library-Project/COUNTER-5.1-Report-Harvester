@@ -37,6 +37,7 @@ import {
 } from "@prisma/client";
 import {
   IDRReportItem,
+  IInstitutionId,
   IReport,
   ITRIRReportItem,
 } from "src/renderer/src/interface/IReport";
@@ -45,8 +46,8 @@ import { format } from "date-fns";
 import fs from "fs";
 import path from "path";
 import { execSync } from "child_process";
-import { reports_5 } from "src/constants/Reports_5";
 import { writeFile } from "../utils/files";
+import { TypeValue } from "src/types/reports";
 
 const prisma = new PrismaClient();
 
@@ -110,7 +111,7 @@ export class PrismaReportService {
   }
 
   async createReportFilter(
-    data: Omit<ReportFilter, "id">,
+    data: Omit<ReportFilter, "id">
   ): Promise<ReportFilter> {
     try {
       return await prisma.reportFilter.create({
@@ -899,31 +900,36 @@ export class PrismaReportService {
    */
   async saveFetchedReport(report: IReport): Promise<void> {
     try {
+      const header = report.Report_Header;
+
+      const institution_id =
+        header.Institution_ID && (header.Institution_ID[0] as IInstitutionId);
+
       const savedReport = await this.createReport({
-        report_id: report.Report_Header.Report_ID,
-        report_name: report.Report_Header.Report_Name,
-        release: report.Report_Header.Release,
-        metric_types: report.Report_Header.Metric_Types || "undefined",
-        report_attributes:
-          report.Report_Header.Report_Attributes || "undefined",
-        exceptions: report.Report_Header.Exceptions || "undefined",
-        reporting_period: report.Report_Header.Reporting_Period || "undefined",
-        institution_name: report.Report_Header.Institution_Name || "undefined",
-        institution_id:
-          report.Report_Header.Institution_ID[0].Type +
-          ":" +
-          report.Report_Header.Institution_ID[0].Value,
-        created: report.Report_Header.Created,
-        created_by: report.Report_Header.Created_By,
-        registry_record: report.Report_Header.Registry_Record || "undefined",
+        report_id: header.Report_ID,
+        report_name: header.Report_Name,
+        release: header.Release,
+        metric_types: header.Metric_Types || "",
+        report_attributes: header.Report_Attributes || "",
+        exceptions: header.Exceptions || "",
+        reporting_period: header.Reporting_Period || "",
+        institution_name: header.Institution_Name || "",
+        institution_id: institution_id
+          ? institution_id?.Type + ":" + institution_id?.Value
+          : "",
+        created: header.Created,
+        created_by: header.Created_By,
+        registry_record: header.Registry_Record || "",
       });
 
       const filtersString = report.Report_Header.Report_Filters;
       if (typeof filtersString === "string") {
         const filtersArray = filtersString.split(";");
+
         for (let filter of filtersArray) {
-          // If filter is a string like "Begin_Date=2024-01-01"
-          const [Name, Value] = filter.split("=");
+          let Name = filter ? filter.split("=")[0] || "" : "";
+          let Value = filter ? filter.split("=")[1] || "" : "";
+
           await this.createReportFilter({
             reportId: savedReport.id,
             filter_type: Name,
@@ -932,12 +938,21 @@ export class PrismaReportService {
         }
       } else if (Array.isArray(filtersString)) {
         for (const filter of filtersString) {
+          let Name = filter && filter.Name ? filter.Name : "";
+          let Value = filter && filter.Value ? filter.Value : "";
+
           await this.createReportFilter({
             reportId: savedReport.id,
-            filter_type: filter.Name,
-            value: filter.Value,
+            filter_type: Name,
+            value: Value,
           });
         }
+      } else {
+        await this.createReportFilter({
+          reportId: savedReport.id,
+          filter_type: "",
+          value: "",
+        });
       }
 
       if (report.Report_Header.Report_ID.includes("PR")) {
@@ -1029,11 +1044,11 @@ export class PrismaReportService {
             reportId: savedReport.id,
             database: drItem.Database,
             proprietary:
-              drItem.Item_ID.find((id) => id.Type === "Proprietary")?.Value ||
+              drItem.Item_ID?.find((id) => id.Type === "Proprietary")?.Value ||
               null,
             publisher: drItem.Publisher,
-            publisherId: drItem.Publisher_ID.map(
-              (id) => `${id.Type}:${id.Value}`,
+            publisherId: drItem.Publisher_ID?.map(
+              (id) => `${id.Type}:${id.Value}`
             ).join(";"),
             platform: drItem.Platform,
           };
@@ -1124,12 +1139,16 @@ export class PrismaReportService {
             reportId: savedReport.id,
             title: irItem.Title,
             publisher: irItem.Publisher,
-            publisherId: irItem.Publisher_ID.map(
-              (id) => `${id.Type}:${id.Value}`,
+            publisherId: irItem.Publisher_ID?.map(
+              (id: TypeValue) => `${id.Type}:${id.Value}`
             ).join(";"),
             platform: irItem.Platform,
-            doi: irItem.Item_ID.find((id) => id.Type === "DOI")?.Value || null,
-            yop: irItem.Item_ID.find((id) => id.Type === "YOP")?.Value || null,
+            doi:
+              irItem.Item_ID?.find((id: TypeValue) => id.Type === "DOI")
+                ?.Value || null,
+            yop:
+              irItem.Item_ID?.find((id: TypeValue) => id.Type === "YOP")
+                ?.Value || null,
             item: irItem.Item,
           };
 
@@ -1219,28 +1238,29 @@ export class PrismaReportService {
             reportId: savedReport.id,
             title: trItem.Title,
             publisher: trItem.Publisher,
-            publisherId: trItem.Publisher_ID.map(
-              (id) => `${id.Type}:${id.Value}`,
-            ).join(";"),
+            publisherId:
+              trItem.Publisher_ID?.map((id) => `${id.Type}:${id.Value}`).join(
+                ";"
+              ) ?? null,
             platform: trItem.Platform,
-            doi: trItem.Item_ID.find((id) => id.Type === "DOI")?.Value || null,
-            yop: trItem.Item_ID.find((id) => id.Type === "YOP")?.Value || null,
+            doi: trItem.Item_ID?.find((id) => id.Type === "DOI")?.Value || null,
+            yop: trItem.Item_ID?.find((id) => id.Type === "YOP")?.Value || null,
             proprietaryId:
-              trItem.Item_ID.find((id) => id.Type === "Proprietary")?.Type +
+              trItem.Item_ID?.find((id) => id.Type === "Proprietary")?.Type +
                 ":" +
-                trItem.Item_ID.find((id) => id.Type === "Proprietary")?.Value ||
-              null,
+                trItem.Item_ID?.find((id) => id.Type === "Proprietary")
+                  ?.Value || null,
             isbn:
-              trItem.Item_ID.find((id) => id.Type === "ISBN")?.Value || null,
+              trItem.Item_ID?.find((id) => id.Type === "ISBN")?.Value || null,
             printIssn:
-              trItem.Item_ID.find((id) => id.Type === "Print_ISSN")?.Value ||
+              trItem.Item_ID?.find((id) => id.Type === "Print_ISSN")?.Value ||
               null,
             onlineIssn:
-              trItem.Item_ID.find((id) => id.Type === "Online_ISSN")?.Value ||
+              trItem.Item_ID?.find((id) => id.Type === "Online_ISSN")?.Value ||
               null,
-            uri: trItem.Item_ID.find((id) => id.Type === "URI")?.Value || null,
+            uri: trItem.Item_ID?.find((id) => id.Type === "URI")?.Value || null,
             dataType:
-              trItem.Item_ID.find((id) => id.Type === "Data_Type")?.Value ||
+              trItem.Item_ID?.find((id) => id.Type === "Data_Type")?.Value ||
               null,
           };
 
@@ -1406,8 +1426,8 @@ export class PrismaReportService {
         }
       }
     } catch (error) {
-      console.log("There was an error while saving reports:", error);
-      throw new Error("Failed to save report.");
+      console.log("Error saving report:", error);
+      throw new Error("Failed to save report in database.");
     }
   }
 
@@ -1416,7 +1436,7 @@ export class PrismaReportService {
     limit: number, // limit set to default 10 if not provided
     title?: string,
     issn?: string,
-    isbn?: string,
+    isbn?: string
   ): Promise<Report[]> {
     try {
       let whereClause: WhereClause = {};
@@ -1457,7 +1477,7 @@ export class PrismaReportService {
         ].map((model) => {
           switch (model) {
             case "TR_Item":
-              return prisma.tR_Item.findMany({
+              return prisma.tR_Item?.findMany({
                 where: whereClause,
                 include: {
                   report: {
@@ -1475,7 +1495,7 @@ export class PrismaReportService {
                 take: limit, // This will limit the number of items returned
               });
             case "TR_B1_Item":
-              return prisma.tR_B1_Item.findMany({
+              return prisma.tR_B1_Item?.findMany({
                 where: whereClause,
                 include: {
                   report: {
@@ -1493,7 +1513,7 @@ export class PrismaReportService {
                 take: limit, // This will limit the number of items returned
               });
             case "TR_B2_Item":
-              return prisma.tR_B2_Item.findMany({
+              return prisma.tR_B2_Item?.findMany({
                 where: whereClause,
                 include: {
                   report: {
@@ -1511,7 +1531,7 @@ export class PrismaReportService {
                 take: limit, // This will limit the number of items returned
               });
             case "TR_B3_Item":
-              return prisma.tR_B3_Item.findMany({
+              return prisma.tR_B3_Item?.findMany({
                 where: whereClause,
                 include: {
                   report: {
@@ -1529,7 +1549,7 @@ export class PrismaReportService {
                 take: limit, // This will limit the number of items returned
               });
             case "TR_J1_Item":
-              return prisma.tR_J1_Item.findMany({
+              return prisma.tR_J1_Item?.findMany({
                 where: whereClause,
                 include: {
                   report: {
@@ -1547,7 +1567,7 @@ export class PrismaReportService {
                 take: limit, // This will limit the number of items returned
               });
             case "TR_J2_Item":
-              return prisma.tR_J2_Item.findMany({
+              return prisma.tR_J2_Item?.findMany({
                 where: whereClause,
                 include: {
                   report: {
@@ -1565,7 +1585,7 @@ export class PrismaReportService {
                 take: limit, // This will limit the number of items returned
               });
             case "TR_J3_Item":
-              return prisma.tR_J3_Item.findMany({
+              return prisma.tR_J3_Item?.findMany({
                 where: whereClause,
                 include: {
                   report: {
@@ -1583,7 +1603,7 @@ export class PrismaReportService {
                 take: limit, // This will limit the number of items returned
               });
             case "TR_J4_Item":
-              return prisma.tR_J4_Item.findMany({
+              return prisma.tR_J4_Item?.findMany({
                 where: whereClause,
                 include: {
                   report: {
@@ -1603,12 +1623,12 @@ export class PrismaReportService {
             default:
               return [];
           }
-        }),
+        })
       );
 
       // Flatten the array and map each item to its parent report
       const reportItems = reportItemsOfAllModels.flat();
-      const reports = reportItems.map((item: any) => item.report);
+      const reports = reportItems?.map((item: any) => item.report);
 
       // Deduplicate reports based on a unique property (like id)
       const uniqueReports: Report[] = [];
@@ -1640,7 +1660,7 @@ export class PrismaReportService {
 
     // Report Filters
     const reportFilters = report.ReportFilter?.map(
-      (filter: any) => `${filter.filter_type}=${filter.value}`,
+      (filter: any) => `${filter.filter_type}=${filter.value}`
     ).join(";");
     tsv += `Report_Filters\t${reportFilters}\n`;
 
@@ -1717,7 +1737,7 @@ export class PrismaReportService {
     const dirService = new DirectorySettingService();
     const filePath = dirService.getPath("search", `${fileName}.tsv`);
 
-    console.log("Writing TSV to file:", filePath);
+    // console.log("Writing TSV to file:", filePath);
 
     writeFile(filePath, tsv);
   }
@@ -1733,7 +1753,7 @@ export class PrismaReportService {
   async writeSearchedReportsToTSV(
     title?: string,
     issn?: string,
-    isbn?: string,
+    isbn?: string
   ): Promise<Report[]> {
     const reports = await this.searchReport(1, 250, title, issn, isbn);
 
@@ -1758,19 +1778,20 @@ export class PrismaReportService {
   async rebuildDatabase() {
     const dbFile = path.join(
       __dirname,
-      process.env.DATABASE_FILE || "../../prisma/search.db",
+      process.env.DATABASE_FILE || "../../prisma/search.db"
     );
 
     try {
       await prisma.$disconnect();
       if (fs.existsSync(dbFile)) {
         await fs.promises.unlink(dbFile);
-        console.log("Previous database file deleted.");
+        // console.log("Previous database file deleted.");
       }
 
+      // TODO: Review
       const stdout = execSync("npx prisma db push --force-reset").toString();
 
-      console.log("Prisma migrate output:", stdout);
+      // console.log("Prisma migrate output:", stdout);
     } catch (error) {
       console.error("Error while rebuilding the database:", error);
       throw error;
@@ -1788,12 +1809,12 @@ export class PrismaReportService {
 
         const exportFilePath = path.join(
           exportPath,
-          `CH_SearchDB_Export_${formattedDate}.db`,
+          `CH_SearchDB_Export_${formattedDate}.db`
         );
 
         fs.copyFileSync(dbPath, exportFilePath);
 
-        console.log(`Database exported successfully to: ${exportFilePath}`);
+        // console.log(`Database exported successfully to: ${exportFilePath}`);
       } catch (error) {
         console.error("Error while exporting the database file:", error);
       }

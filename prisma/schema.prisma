@@ -8,7 +8,7 @@ datasource db {
 }
 
 model Report {
-  id                Int            @id @default(autoincrement())
+  id                Int     @id @default(autoincrement())
   report_id         String
   report_name       String
   release           String
@@ -17,27 +17,29 @@ model Report {
   exceptions        String?
   reporting_period  String?
   institution_name  String
-  institution_id    String
+  institution_id    String?
   created           String
   created_by        String
   registry_record   String?
-  ReportFilter      ReportFilter[]
-  PR_Item           PR_Item[]
-  PR_P1_Item        PR_P1_Item[]
-  DR_Item           DR_Item[]
-  DR_D1_Item        DR_D1_Item[]
-  DR_D2_Item        DR_D2_Item[]
-  TR_Item           TR_Item[]
-  TR_B1_Item        TR_B1_Item[]
-  TR_B2_Item        TR_B2_Item[]
-  TR_B3_Item        TR_B3_Item[]
-  TR_J1_Item        TR_J1_Item[]
-  TR_J2_Item        TR_J2_Item[]
-  TR_J3_Item        TR_J3_Item[]
-  TR_J4_Item        TR_J4_Item[]
-  IR_Item           IR_Item[]
-  IR_A1_Item        IR_A1_Item[]
-  IR_M1_Item        IR_M1_Item[]
+
+  // Relations
+  ReportFilter ReportFilter[]
+  PR_Item      PR_Item[]
+  PR_P1_Item   PR_P1_Item[]
+  DR_Item      DR_Item[]
+  DR_D1_Item   DR_D1_Item[]
+  DR_D2_Item   DR_D2_Item[]
+  TR_Item      TR_Item[]
+  TR_B1_Item   TR_B1_Item[]
+  TR_B2_Item   TR_B2_Item[]
+  TR_B3_Item   TR_B3_Item[]
+  TR_J1_Item   TR_J1_Item[]
+  TR_J2_Item   TR_J2_Item[]
+  TR_J3_Item   TR_J3_Item[]
+  TR_J4_Item   TR_J4_Item[]
+  IR_Item      IR_Item[]
+  IR_A1_Item   IR_A1_Item[]
+  IR_M1_Item   IR_M1_Item[]
 }
 
 model ReportFilter {

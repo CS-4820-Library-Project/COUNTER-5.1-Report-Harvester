@@ -112,7 +112,6 @@ export class FetchService {
       ) => {
         const report = { reportId, success, errors, warnings };
 
-        // Determine if the vendor is 'main' or 'custom'
         const reportType = custom ? "custom" : "main";
 
         const vendor = acc[reportType].vendors.find(
@@ -223,14 +222,6 @@ export class FetchService {
             await new Promise((resolve) =>
               setTimeout(resolve, requestInterval)
             );
-
-            // TODO: Remove console log
-            // console.log(
-            //   "\nThrottling requests for",
-            //   vendor.name,
-            //   "... With Interval",
-            //   requestInterval
-            // );
 
             const result = await FetchService.fetchReport(
               vendor,
@@ -366,11 +357,8 @@ export class FetchService {
         endDate
       );
 
-      // TODO: THROWS MANY ERRORS
       TSVService.writeTSVReport(tsvFilename, tsv, isCustomReport);
 
-      // TODO: DATABASE CRASHING
-      // if (reportSettings.id === "TR")
       // await prismaReportService.saveFetchedReport(report);
 
       fetchResult.success = true;
@@ -417,16 +405,6 @@ export class FetchService {
     let response = null;
 
     for (let i = 0; i < attempts; i++) {
-      // TODO: Remove Console Log
-      // if (attempts > 1)
-      //   console.log(
-      //     vendorInfo.baseURL + " Attempt ",
-      //     i + 1,
-      //     " TimeOut ",
-      //     requestTimeout,
-      //     new Date().toISOString()
-      //   );
-
       const responsePromise = fetch(reportUrl);
       const timeoutPromise = new Promise((_, reject) => {
         setTimeout(
@@ -452,11 +430,8 @@ export class FetchService {
         response instanceof Response &&
         response.status === 429 &&
         i < attempts - 1
-      ) {
-        // TODO: Remove Console Log
-        // console.log("Rate limit exceeded, waiting for 3 seconds...");
+      )
         await new Promise((resolve) => setTimeout(resolve, 3000));
-      }
     }
 
     return response;
@@ -481,7 +456,7 @@ export class FetchService {
     if (response.headers.get("content-type")?.includes("application/json")) {
       data = await response.json().catch(() => {
         fetchingError +=
-          "Invalid JSON Format ( " + JSON.stringify(response) + " ):\n";
+          "Invalid JSON Format ( " + JSON.stringify(response) + " ):";
 
         throw fetchingError;
       });
