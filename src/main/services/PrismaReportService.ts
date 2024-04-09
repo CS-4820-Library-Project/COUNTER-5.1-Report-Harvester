@@ -136,7 +136,7 @@ export class PrismaReportService {
    * @throws {Error} If there is an error creating the report filter.
    */
   async createReportFilter(
-    data: Omit<ReportFilter, "id">,
+    data: Omit<ReportFilter, "id">
   ): Promise<ReportFilter> {
     try {
       return await prisma.reportFilter.create({
@@ -190,7 +190,7 @@ export class PrismaReportService {
    * @returns {Promise<Object>} - A Promise that resolves with the created PR_ItemMetric object.
    */
   async createPRItemMetric(
-    details: Omit<PR_ItemMetric, "id">,
+    details: Omit<PR_ItemMetric, "id">
   ): Promise<PR_ItemMetric> {
     return prisma.pR_ItemMetric.create({
       data: {
@@ -243,7 +243,7 @@ export class PrismaReportService {
    * @returns {Promise<Object>} - A promise that resolves to the created PR_P1_ItemMetric record.
    */
   async createPRP1ItemMetric(
-    details: Omit<PR_P1_ItemMetric, "id">,
+    details: Omit<PR_P1_ItemMetric, "id">
   ): Promise<PR_P1_ItemMetric> {
     return prisma.pR_P1_ItemMetric.create({
       data: {
@@ -319,7 +319,7 @@ export class PrismaReportService {
    * @return {Promise<object>} - A Promise that resolves to the created TR_ItemMetric.
    */
   async createTRItemMetric(
-    details: Omit<TR_ItemMetric, "id">,
+    details: Omit<TR_ItemMetric, "id">
   ): Promise<TR_ItemMetric> {
     return prisma.tR_ItemMetric.create({
       data: {
@@ -410,7 +410,7 @@ export class PrismaReportService {
    * @return {Promise<Object>} - A promise that resolves to the newly created TR_B1_ItemMetric record.
    */
   async createTRB1ItemMetric(
-    details: Omit<TR_B1_ItemMetric, "id">,
+    details: Omit<TR_B1_ItemMetric, "id">
   ): Promise<TR_B1_ItemMetric> {
     return prisma.tR_B1_ItemMetric.create({
       data: {
@@ -482,7 +482,7 @@ export class PrismaReportService {
    * @return {Promise<TR_B2_ItemMetric>} - A promise that resolves to the created TRB2ItemMetric record.
    */
   async createTRB2ItemMetric(
-    details: Omit<TR_B2_ItemMetric, "id">,
+    details: Omit<TR_B2_ItemMetric, "id">
   ): Promise<TR_B2_ItemMetric> {
     return prisma.tR_B2_ItemMetric.create({
       data: {
@@ -563,7 +563,7 @@ export class PrismaReportService {
    * @returns {Promise<Object>} - A promise that resolves to the created TR_B3_ItemMetric record.
    */
   async createTRB3ItemMetric(
-    details: Omit<TR_B3_ItemMetric, "id">,
+    details: Omit<TR_B3_ItemMetric, "id">
   ): Promise<TR_B3_ItemMetric> {
     return prisma.tR_B3_ItemMetric.create({
       data: {
@@ -638,7 +638,7 @@ export class PrismaReportService {
    * @returns {Promise<object>} A promise that resolves to the created TR_J1_ItemMetric record.
    */
   async createTRJ1ItemMetric(
-    details: Omit<TR_J1_ItemMetric, "id">,
+    details: Omit<TR_J1_ItemMetric, "id">
   ): Promise<TR_J1_ItemMetric> {
     return prisma.tR_J1_ItemMetric.create({
       data: {
@@ -729,7 +729,7 @@ export class PrismaReportService {
    * @returns {Promise<object>} - A Promise that resolves to the created TR_J2_ItemMetric object.
    */
   async createTRJ2ItemMetric(
-    details: Omit<TR_J2_ItemMetric, "id">,
+    details: Omit<TR_J2_ItemMetric, "id">
   ): Promise<TR_J2_ItemMetric> {
     return prisma.tR_J2_ItemMetric.create({
       data: {
@@ -816,7 +816,7 @@ export class PrismaReportService {
    * // { id: 123, reportItemId: 1, period: '2021-01', value: 10, metricType: 'metric A' }
    */
   async createTRJ3ItemMetric(
-    details: Omit<TR_J3_ItemMetric, "id">,
+    details: Omit<TR_J3_ItemMetric, "id">
   ): Promise<TR_J3_ItemMetric> {
     return prisma.tR_J3_ItemMetric.create({
       data: {
@@ -892,7 +892,7 @@ export class PrismaReportService {
    * @returns {Promise<TR_J4_ItemMetric>} - A promise that resolves to the created TR_J4_ItemMetric object.
    */
   async createTRJ4ItemMetric(
-    details: Omit<TR_J4_ItemMetric, "id">,
+    details: Omit<TR_J4_ItemMetric, "id">
   ): Promise<TR_J4_ItemMetric> {
     return prisma.tR_J4_ItemMetric.create({
       data: {
@@ -968,7 +968,7 @@ export class PrismaReportService {
    * @return {Promise<IR_ItemMetric>} A promise that resolves with the created IR_ItemMetric.
    */
   async createIRItemMetric(
-    details: Omit<IR_ItemMetric, "id">,
+    details: Omit<IR_ItemMetric, "id">
   ): Promise<IR_ItemMetric> {
     return prisma.iR_ItemMetric.create({
       data: {
@@ -1043,7 +1043,7 @@ export class PrismaReportService {
    * @returns {Promise} A promise that resolves with the newly created IRA1 item metric object.
    */
   async createIRA1ItemMetric(
-    details: Omit<IR_A1_ItemMetric, "id">,
+    details: Omit<IR_A1_ItemMetric, "id">
   ): Promise<IR_A1_ItemMetric> {
     return prisma.iR_A1_ItemMetric.create({
       data: {
@@ -1109,7 +1109,7 @@ export class PrismaReportService {
    * @returns {Promise<IR_M1_ItemMetric>} A Promise resolving to the created IR_M1_ItemMetric.
    */
   async createIRM1ItemMetric(
-    details: Omit<IR_M1_ItemMetric, "id">,
+    details: Omit<IR_M1_ItemMetric, "id">
   ): Promise<IR_M1_ItemMetric> {
     return prisma.iR_M1_ItemMetric.create({
       data: {
@@ -1171,7 +1171,7 @@ export class PrismaReportService {
    * @return {Promise<DR_ItemMetric>} - A promise that resolves to the created DR_ItemMetric record.
    */
   async createDRItemMetric(
-    details: Omit<DR_ItemMetric, "id">,
+    details: Omit<DR_ItemMetric, "id">
   ): Promise<DR_ItemMetric> {
     return prisma.dR_ItemMetric.create({
       data: {
@@ -1232,7 +1232,7 @@ export class PrismaReportService {
    * @return {Promise<DR_D1_ItemMetric>} - The created DRD1 Item Metric object.
    */
   async createDRD1ItemMetric(
-    details: Omit<DR_D1_ItemMetric, "id">,
+    details: Omit<DR_D1_ItemMetric, "id">
   ): Promise<DR_D1_ItemMetric> {
     return prisma.dR_D1_ItemMetric.create({
       data: {
@@ -1305,7 +1305,7 @@ export class PrismaReportService {
    * @returns {Promise} - A Promise that resolves with the created DRD2ItemMetric object.
    */
   async createDRD2ItemMetric(
-    details: Omit<DR_D2_ItemMetric, "id">,
+    details: Omit<DR_D2_ItemMetric, "id">
   ): Promise<DR_D2_ItemMetric> {
     return prisma.dR_D2_ItemMetric.create({
       data: {
@@ -1469,7 +1469,7 @@ export class PrismaReportService {
             database: drItem.Database || "undefined",
             proprietary:
               (Array.isArray(drItem.Item_ID) ? drItem.Item_ID : []).find(
-                (id) => id.Type === "Proprietary",
+                (id) => id.Type === "Proprietary"
               )?.Value || null,
             publisher: drItem.Publisher || "undefined",
             publisherId:
@@ -1574,11 +1574,11 @@ export class PrismaReportService {
             platform: irItem.Platform || "undefined",
             doi:
               (Array.isArray(irItem.Item_ID) ? irItem.Item_ID : []).find(
-                (id) => id.Type === "DOI",
+                (id) => id.Type === "DOI"
               )?.Value || null,
             yop:
               (Array.isArray(irItem.Item_ID) ? irItem.Item_ID : []).find(
-                (id) => id.Type === "YOP",
+                (id) => id.Type === "YOP"
               )?.Value || null,
             item: irItem.Item || "undefined",
           };
@@ -1677,42 +1677,42 @@ export class PrismaReportService {
             platform: trItem.Platform,
             doi:
               (Array.isArray(trItem.Item_ID) ? trItem.Item_ID : []).find(
-                (id) => id.Type === "DOI",
+                (id) => id.Type === "DOI"
               )?.Value || null,
             yop:
               (Array.isArray(trItem.Item_ID) ? trItem.Item_ID : []).find(
-                (id) => id.Type === "YOP",
+                (id) => id.Type === "YOP"
               )?.Value || null,
 
             proprietaryId:
               (Array.isArray(trItem.Item_ID) ? trItem.Item_ID : []).find(
-                (id) => id.Type === "Proprietary",
+                (id) => id.Type === "Proprietary"
               )?.Type ||
               "undefined" +
                 ":" +
                 (Array.isArray(trItem.Item_ID) ? trItem.Item_ID : []).find(
-                  (id) => id.Type === "Proprietary",
+                  (id) => id.Type === "Proprietary"
                 )?.Value ||
               null,
             isbn:
               (Array.isArray(trItem.Item_ID) ? trItem.Item_ID : []).find(
-                (id) => id.Type === "ISBN",
+                (id) => id.Type === "ISBN"
               )?.Value || null,
             printIssn:
               (Array.isArray(trItem.Item_ID) ? trItem.Item_ID : []).find(
-                (id) => id.Type === "Print_ISSN",
+                (id) => id.Type === "Print_ISSN"
               )?.Value || null,
             onlineIssn:
               (Array.isArray(trItem.Item_ID) ? trItem.Item_ID : []).find(
-                (id) => id.Type === "Online_ISSN",
+                (id) => id.Type === "Online_ISSN"
               )?.Value || null,
             uri:
               (Array.isArray(trItem.Item_ID) ? trItem.Item_ID : []).find(
-                (id) => id.Type === "URI",
+                (id) => id.Type === "URI"
               )?.Value || null,
             dataType:
               (Array.isArray(trItem.Item_ID) ? trItem.Item_ID : []).find(
-                (id) => id.Type === "Data_Type",
+                (id) => id.Type === "Data_Type"
               )?.Value || null,
           };
 
@@ -1900,7 +1900,7 @@ export class PrismaReportService {
     limit: number, // limit set to default 10 if not provided
     title?: string,
     issn?: string,
-    isbn?: string,
+    isbn?: string
   ): Promise<Report[]> {
     try {
       let whereClause: WhereClause = {};
@@ -2087,7 +2087,7 @@ export class PrismaReportService {
             default:
               return [];
           }
-        }),
+        })
       );
 
       // Flatten the array and map each item to its parent report
@@ -2115,87 +2115,108 @@ export class PrismaReportService {
   /**
    * Converts a report object to a TSV (Tab-Separated Values) string format.
    * @param {any} report The report object to convert.
+   * @param title
+   * @param issn
+   * @param isbn
    * @return {Promise<string>} A promise that resolves with the TSV string.
    */
-  async convertReportToTSV(report: any): Promise<string> {
+  async convertReportToTSV(
+    report: any,
+    title?: string,
+    issn?: string,
+    isbn?: string,
+  ): Promise<string> {
     let tsv = "";
 
-    // Headers
-    tsv += `Report_Name\t${report.report_name}\n`;
-    tsv += `Report_ID\t${report.report_id}\n`;
-    tsv += `Release\t${report.release}\n`;
-    tsv += `Institution_Name\t${report.institution_name}\n`;
-    tsv += `Institution_ID\t${report.institution_id}\n`;
+    const includesSearchParameter = (item: any) => {
+      let matches = [];
+      if (title)
+        matches.push(item.title.toLowerCase().includes(title.toLowerCase()));
+      if (issn) {
+        matches.push(
+          item.printIssn?.toLowerCase().includes(issn.toLowerCase()),
+          item.onlineIssn?.toLowerCase().includes(issn.toLowerCase()),
+        );
+      }
+      if (isbn)
+        matches.push(item.isbn?.toLowerCase().includes(isbn.toLowerCase()));
+      return matches.some(Boolean);
+    };
 
-    // Report Filters
-    const reportFilters = report.ReportFilter?.map(
-      (filter: any) => `${filter.filter_type}=${filter.value}`,
-    ).join(";");
-    tsv += `Report_Filters\t${reportFilters}\n`;
-
-    tsv += `Created\t${report.created}\n`;
-    tsv += `Created_By\t${report.created_by}\n`;
-    tsv += "\n";
-
-    tsv += `Title\tPublisher\tPublisher_ID\tPlatform\tDOI\tYOP\tProprietary_ID\tISBN\tPrint_ISSN\tOnline_ISSN\tURI\tData_Type\tMetric_Type\tReporting_Period_Total\n`;
 
     if (report.report_id.includes("TR")) {
-      if (report.report_id === "TR") {
-        for (const item of report.TR_Item) {
-          for (const metric of item.TR_ItemMetric) {
-            tsv += `${item.title}\t${item.publisher}\t${item.publisherId}\t${item.platform}\t${item.doi}\t${item.yop}\t${item.proprietaryId}\t${item.isbn}\t${item.printIssn}\t${item.onlineIssn}\t${item.uri}\t${item.dataType}\t${metric.metricType}\t${item.reportingPeriodTotal}\n`;
+      switch (report.report_id) {
+        case "TR":
+          for (const item of report.TR_Item) {
+            if (!includesSearchParameter(item)) continue;
+            for (const metric of item.TR_ItemMetric) {
+              tsv += `${item.title}\t${item.publisher}\t${item.publisherId}\t${item.platform}\t${item.doi}\t${item.yop}\t${item.proprietaryId}\t${item.isbn}\t${item.printIssn}\t${item.onlineIssn}\t${item.uri}\t${item.dataType}\t${metric.metricType}\t${item.reportingPeriodTotal}\n`;
+            }
           }
-          tsv += "\n";
-        }
-      } else if (report.report_id === "TR_B1") {
-        for (const item of report.TR_B1_Item) {
-          for (const metric of item.TR_B1_ItemMetric) {
-            tsv += `${item.title}\t${item.publisher}\t${item.publisherId}\t${item.platform}\t${item.doi}\t${item.yop}\t${item.proprietaryId}\t${item.isbn}\t${item.printIssn}\t${item.onlineIssn}\t${item.uri}\t${item.dataType}\t${metric.metricType}\t${item.reportingPeriodTotal}\n`;
+          break;
+
+        case "TR_B1":
+          for (const item of report.TR_B1_Item) {
+            if (!includesSearchParameter(item)) continue;
+            for (const metric of item.TR_B1_ItemMetric) {
+              tsv += `${item.title}\t${item.publisher}\t${item.publisherId}\t${item.platform}\t${item.doi}\t${item.yop}\t${item.proprietaryId}\t${item.isbn}\t${item.printIssn}\t${item.onlineIssn}\t${item.uri}\t${item.dataType}\t${metric.metricType}\t${item.reportingPeriodTotal}\n`;
+            }
           }
-          tsv += "\n";
-        }
-      } else if (report.report_id === "TR_B2") {
-        for (const item of report.TR_B2_Item) {
-          for (const metric of item.TR_B2_ItemMetric) {
-            tsv += `${item.title}\t${item.publisher}\t${item.publisherId}\t${item.platform}\t${item.doi}\t${item.yop}\t${item.proprietaryId}\t${item.isbn}\t${item.printIssn}\t${item.onlineIssn}\t${item.uri}\t${item.dataType}\t${metric.metricType}\t${item.reportingPeriodTotal}\n`;
+          break;
+
+        case "TR_B2":
+          for (const item of report.TR_B2_Item) {
+            if (!includesSearchParameter(item)) continue;
+            for (const metric of item.TR_B2_ItemMetric) {
+              tsv += `${item.title}\t${item.publisher}\t${item.publisherId}\t${item.platform}\t${item.doi}\t${item.yop}\t${item.proprietaryId}\t${item.isbn}\t${item.printIssn}\t${item.onlineIssn}\t${item.uri}\t${item.dataType}\t${metric.metricType}\t${item.reportingPeriodTotal}\n`;
+            }
           }
-          tsv += "\n";
-        }
-      } else if (report.report_id === "TR_B3") {
-        for (const item of report.TR_B3_Item) {
-          for (const metric of item.TR_B3_ItemMetric) {
-            tsv += `${item.title}\t${item.publisher}\t${item.publisherId}\t${item.platform}\t${item.doi}\t${item.yop}\t${item.proprietaryId}\t${item.isbn}\t${item.printIssn}\t${item.onlineIssn}\t${item.uri}\t${item.dataType}\t${metric.metricType}\t${item.reportingPeriodTotal}\n`;
+          break;
+
+        case "TR_B3":
+          for (const item of report.TR_B3_Item) {
+            if (!includesSearchParameter(item)) continue;
+            for (const metric of item.TR_B3_ItemMetric) {
+              tsv += `${item.title}\t${item.publisher}\t${item.publisherId}\t${item.platform}\t${item.doi}\t${item.yop}\t${item.proprietaryId}\t${item.isbn}\t${item.printIssn}\t${item.onlineIssn}\t${item.uri}\t${item.dataType}\t${metric.metricType}\t${item.reportingPeriodTotal}\n`;
+            }
           }
-          tsv += "\n";
-        }
-      } else if (report.report_id === "TR_J1") {
-        for (const item of report.TR_J1_Item) {
-          for (const metric of item.TR_J1_ItemMetric) {
-            tsv += `${item.title}\t${item.publisher}\t${item.publisherId}\t${item.platform}\t${item.doi}\t${item.yop}\t${item.proprietaryId}\t${item.isbn}\t${item.printIssn}\t${item.onlineIssn}\t${item.uri}\t${item.dataType}\t${metric.metricType}\t${item.reportingPeriodTotal}\n`;
+          break;
+
+        case "TR_J1":
+          for (const item of report.TR_J1_Item) {
+            if (!includesSearchParameter(item)) continue;
+            for (const metric of item.TR_J1_ItemMetric) {
+              tsv += `${item.title}\t${item.publisher}\t${item.publisherId}\t${item.platform}\t${item.doi}\t${item.yop}\t${item.proprietaryId}\t${item.isbn}\t${item.printIssn}\t${item.onlineIssn}\t${item.uri}\t${item.dataType}\t${metric.metricType}\t${item.reportingPeriodTotal}\n`;
+            }
           }
-          tsv += "\n";
-        }
-      } else if (report.report_id === "TR_J2") {
-        for (const item of report.TR_J2_Item) {
-          for (const metric of item.TR_J2_ItemMetric) {
-            tsv += `${item.title}\t${item.publisher}\t${item.publisherId}\t${item.platform}\t${item.doi}\t${item.yop}\t${item.proprietaryId}\t${item.isbn}\t${item.printIssn}\t${item.onlineIssn}\t${item.uri}\t${item.dataType}\t${metric.metricType}\t${item.reportingPeriodTotal}\n`;
+          break;
+
+        case "TR_J2":
+          for (const item of report.TR_J2_Item) {
+            if (!includesSearchParameter(item)) continue;
+            for (const metric of item.TR_J2_ItemMetric) {
+              tsv += `${item.title}\t${item.publisher}\t${item.publisherId}\t${item.platform}\t${item.doi}\t${item.yop}\t${item.proprietaryId}\t${item.isbn}\t${item.printIssn}\t${item.onlineIssn}\t${item.uri}\t${item.dataType}\t${metric.metricType}\t${item.reportingPeriodTotal}\n`;
+            }
           }
-          tsv += "\n";
-        }
-      } else if (report.report_id === "TR_J3") {
-        for (const item of report.TR_J3_Item) {
-          for (const metric of item.TR_J3_ItemMetric) {
-            tsv += `${item.title}\t${item.publisher}\t${item.publisherId}\t${item.platform}\t${item.doi}\t${item.yop}\t${item.proprietaryId}\t${item.isbn}\t${item.printIssn}\t${item.onlineIssn}\t${item.uri}\t${item.dataType}\t${metric.metricType}\t${item.reportingPeriodTotal}\n`;
+          break;
+
+        case "TR_J3":
+          for (const item of report.TR_J3_Item) {
+            if (!includesSearchParameter(item)) continue;
+            for (const metric of item.TR_J3_ItemMetric) {
+              tsv += `${item.title}\t${item.publisher}\t${item.publisherId}\t${item.platform}\t${item.doi}\t${item.yop}\t${item.proprietaryId}\t${item.isbn}\t${item.printIssn}\t${item.onlineIssn}\t${item.uri}\t${item.dataType}\t${metric.metricType}\t${item.reportingPeriodTotal}\n`;
+            }
           }
-          tsv += "\n";
-        }
-      } else if (report.report_id === "TR_J4") {
-        for (const item of report.TR_J4_Item) {
-          for (const metric of item.TR_J4_ItemMetric) {
-            tsv += `${item.title}\t${item.publisher}\t${item.publisherId}\t${item.platform}\t${item.doi}\t${item.yop}\t${item.proprietaryId}\t${item.isbn}\t${item.printIssn}\t${item.onlineIssn}\t${item.uri}\t${item.dataType}\t${metric.metricType}\t${item.reportingPeriodTotal}\n`;
+          break;
+
+        case "TR_J4":
+          for (const item of report.TR_J4_Item) {
+            if (!includesSearchParameter(item)) continue;
+            for (const metric of item.TR_J4_ItemMetric) {
+              tsv += `${item.title}\t${item.publisher}\t${item.publisherId}\t${item.platform}\t${item.doi}\t${item.yop}\t${item.proprietaryId}\t${item.isbn}\t${item.printIssn}\t${item.onlineIssn}\t${item.uri}\t${item.dataType}\t${metric.metricType}\t${item.reportingPeriodTotal}\n`;
+            }
           }
-          tsv += "\n";
-        }
+          break;
       }
     }
 
@@ -2217,21 +2238,6 @@ export class PrismaReportService {
   }
 
   /**
-   * Generates a search filename based on the given query and vendor name.
-   *
-   * @param {string} query - The search query.
-   * @param {string} vendorName - The vendor name.
-   * @returns {string} The generated search filename.
-   */
-  private generateSearchFilename(query: string, vendorName: string): string {
-    let filename = query.replace(/ /g, "_") + "_";
-    filename += vendorName.toLowerCase() + "_";
-    filename += format(new Date(), "yyyyMMddHHmmss");
-
-    return filename;
-  }
-
-  /**
    * Writes searched reports to a TSV file.
    * @param {string} [title] - The title of the report.
    * @param {string} [issn] - The ISSN of the report.
@@ -2241,24 +2247,26 @@ export class PrismaReportService {
   async writeSearchedReportsToTSV(
     title?: string,
     issn?: string,
-    isbn?: string,
+    isbn?: string
   ): Promise<Report[]> {
-    const reports = await this.searchReport(1, 250, title, issn, isbn);
+    const reports = await this.searchReport(1, 200, title, issn, isbn);
 
-    let fileNumber = 1; // Counter variable for filename
+    let tsv = "";
+    tsv += `Title\tPublisher\tPublisher_ID\tPlatform\tDOI\tYOP\tProprietary_ID\tISBN\tPrint_ISSN\tOnline_ISSN\tURI\tData_Type\tMetric_Type\tReporting_Period_Total\n`;
 
     for (const report of reports) {
-      const tsv = this.convertReportToTSV(report);
-      const vendorName = report.institution_id.split(":")[0];
 
-      const fileName =
-        this.generateSearchFilename(title || issn || isbn || "", vendorName) +
-        "_" +
-        fileNumber; // Add the counter to the filename
+      const reportTsv = await this.convertReportToTSV(
+        report,
+        title,
+        issn,
+        isbn,
+      );
+      tsv += reportTsv;
 
-      await this.writeTSVToFile(await tsv, fileName);
-      fileNumber++; // Increment the counter
     }
+
+    await this.writeTSVToFile(tsv, "search_results");
 
     return reports;
   }
@@ -2273,7 +2281,7 @@ export class PrismaReportService {
   async rebuildDatabase(): Promise<void> {
     const dbFile = path.join(
       __dirname,
-      process.env.DATABASE_FILE || "../../prisma/search.db",
+      process.env.DATABASE_FILE || "../../prisma/search.db"
     );
 
     try {
@@ -2310,7 +2318,7 @@ export class PrismaReportService {
 
         const exportFilePath = path.join(
           exportPath,
-          `CH_SearchDB_Export_${formattedDate}.db`,
+          `CH_SearchDB_Export_${formattedDate}.db`
         );
 
         fs.copyFileSync(dbPath, exportFilePath);
