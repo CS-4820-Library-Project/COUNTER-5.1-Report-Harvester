@@ -371,7 +371,7 @@ export class FetchService {
       let errorMessage = logHeader + error;
       errorMessage += error;
 
-      console.log(errorMessage);
+      // console.log(errorMessage);
 
       logger.log(errorMessage);
 

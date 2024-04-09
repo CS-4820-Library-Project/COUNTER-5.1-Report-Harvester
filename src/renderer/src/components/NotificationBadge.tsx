@@ -43,10 +43,12 @@ const NotificationProvider = ({ children }: { children: React.ReactNode }) => {
           anchorOrigin={{ vertical: "top", horizontal: "right" }}
           autoHideDuration={5000}
           TransitionComponent={Slide}
+          sx={{ zIndex: 9999 }}
         >
           <Alert
             severity={notification?.type}
             sx={{
+              zIndex: 9999,
               boxShadow: "0 0 10px 0 rgba(0,0,0,0.2)",
               borderRadius: "25px",
               padding: "0.5rem 2rem",

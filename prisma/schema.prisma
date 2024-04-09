@@ -17,7 +17,7 @@ model Report {
   exceptions        String?
   reporting_period  String?
   institution_name  String
-  institution_id    String
+  institution_id    String?
   created           String
   created_by        String
   registry_record   String?

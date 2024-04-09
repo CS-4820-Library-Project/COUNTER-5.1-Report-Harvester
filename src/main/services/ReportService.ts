@@ -1,7 +1,9 @@
 import {
   IDRReportItem,
   IInstitutionId,
+  IItemId,
   IPerformance,
+  IPublisherId,
   IReport,
   IReportHeader,
   IReportItem,
@@ -10,13 +12,11 @@ import {
   I_IR_ReportItem,
 } from "../../renderer/src/interface/IReport";
 import {
-  getReportItemHeaders,
-  TRItemIdHeaders,
+  ReportIDTSVHeaderDict,
   TSVHeaders as THd,
 } from "../../renderer/src/const/TSVStrings";
 import { CounterVersion } from "../../renderer/src/const/CounterVersion";
 import { NameValue, TypeValue } from "src/types/reports";
-import { MainReportIDs } from "src/types/counter";
 
 /** The main service for cleansing, coercing, and analyzing Reports from SUSHI APIs. */
 
@@ -30,7 +30,13 @@ export class ReportService {
 
     return {
       Report_Header: ReportService.getHeaderObjectFromJSON(data.Report_Header),
-      Report_Items: data.Report_Items,
+      Report_Items: data.Report_Items.map((reportItem) => {
+        if (data.Report_Header.Report_ID.includes("IR")) {
+          reportItem.Title = reportItem["Item"];
+          delete reportItem["Item"];
+        }
+        return reportItem;
+      }),
     } as IReport;
   }
 
@@ -80,8 +86,18 @@ export class ReportService {
             });
           });
         });
+
+        console.log(item.Item_ID);
+        const itemID = item.Item_ID
+          ? Object.entries(item.Item_ID)?.map(([Type, Value]) => ({
+              Type,
+              Value,
+            }))
+          : [];
+
         const reportItem: IReportItem = {
           Platform: item.Platform,
+          Item_ID: itemID as IItemId[],
           Performance: Array.from(performanceMap.values()),
         };
         // Process TR Report
@@ -89,41 +105,26 @@ export class ReportService {
           const reportItem = item as ITRIRReportItem;
           const trItem = item as ITRIRReportItem;
           reportItem["Title"] = trItem.Title;
-          reportItem["Publisher_ID"] = Object.keys(trItem.Publisher_ID)?.map(
-            (key) => ({
-              Type: key,
-              Value: trItem.Publisher_ID[
-                key as unknown as number
-              ] as unknown as string,
-            })
+          reportItem["Publisher_ID"] = Object.entries(
+            trItem.Publisher_ID
+          )?.flatMap(([Type, Values]) =>
+            Values.map((Value) => ({ Type, Value }))
           );
           reportItem["Publisher"] = trItem.Publisher;
-          reportItem["Item_ID"] = Object.keys(trItem.Item_ID)?.map((key) => ({
-            Type: key,
-            Value: trItem.Item_ID[
-              key as unknown as number
-            ] as unknown as string,
-          }));
+          reportItem["Item_ID"] = Object.entries(trItem.Item_ID)?.map(
+            ([Type, Value]) => ({ Type, Value })
+          );
         }
         // Process IR Report
         else if (reportId.includes("IR")) {
-          const irItem = item as ITRIRReportItem;
-          const reportItem = item as ITRIRReportItem;
-          reportItem["Item"] = irItem.Item ?? "";
-          reportItem["Item_ID"] = [
-            {
-              Type: "DOI",
-              Value: irItem.Item_ID[
-                "DOI" as unknown as number
-              ] as unknown as string,
-            },
-            {
-              Type: "YOP",
-              Value: irItem.Item_ID[
-                "YOP" as unknown as number
-              ] as unknown as string,
-            },
-          ];
+          const irItem = item as I_IR_ReportItem;
+          const reportItem = item as I_IR_ReportItem;
+
+          reportItem["Item"] = irItem.Item;
+
+          reportItem["Item_ID"] = Object.entries(irItem.Item_ID)?.map(
+            (Type, Value) => ({ Type, Value })
+          );
         }
         // Process DR Report
         else if (reportId.includes("DR")) {
@@ -131,20 +132,14 @@ export class ReportService {
           const reportItem = item as IDRReportItem;
           reportItem["Database"] = drItem.Database;
           reportItem["Publisher"] = drItem.Publisher;
-          reportItem["Publisher_ID"] = Object.keys(drItem.Publisher_ID)?.map(
-            (key) => ({
-              Type: key,
-              Value: drItem.Publisher_ID[
-                key as unknown as number
-              ] as unknown as string,
-            })
+          reportItem["Publisher_ID"] = Object.entries(
+            drItem.Publisher_ID
+          )?.flatMap(([Type, Values]) =>
+            Values.map((Value) => ({ Type, Value }))
           );
-          reportItem["Item_ID"] = Object.keys(drItem.Item_ID)?.map((key) => ({
-            Type: key,
-            Value: drItem.Item_ID[
-              key as unknown as number
-            ] as unknown as string,
-          }));
+          reportItem["Item_ID"] = Object.entries(drItem.Item_ID)?.map(
+            ([Type, Value]) => ({ Type, Value })
+          );
         }
         return reportItem;
       });
@@ -186,13 +181,24 @@ export class ReportService {
               0
             ).getDate();
 
+            const itemID = item.Item_ID
+              ? Object.entries(item.Item_ID)?.map(([Type, Value]) => ({
+                  Type,
+                  Value,
+                }))
+              : [];
+
+            const publisherID = Object.entries(subItem.Publisher_ID)?.flatMap(
+              ([Type, Values]) => Values.map((Value) => ({ Type, Value }))
+            );
+
             const reportItem: ITRIRReportItem = {
-              Title: item.Title ?? "",
+              Title: item.Item ?? "",
               Item: subItem.Item ?? "",
               Platform: item.Platform ?? "",
-              Publisher_ID: subItem.Publisher_ID ?? "",
+              Publisher_ID: publisherID ?? "",
               Publisher: subItem.Publisher ?? "",
-              Item_ID: item.Item_ID ?? "",
+              Item_ID: (itemID as IItemId[]) ?? "",
               Performance: [
                 {
                   Period: {
@@ -225,7 +231,7 @@ export class ReportService {
     );
 
     return {
-      Report_Header: ReportService.getHeaderObjectFromJSON(data.Report_Header), // direct call to self as `this` is lost in promise
+      Report_Header: ReportService.getHeaderObjectFromJSON(data.Report_Header),
       Report_Items: reportItems,
     } as IReport;
   }
@@ -246,9 +252,11 @@ export class ReportService {
           JSON.stringify(report)
         );
 
+      const release = header.Release;
+
       tsv += `${THd.REPORT_NAME}\t${header.Report_Name}\n`;
       tsv += `${THd.REPORT_ID}\t${header.Report_ID}\n`;
-      tsv += `${THd.RELEASE}\t${header.Release}\n`;
+      tsv += `${THd.RELEASE}\t${release}\n`;
       tsv += `${THd.INST_NAME}\t${header.Institution_Name}\n`;
 
       // Convert Institution_ID to string
@@ -272,25 +280,36 @@ export class ReportService {
       tsv += `${THd.CREATED}\t${header.Created}\n`;
       tsv += `${THd.CREATED_BY}\t${header.Created_By}\n`;
 
-      if (header.Release == "5.1")
+      if (release == "5.1")
         tsv += `${THd.REGISTRY_RECORD}\t${header.Registry_Record ?? ""}\n`;
 
       tsv += "\n";
-      tsv +=
-        getReportItemHeaders(
-          header.Report_ID.substring(0, 2) as MainReportIDs,
-          header.Release
-        ) ?? "";
+      tsv += ReportIDTSVHeaderDict[header.Report_ID.substring(0, 2)] ?? "";
+      tsv += "\t";
+
+      const itemIdHeaders: string[] = [];
+
+      // This collects all Item_ID types and turns them into parts of the TSV header
+      report.Report_Items?.forEach((reportItem) => {
+        reportItem.Item_ID?.forEach((itemID) => {
+          if (!itemIdHeaders.includes(itemID.Type))
+            itemIdHeaders.push(itemID.Type);
+        });
+      });
+
+      tsv += itemIdHeaders.join("\t") + "\t";
+      // tsv += TSVHeaderSuffix;
 
       // PARSE REPORT ITEMS
       const reportItems = report.Report_Items;
+
       if (!reportItems) return tsv;
 
       const uniqueMonths: Set<string> = new Set();
-      report.Report_Items.forEach((item) => {
+      report.Report_Items?.forEach((item) => {
         if (!item) return tsv;
 
-        item.Performance.forEach((performance) => {
+        item.Performance?.forEach((performance) => {
           if (!performance) return tsv;
 
           const startDate = performance.Period.Begin_Date;
@@ -306,17 +325,17 @@ export class ReportService {
       tsv += monthHeaders.join("\t") + "\n";
 
       if (report.Report_Items)
-        report.Report_Items.forEach((item) => {
+        report.Report_Items?.forEach((item) => {
           if (!item || !item.Performance) return tsv;
 
           const metricCounts: { [metricType: string]: number[] } = {};
 
           if (!item.Performance) return tsv;
 
-          item.Performance.forEach((performance) => {
+          item.Performance?.forEach((performance) => {
             if (!performance) return tsv;
 
-            performance.Instance.forEach((instance) => {
+            performance.Instance?.forEach((instance) => {
               if (!metricCounts[instance.Metric_Type]) {
                 metricCounts[instance.Metric_Type] = new Array(
                   monthHeaders.length
@@ -347,61 +366,59 @@ export class ReportService {
               let trItem = item as ITRReportItem;
               rowData += `${trItem.Title}\t${trItem.Publisher}\t`;
 
-              const publisherIDs = trItem.Publisher_ID?.map(
-                (id: TypeValue) => `${id.Type}:${id.Value}`
-              ).join(";");
-              rowData += `${publisherIDs}\t${trItem.Platform}\t`;
+              let publisherID: IPublisherId[] | string =
+                trItem.Publisher_ID || "";
 
-              // Get Item_IDs from Item
-              const itemIDs = trItem.Item_ID?.reduce(
-                (acc: { [key: string]: string }, id: TypeValue) => {
-                  //
-                  const isTRHeader = TRItemIdHeaders?.map(
-                    (h) => h as string
-                  ).includes(id.Type);
+              if (publisherID)
+                publisherID = publisherID
+                  ?.map((id: TypeValue) => `${id.Type}:${id.Value}`)
+                  .join(";");
 
-                  if (isTRHeader) acc[id.Type] = id.Value;
-                  return acc;
-                },
-                {}
-              );
-
-              TRItemIdHeaders?.forEach((header) => {
-                if (!itemIDs) return "";
-                else rowData += `${itemIDs[header] || ``}\t`;
-              });
+              rowData += `${publisherID}\t${trItem.Platform}\t`;
             }
 
             if (header.Report_ID.includes("IR")) {
-              const irItem = item as ITRIRReportItem;
+              let irItem = item as ITRIRReportItem;
+              rowData += `${irItem.Title}\t${irItem.Publisher}\t`;
 
-              if (Array.isArray(irItem.Item_ID)) {
-                const doi =
-                  irItem.Item_ID.find((id: TypeValue) => id.Type === THd.DOI)
-                    ?.Value || "";
-                const yop =
-                  irItem.Item_ID.find((id: TypeValue) => id.Type === THd.YOP)
-                    ?.Value || "";
+              let publisherID: IPublisherId[] | string =
+                irItem.Publisher_ID || "";
 
-                rowData += `${irItem.Item ?? ""}\t${irItem.Platform ?? ""}\t${doi}\t${yop}`;
-              } else {
-                rowData += `${irItem.Item ?? ""}\t${irItem.Platform ?? ""}\t\t`;
-              }
+              if (publisherID)
+                publisherID = publisherID
+                  ?.map((id: TypeValue) => `${id.Type}:${id.Value}`)
+                  .join(";");
+
+              rowData += `${publisherID}\t${irItem.Platform}\t`;
             }
 
             if (header.Report_ID.includes("DR")) {
-              const drItem = item as IDRReportItem;
+              let drItem = item as IDRReportItem;
+              rowData += `${drItem.Database}\t${drItem.Publisher}\t`;
 
-              if (!drItem.Item_ID) return tsv;
+              let publisherID: IPublisherId[] | string =
+                drItem.Publisher_ID || "";
 
-              const propId =
-                drItem.Item_ID.find((id) => id.Type === THd.PROPRIETARY_ID)
-                  ?.Value || "";
-              rowData += `${drItem.Database}\t${drItem.Platform}\t${propId}\t`;
+              if (publisherID)
+                publisherID = publisherID
+                  ?.map((id: TypeValue) => `${id.Type}:${id.Value}`)
+                  .join(";");
+
+              rowData += `${publisherID}\t${drItem.Platform}\t`;
             }
 
-            if (header.Report_ID.includes("PR"))
+            if (header.Report_ID.includes("PR")) {
               rowData += `${item.Platform}\t`;
+            }
+
+            // This will match all Item_ID values to the headers that are collected above
+            itemIdHeaders?.forEach((itemIdHeader) => {
+              item.Item_ID?.forEach((itemID) => {
+                if (itemIdHeader == itemID.Type) rowData += itemID.Value;
+              });
+
+              rowData += `\t`;
+            });
 
             rowData += `${metricType}\t${this.getSum(metricCounts[metricType])}\t`;
             rowData += `${metricCounts[metricType].join("\t")}\n`;
@@ -628,7 +645,7 @@ export class ReportService {
         .join(";");
     } catch (error) {
       let logMessage = `Getting Semicolon Delimited String 5.1\t`;
-      console.log(logMessage, error);
+      // console.log(logMessage, error);
       throw logMessage;
     }
   }
