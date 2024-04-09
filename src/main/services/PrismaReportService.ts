@@ -1323,6 +1323,7 @@ export class PrismaReportService {
    * @returns {Promise<void>} - A promise that resolves when all the report information has been saved into the database.
    */
   async saveFetchedReport(report: IReport): Promise<void> {
+    // console.log("Report:", report.Report_Header);
     try {
       const savedReport = await this.createReport({
         report_id: report.Report_Header.Report_ID,
@@ -1334,9 +1335,10 @@ export class PrismaReportService {
         reporting_period: report.Report_Header.Reporting_Period || "",
         institution_name: report.Report_Header.Institution_Name || "",
         institution_id:
-          report.Report_Header.Institution_ID[0].Type +
-          ":" +
-          report.Report_Header.Institution_ID[0].Value,
+          Array.isArray(report.Report_Header.Institution_ID) &&
+          report.Report_Header.Institution_ID.length > 0
+            ? `${report.Report_Header.Institution_ID[0].Type}:${report.Report_Header.Institution_ID[0].Value}`
+            : "undefined",
         created: report.Report_Header.Created,
         created_by: report.Report_Header.Created_By,
         registry_record: report.Report_Header.Registry_Record || "",
@@ -1415,6 +1417,7 @@ export class PrismaReportService {
             const reportId = reportItemDetails.reportId;
             const platform = rawItem.Platform;
 
+            // PR Report
             if (report.Report_Header.Report_ID == "PR") {
               const pr_item = await this.createPRItem({
                 reportId,
@@ -1461,7 +1464,6 @@ export class PrismaReportService {
       // DR Report
       if (report.Report_Header.Report_ID.includes("DR")) {
         for (const rawItem of report.Report_Items) {
-          console.log("rawItem", rawItem);
           const drItem = rawItem as IDRReportItem;
           let reportItemDetails: any = {
             reportId: savedReport.id,
@@ -1560,18 +1562,25 @@ export class PrismaReportService {
       if (report.Report_Header.Report_ID.includes("IR")) {
         for (const rawItem of report.Report_Items) {
           const irItem = rawItem as ITRIRReportItem;
+
           let reportItemDetails: any = {
             reportId: savedReport.id,
-            title: irItem.Title,
-            publisher: irItem.Publisher,
+            title: irItem.Title || "undefined",
+            publisher: irItem.Publisher || "undefined",
             publisherId:
               (irItem.Publisher_ID || [])
                 .map((id) => `${id.Type}:${id.Value}`)
                 .join(";") || null,
             platform: irItem.Platform,
-            doi: irItem.Item_ID.find((id) => id.Type === "DOI")?.Value || null,
-            yop: irItem.Item_ID.find((id) => id.Type === "YOP")?.Value || null,
-            item: irItem.Item,
+            doi:
+              (Array.isArray(irItem.Item_ID) ? irItem.Item_ID : []).find(
+                (id) => id.Type === "DOI",
+              )?.Value || null,
+            yop:
+              (Array.isArray(irItem.Item_ID) ? irItem.Item_ID : []).find(
+                (id) => id.Type === "YOP",
+              )?.Value || null,
+            item: irItem.Item || "undefined",
           };
 
           const metricCounts = new Map<string, number>();
@@ -1656,7 +1665,6 @@ export class PrismaReportService {
       if (report.Report_Header.Report_ID.includes("TR")) {
         for (const rawItem of report.Report_Items) {
           const trItem = rawItem as ITRIRReportItem;
-          console.log("publisherId", trItem.Publisher_ID);
           let reportItemDetails: any = {
             reportId: savedReport.id,
             title: trItem.Title,
@@ -1686,7 +1694,6 @@ export class PrismaReportService {
               trItem.Item_ID.find((id) => id.Type === "Data_Type")?.Value ||
               null,
           };
-          console.log("reportItemDetails", reportItemDetails);
 
           const metricCounts = new Map<string, number>();
           const metricPeriods = new Map<
