@@ -2115,87 +2115,107 @@ export class PrismaReportService {
   /**
    * Converts a report object to a TSV (Tab-Separated Values) string format.
    * @param {any} report The report object to convert.
+   * @param title
+   * @param issn
+   * @param isbn
    * @return {Promise<string>} A promise that resolves with the TSV string.
    */
-  async convertReportToTSV(report: any): Promise<string> {
+  async convertReportToTSV(
+    report: any,
+    title?: string,
+    issn?: string,
+    isbn?: string,
+  ): Promise<string> {
     let tsv = "";
 
-    // Headers
-    tsv += `Report_Name\t${report.report_name}\n`;
-    tsv += `Report_ID\t${report.report_id}\n`;
-    tsv += `Release\t${report.release}\n`;
-    tsv += `Institution_Name\t${report.institution_name}\n`;
-    tsv += `Institution_ID\t${report.institution_id}\n`;
-
-    // Report Filters
-    const reportFilters = report.ReportFilter?.map(
-      (filter: any) => `${filter.filter_type}=${filter.value}`,
-    ).join(";");
-    tsv += `Report_Filters\t${reportFilters}\n`;
-
-    tsv += `Created\t${report.created}\n`;
-    tsv += `Created_By\t${report.created_by}\n`;
-    tsv += "\n";
-
-    tsv += `Title\tPublisher\tPublisher_ID\tPlatform\tDOI\tYOP\tProprietary_ID\tISBN\tPrint_ISSN\tOnline_ISSN\tURI\tData_Type\tMetric_Type\tReporting_Period_Total\n`;
+    const includesSearchParameter = (item: any) => {
+      let matches = [];
+      if (title)
+        matches.push(item.title.toLowerCase().includes(title.toLowerCase()));
+      if (issn) {
+        matches.push(
+          item.printIssn?.toLowerCase().includes(issn.toLowerCase()),
+          item.onlineIssn?.toLowerCase().includes(issn.toLowerCase()),
+        );
+      }
+      if (isbn)
+        matches.push(item.isbn?.toLowerCase().includes(isbn.toLowerCase()));
+      return matches.some(Boolean);
+    };
 
     if (report.report_id.includes("TR")) {
-      if (report.report_id === "TR") {
-        for (const item of report.TR_Item) {
-          for (const metric of item.TR_ItemMetric) {
-            tsv += `${item.title}\t${item.publisher}\t${item.publisherId}\t${item.platform}\t${item.doi}\t${item.yop}\t${item.proprietaryId}\t${item.isbn}\t${item.printIssn}\t${item.onlineIssn}\t${item.uri}\t${item.dataType}\t${metric.metricType}\t${item.reportingPeriodTotal}\n`;
+      switch (report.report_id) {
+        case "TR":
+          for (const item of report.TR_Item) {
+            if (!includesSearchParameter(item)) continue;
+            for (const metric of item.TR_ItemMetric) {
+              tsv += `${item.title}\t${item.publisher}\t${item.publisherId}\t${item.platform}\t${item.doi}\t${item.yop}\t${item.proprietaryId}\t${item.isbn}\t${item.printIssn}\t${item.onlineIssn}\t${item.uri}\t${item.dataType}\t${metric.metricType}\t${item.reportingPeriodTotal}\n`;
+            }
           }
-          tsv += "\n";
-        }
-      } else if (report.report_id === "TR_B1") {
-        for (const item of report.TR_B1_Item) {
-          for (const metric of item.TR_B1_ItemMetric) {
-            tsv += `${item.title}\t${item.publisher}\t${item.publisherId}\t${item.platform}\t${item.doi}\t${item.yop}\t${item.proprietaryId}\t${item.isbn}\t${item.printIssn}\t${item.onlineIssn}\t${item.uri}\t${item.dataType}\t${metric.metricType}\t${item.reportingPeriodTotal}\n`;
+          break;
+
+        case "TR_B1":
+          for (const item of report.TR_B1_Item) {
+            if (!includesSearchParameter(item)) continue;
+            for (const metric of item.TR_B1_ItemMetric) {
+              tsv += `${item.title}\t${item.publisher}\t${item.publisherId}\t${item.platform}\t${item.doi}\t${item.yop}\t${item.proprietaryId}\t${item.isbn}\t${item.printIssn}\t${item.onlineIssn}\t${item.uri}\t${item.dataType}\t${metric.metricType}\t${item.reportingPeriodTotal}\n`;
+            }
           }
-          tsv += "\n";
-        }
-      } else if (report.report_id === "TR_B2") {
-        for (const item of report.TR_B2_Item) {
-          for (const metric of item.TR_B2_ItemMetric) {
-            tsv += `${item.title}\t${item.publisher}\t${item.publisherId}\t${item.platform}\t${item.doi}\t${item.yop}\t${item.proprietaryId}\t${item.isbn}\t${item.printIssn}\t${item.onlineIssn}\t${item.uri}\t${item.dataType}\t${metric.metricType}\t${item.reportingPeriodTotal}\n`;
+          break;
+
+        case "TR_B2":
+          for (const item of report.TR_B2_Item) {
+            if (!includesSearchParameter(item)) continue;
+            for (const metric of item.TR_B2_ItemMetric) {
+              tsv += `${item.title}\t${item.publisher}\t${item.publisherId}\t${item.platform}\t${item.doi}\t${item.yop}\t${item.proprietaryId}\t${item.isbn}\t${item.printIssn}\t${item.onlineIssn}\t${item.uri}\t${item.dataType}\t${metric.metricType}\t${item.reportingPeriodTotal}\n`;
+            }
           }
-          tsv += "\n";
-        }
-      } else if (report.report_id === "TR_B3") {
-        for (const item of report.TR_B3_Item) {
-          for (const metric of item.TR_B3_ItemMetric) {
-            tsv += `${item.title}\t${item.publisher}\t${item.publisherId}\t${item.platform}\t${item.doi}\t${item.yop}\t${item.proprietaryId}\t${item.isbn}\t${item.printIssn}\t${item.onlineIssn}\t${item.uri}\t${item.dataType}\t${metric.metricType}\t${item.reportingPeriodTotal}\n`;
+          break;
+
+        case "TR_B3":
+          for (const item of report.TR_B3_Item) {
+            if (!includesSearchParameter(item)) continue;
+            for (const metric of item.TR_B3_ItemMetric) {
+              tsv += `${item.title}\t${item.publisher}\t${item.publisherId}\t${item.platform}\t${item.doi}\t${item.yop}\t${item.proprietaryId}\t${item.isbn}\t${item.printIssn}\t${item.onlineIssn}\t${item.uri}\t${item.dataType}\t${metric.metricType}\t${item.reportingPeriodTotal}\n`;
+            }
           }
-          tsv += "\n";
-        }
-      } else if (report.report_id === "TR_J1") {
-        for (const item of report.TR_J1_Item) {
-          for (const metric of item.TR_J1_ItemMetric) {
-            tsv += `${item.title}\t${item.publisher}\t${item.publisherId}\t${item.platform}\t${item.doi}\t${item.yop}\t${item.proprietaryId}\t${item.isbn}\t${item.printIssn}\t${item.onlineIssn}\t${item.uri}\t${item.dataType}\t${metric.metricType}\t${item.reportingPeriodTotal}\n`;
+          break;
+
+        case "TR_J1":
+          for (const item of report.TR_J1_Item) {
+            if (!includesSearchParameter(item)) continue;
+            for (const metric of item.TR_J1_ItemMetric) {
+              tsv += `${item.title}\t${item.publisher}\t${item.publisherId}\t${item.platform}\t${item.doi}\t${item.yop}\t${item.proprietaryId}\t${item.isbn}\t${item.printIssn}\t${item.onlineIssn}\t${item.uri}\t${item.dataType}\t${metric.metricType}\t${item.reportingPeriodTotal}\n`;
+            }
           }
-          tsv += "\n";
-        }
-      } else if (report.report_id === "TR_J2") {
-        for (const item of report.TR_J2_Item) {
-          for (const metric of item.TR_J2_ItemMetric) {
-            tsv += `${item.title}\t${item.publisher}\t${item.publisherId}\t${item.platform}\t${item.doi}\t${item.yop}\t${item.proprietaryId}\t${item.isbn}\t${item.printIssn}\t${item.onlineIssn}\t${item.uri}\t${item.dataType}\t${metric.metricType}\t${item.reportingPeriodTotal}\n`;
+          break;
+
+        case "TR_J2":
+          for (const item of report.TR_J2_Item) {
+            if (!includesSearchParameter(item)) continue;
+            for (const metric of item.TR_J2_ItemMetric) {
+              tsv += `${item.title}\t${item.publisher}\t${item.publisherId}\t${item.platform}\t${item.doi}\t${item.yop}\t${item.proprietaryId}\t${item.isbn}\t${item.printIssn}\t${item.onlineIssn}\t${item.uri}\t${item.dataType}\t${metric.metricType}\t${item.reportingPeriodTotal}\n`;
+            }
           }
-          tsv += "\n";
-        }
-      } else if (report.report_id === "TR_J3") {
-        for (const item of report.TR_J3_Item) {
-          for (const metric of item.TR_J3_ItemMetric) {
-            tsv += `${item.title}\t${item.publisher}\t${item.publisherId}\t${item.platform}\t${item.doi}\t${item.yop}\t${item.proprietaryId}\t${item.isbn}\t${item.printIssn}\t${item.onlineIssn}\t${item.uri}\t${item.dataType}\t${metric.metricType}\t${item.reportingPeriodTotal}\n`;
+          break;
+
+        case "TR_J3":
+          for (const item of report.TR_J3_Item) {
+            if (!includesSearchParameter(item)) continue;
+            for (const metric of item.TR_J3_ItemMetric) {
+              tsv += `${item.title}\t${item.publisher}\t${item.publisherId}\t${item.platform}\t${item.doi}\t${item.yop}\t${item.proprietaryId}\t${item.isbn}\t${item.printIssn}\t${item.onlineIssn}\t${item.uri}\t${item.dataType}\t${metric.metricType}\t${item.reportingPeriodTotal}\n`;
+            }
           }
-          tsv += "\n";
-        }
-      } else if (report.report_id === "TR_J4") {
-        for (const item of report.TR_J4_Item) {
-          for (const metric of item.TR_J4_ItemMetric) {
-            tsv += `${item.title}\t${item.publisher}\t${item.publisherId}\t${item.platform}\t${item.doi}\t${item.yop}\t${item.proprietaryId}\t${item.isbn}\t${item.printIssn}\t${item.onlineIssn}\t${item.uri}\t${item.dataType}\t${metric.metricType}\t${item.reportingPeriodTotal}\n`;
+          break;
+
+        case "TR_J4":
+          for (const item of report.TR_J4_Item) {
+            if (!includesSearchParameter(item)) continue;
+            for (const metric of item.TR_J4_ItemMetric) {
+              tsv += `${item.title}\t${item.publisher}\t${item.publisherId}\t${item.platform}\t${item.doi}\t${item.yop}\t${item.proprietaryId}\t${item.isbn}\t${item.printIssn}\t${item.onlineIssn}\t${item.uri}\t${item.dataType}\t${metric.metricType}\t${item.reportingPeriodTotal}\n`;
+            }
           }
-          tsv += "\n";
-        }
+          break;
       }
     }
 
@@ -2217,21 +2237,6 @@ export class PrismaReportService {
   }
 
   /**
-   * Generates a search filename based on the given query and vendor name.
-   *
-   * @param {string} query - The search query.
-   * @param {string} vendorName - The vendor name.
-   * @returns {string} The generated search filename.
-   */
-  private generateSearchFilename(query: string, vendorName: string): string {
-    let filename = query.replace(/ /g, "_") + "_";
-    filename += vendorName.toLowerCase() + "_";
-    filename += format(new Date(), "yyyyMMddHHmmss");
-
-    return filename;
-  }
-
-  /**
    * Writes searched reports to a TSV file.
    * @param {string} [title] - The title of the report.
    * @param {string} [issn] - The ISSN of the report.
@@ -2243,22 +2248,22 @@ export class PrismaReportService {
     issn?: string,
     isbn?: string,
   ): Promise<Report[]> {
-    const reports = await this.searchReport(1, 250, title, issn, isbn);
+    const reports = await this.searchReport(1, 200, title, issn, isbn);
 
-    let fileNumber = 1; // Counter variable for filename
+    let tsv = "";
+    tsv += `Title\tPublisher\tPublisher_ID\tPlatform\tDOI\tYOP\tProprietary_ID\tISBN\tPrint_ISSN\tOnline_ISSN\tURI\tData_Type\tMetric_Type\tReporting_Period_Total\n`;
 
     for (const report of reports) {
-      const tsv = this.convertReportToTSV(report);
-      const vendorName = report.institution_id.split(":")[0];
-
-      const fileName =
-        this.generateSearchFilename(title || issn || isbn || "", vendorName) +
-        "_" +
-        fileNumber; // Add the counter to the filename
-
-      await this.writeTSVToFile(await tsv, fileName);
-      fileNumber++; // Increment the counter
+      const reportTsv = await this.convertReportToTSV(
+        report,
+        title,
+        issn,
+        isbn,
+      );
+      tsv += reportTsv;
     }
+
+    await this.writeTSVToFile(tsv, "search_results");
 
     return reports;
   }
