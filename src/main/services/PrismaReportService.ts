@@ -2120,23 +2120,6 @@ export class PrismaReportService {
   async convertReportToTSV(report: any): Promise<string> {
     let tsv = "";
 
-    // Headers
-    tsv += `Report_Name\t${report.report_name}\n`;
-    tsv += `Report_ID\t${report.report_id}\n`;
-    tsv += `Release\t${report.release}\n`;
-    tsv += `Institution_Name\t${report.institution_name}\n`;
-    tsv += `Institution_ID\t${report.institution_id}\n`;
-
-    // Report Filters
-    const reportFilters = report.ReportFilter?.map(
-      (filter: any) => `${filter.filter_type}=${filter.value}`,
-    ).join(";");
-    tsv += `Report_Filters\t${reportFilters}\n`;
-
-    tsv += `Created\t${report.created}\n`;
-    tsv += `Created_By\t${report.created_by}\n`;
-    tsv += "\n";
-
     tsv += `Title\tPublisher\tPublisher_ID\tPlatform\tDOI\tYOP\tProprietary_ID\tISBN\tPrint_ISSN\tOnline_ISSN\tURI\tData_Type\tMetric_Type\tReporting_Period_Total\n`;
 
     if (report.report_id.includes("TR")) {
@@ -2217,21 +2200,6 @@ export class PrismaReportService {
   }
 
   /**
-   * Generates a search filename based on the given query and vendor name.
-   *
-   * @param {string} query - The search query.
-   * @param {string} vendorName - The vendor name.
-   * @returns {string} The generated search filename.
-   */
-  private generateSearchFilename(query: string, vendorName: string): string {
-    let filename = query.replace(/ /g, "_") + "_";
-    filename += vendorName.toLowerCase() + "_";
-    filename += format(new Date(), "yyyyMMddHHmmss");
-
-    return filename;
-  }
-
-  /**
    * Writes searched reports to a TSV file.
    * @param {string} [title] - The title of the report.
    * @param {string} [issn] - The ISSN of the report.
@@ -2245,20 +2213,18 @@ export class PrismaReportService {
   ): Promise<Report[]> {
     const reports = await this.searchReport(1, 250, title, issn, isbn);
 
-    let fileNumber = 1; // Counter variable for filename
+    let tsv = "";
 
     for (const report of reports) {
-      const tsv = this.convertReportToTSV(report);
-      const vendorName = report.institution_id.split(":")[0];
+      const reportTsv = await this.convertReportToTSV(report);
+      tsv += reportTsv;
 
-      const fileName =
-        this.generateSearchFilename(title || issn || isbn || "", vendorName) +
-        "_" +
-        fileNumber; // Add the counter to the filename
-
-      await this.writeTSVToFile(await tsv, fileName);
-      fileNumber++; // Increment the counter
+      if (report !== reports[reports.length - 1]) {
+        tsv += "\n"; // Add a newline character after each report, except for the last one
+      }
     }
+
+    await this.writeTSVToFile(tsv, "search_results");
 
     return reports;
   }
