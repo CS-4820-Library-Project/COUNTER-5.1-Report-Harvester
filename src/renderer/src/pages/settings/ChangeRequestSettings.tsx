@@ -94,38 +94,43 @@ const Spacer = styled(Box)({
 
 // Custom hook for managing the state of a counter. Includes functionality to increase, decrease, and directly update the counter value.
 const useCounter = (initialValue: number) => {
-  const [value, setValue] = useState(initialValue);
+  const [value, setValue] = useState(initialValue); // Actual value
+  const [displayValue, setDisplayValue] = useState(initialValue.toString()); // Display value
 
+  const syncValue = (newValue: string) => {
+    setValue(newValue === "" ? 0 : Math.max(parseInt(newValue, 10), 0));
+    setDisplayValue(newValue);
+  };
   // useCallback is used to memoize callback functions. This prevents unnecessary re-renders of components
   // that depend on these functions, as the same function object is returned on subsequent renders unless dependencies change
   // Memoizing the increase, decrease, and input change handlers to prevent unnecessary re-renders.
   const handleIncrease = useCallback(() => {
-    setValue((prevValue) => prevValue + 1);
-  }, []);
+    syncValue((Math.max(value, 0) + 1).toString());
+  }, [value]);
 
   const handleDecrease = useCallback(() => {
-    setValue((prevValue) => Math.max(prevValue - 1, 0));
-  }, []);
+    syncValue((Math.max(value - 1, 0)).toString());
+  }, [value]);
 
   const handleInputChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
-    const newValue = parseInt(e.target.value, 10);
-    setValue(!isNaN(newValue) ? Math.max(newValue, 0) : 0);
+    const newValue = e.target.value;
+    syncValue(newValue);
   }, []);
 
-  return { value, handleIncrease, handleDecrease, handleInputChange };
+  return { displayValue, handleIncrease, handleDecrease, handleInputChange };
 };
-
 interface CounterProps {
-  value: number;
+  displayValue: string;
   onDecrease: () => void;
   onIncrease: () => void;
   onInputChange: (e: ChangeEvent<HTMLInputElement>) => void;
 }
 
+
 // Counter component illustrates how to handle state and events in a function component with props.
 // The component demonstrates a common pattern for inputs that need to validate or process their data before updating state.
 const Counter: React.FC<CounterProps> = ({
-  value,
+  displayValue,
   onDecrease,
   onIncrease,
   onInputChange,
@@ -146,8 +151,8 @@ const Counter: React.FC<CounterProps> = ({
         <RemoveOutlinedIcon />
       </ButtonWrapper>
       <input
-        type="number"
-        value={value}
+        type="number" // Keeps the input type as number
+        value={displayValue}
         onChange={onInputChange}
         style={inputStyle}
         min="0"
@@ -215,19 +220,23 @@ const ChangeRequestSettings: React.FC = () => {
       </Description>
       <FieldLabel>Request Interval (seconds)</FieldLabel>
       <Counter
-        value={reportRequestInterval}
-        onDecrease={() =>
-          setReportRequestInterval(Math.max(reportRequestInterval - 1, 0))
-        }
-        onIncrease={() => setReportRequestInterval(reportRequestInterval + 1)}
-        onInputChange={(e) => setReportRequestInterval(Math.max(parseInt(e.target.value, 10) || 0, 0))}
-      />
+  displayValue={reportRequestInterval.toString()} // Update this line
+  onDecrease={() => setReportRequestInterval(Math.max(reportRequestInterval - 1, 0))}
+  onIncrease={() => setReportRequestInterval(reportRequestInterval + 1)}
+  onInputChange={(e) => {
+    const newValue = Math.max(parseInt(e.target.value, 10) || 0, 0);
+    setReportRequestInterval(newValue);
+  }}
+/>
       <FieldLabel>Request Timeout (seconds)</FieldLabel>
       <Counter
-        value={requestTimeout}
+        displayValue={requestTimeout.toString()}
         onDecrease={() => setRequestTimeout(Math.max(requestTimeout - 1, 0))}
         onIncrease={() => setRequestTimeout(requestTimeout + 1)}
-        onInputChange={(e) => setRequestTimeout(Math.max(parseInt(e.target.value, 10) || 0, 0))}
+        onInputChange={(e) => {
+          const newValue = Math.max(parseInt(e.target.value, 10) || 0, 0);
+          setRequestTimeout(newValue);
+        }}
       />
       {/*
       <FieldLabel>Concurrent Reports</FieldLabel>
