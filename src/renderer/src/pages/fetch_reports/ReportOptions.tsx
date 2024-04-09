@@ -329,9 +329,9 @@ const ReportOptions = ({
 
   /* Debugging Logs - Keep for peace of mind :) */
 
-  // useEffect(() => {
-  //   console.log("Active Report", activeReport);
-  // }, [activeReport]);
+  useEffect(() => {
+    console.log("Active Report", activeReport);
+  }, [activeReport]);
 
   // useEffect(() => {
   //   console.log("Custom Report", customReport);
