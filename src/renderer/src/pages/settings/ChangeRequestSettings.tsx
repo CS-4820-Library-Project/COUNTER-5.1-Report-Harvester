@@ -108,8 +108,8 @@ const useCounter = (initialValue: number) => {
   }, []);
 
   const handleInputChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
-    const newValue = Math.max(parseInt(e.target.value, 10), 0);
-    setValue(newValue);
+    const newValue = parseInt(e.target.value, 10);
+    setValue(!isNaN(newValue) ? Math.max(newValue, 0) : 0);
   }, []);
 
   return { value, handleIncrease, handleDecrease, handleInputChange };
@@ -220,12 +220,14 @@ const ChangeRequestSettings: React.FC = () => {
           setReportRequestInterval(Math.max(reportRequestInterval - 1, 0))
         }
         onIncrease={() => setReportRequestInterval(reportRequestInterval + 1)}
+        onInputChange={(e) => setReportRequestInterval(Math.max(parseInt(e.target.value, 10) || 0, 0))}
       />
       <FieldLabel>Request Timeout (seconds)</FieldLabel>
       <Counter
         value={requestTimeout}
         onDecrease={() => setRequestTimeout(Math.max(requestTimeout - 1, 0))}
         onIncrease={() => setRequestTimeout(requestTimeout + 1)}
+        onInputChange={(e) => setRequestTimeout(Math.max(parseInt(e.target.value, 10) || 0, 0))}
       />
       {/*
       <FieldLabel>Concurrent Reports</FieldLabel>
