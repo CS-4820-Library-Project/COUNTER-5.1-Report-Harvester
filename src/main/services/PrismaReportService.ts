@@ -1668,32 +1668,52 @@ export class PrismaReportService {
           const trItem = rawItem as ITRIRReportItem;
           let reportItemDetails: any = {
             reportId: savedReport.id,
-            title: trItem.Title,
-            publisher: trItem.Publisher,
+            title: trItem.Title || "undefined",
+            publisher: trItem.Publisher || "undefined",
             publisherId:
               (trItem.Publisher_ID || [])
                 .map((id) => `${id.Type}:${id.Value}`)
                 .join(";") || null,
             platform: trItem.Platform,
-            doi: trItem.Item_ID.find((id) => id.Type === "DOI")?.Value || null,
-            yop: trItem.Item_ID.find((id) => id.Type === "YOP")?.Value || null,
+            doi:
+              (Array.isArray(trItem.Item_ID) ? trItem.Item_ID : []).find(
+                (id) => id.Type === "DOI",
+              )?.Value || null,
+            yop:
+              (Array.isArray(trItem.Item_ID) ? trItem.Item_ID : []).find(
+                (id) => id.Type === "YOP",
+              )?.Value || null,
+
             proprietaryId:
-              trItem.Item_ID.find((id) => id.Type === "Proprietary")?.Type +
+              (Array.isArray(trItem.Item_ID) ? trItem.Item_ID : []).find(
+                (id) => id.Type === "Proprietary",
+              )?.Type ||
+              "undefined" +
                 ":" +
-                trItem.Item_ID.find((id) => id.Type === "Proprietary")?.Value ||
+                (Array.isArray(trItem.Item_ID) ? trItem.Item_ID : []).find(
+                  (id) => id.Type === "Proprietary",
+                )?.Value ||
               null,
             isbn:
-              trItem.Item_ID.find((id) => id.Type === "ISBN")?.Value || null,
+              (Array.isArray(trItem.Item_ID) ? trItem.Item_ID : []).find(
+                (id) => id.Type === "ISBN",
+              )?.Value || null,
             printIssn:
-              trItem.Item_ID.find((id) => id.Type === "Print_ISSN")?.Value ||
-              null,
+              (Array.isArray(trItem.Item_ID) ? trItem.Item_ID : []).find(
+                (id) => id.Type === "Print_ISSN",
+              )?.Value || null,
             onlineIssn:
-              trItem.Item_ID.find((id) => id.Type === "Online_ISSN")?.Value ||
-              null,
-            uri: trItem.Item_ID.find((id) => id.Type === "URI")?.Value || null,
+              (Array.isArray(trItem.Item_ID) ? trItem.Item_ID : []).find(
+                (id) => id.Type === "Online_ISSN",
+              )?.Value || null,
+            uri:
+              (Array.isArray(trItem.Item_ID) ? trItem.Item_ID : []).find(
+                (id) => id.Type === "URI",
+              )?.Value || null,
             dataType:
-              trItem.Item_ID.find((id) => id.Type === "Data_Type")?.Value ||
-              null,
+              (Array.isArray(trItem.Item_ID) ? trItem.Item_ID : []).find(
+                (id) => id.Type === "Data_Type",
+              )?.Value || null,
           };
 
           const metricCounts = new Map<string, number>();
