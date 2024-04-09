@@ -1323,7 +1323,6 @@ export class PrismaReportService {
    * @returns {Promise<void>} - A promise that resolves when all the report information has been saved into the database.
    */
   async saveFetchedReport(report: IReport): Promise<void> {
-    // console.log("Report:", report.Report_Header);
     try {
       const savedReport = await this.createReport({
         report_id: report.Report_Header.Report_ID,
