@@ -1463,7 +1463,6 @@ export class PrismaReportService {
         for (const rawItem of report.Report_Items) {
           console.log("rawItem", rawItem);
           const drItem = rawItem as IDRReportItem;
-          // console.log("drItem", drItem);
           let reportItemDetails: any = {
             reportId: savedReport.id,
             database: drItem.Database,
@@ -1471,9 +1470,10 @@ export class PrismaReportService {
               drItem.Item_ID.find((id) => id.Type === "Proprietary")?.Value ||
               null,
             publisher: drItem.Publisher,
-            publisherId: drItem.Publisher_ID.map(
-              (id) => `${id.Type}:${id.Value}`,
-            ).join(";"),
+            publisherId:
+              (drItem.Publisher_ID || [])
+                .map((id) => `${id.Type}:${id.Value}`)
+                .join(";") || null,
             platform: drItem.Platform,
           };
 
@@ -1556,6 +1556,7 @@ export class PrismaReportService {
         }
       }
 
+      // IR Report
       if (report.Report_Header.Report_ID.includes("IR")) {
         for (const rawItem of report.Report_Items) {
           const irItem = rawItem as ITRIRReportItem;
@@ -1563,9 +1564,10 @@ export class PrismaReportService {
             reportId: savedReport.id,
             title: irItem.Title,
             publisher: irItem.Publisher,
-            publisherId: irItem.Publisher_ID.map(
-              (id) => `${id.Type}:${id.Value}`,
-            ).join(";"),
+            publisherId:
+              (irItem.Publisher_ID || [])
+                .map((id) => `${id.Type}:${id.Value}`)
+                .join(";") || null,
             platform: irItem.Platform,
             doi: irItem.Item_ID.find((id) => id.Type === "DOI")?.Value || null,
             yop: irItem.Item_ID.find((id) => id.Type === "YOP")?.Value || null,
@@ -1654,13 +1656,15 @@ export class PrismaReportService {
       if (report.Report_Header.Report_ID.includes("TR")) {
         for (const rawItem of report.Report_Items) {
           const trItem = rawItem as ITRIRReportItem;
+          console.log("publisherId", trItem.Publisher_ID);
           let reportItemDetails: any = {
             reportId: savedReport.id,
             title: trItem.Title,
             publisher: trItem.Publisher,
-            publisherId: trItem.Publisher_ID.map(
-              (id) => `${id.Type}:${id.Value}`,
-            ).join(";"),
+            publisherId:
+              (trItem.Publisher_ID || [])
+                .map((id) => `${id.Type}:${id.Value}`)
+                .join(";") || null,
             platform: trItem.Platform,
             doi: trItem.Item_ID.find((id) => id.Type === "DOI")?.Value || null,
             yop: trItem.Item_ID.find((id) => id.Type === "YOP")?.Value || null,
@@ -1682,6 +1686,7 @@ export class PrismaReportService {
               trItem.Item_ID.find((id) => id.Type === "Data_Type")?.Value ||
               null,
           };
+          console.log("reportItemDetails", reportItemDetails);
 
           const metricCounts = new Map<string, number>();
           const metricPeriods = new Map<
