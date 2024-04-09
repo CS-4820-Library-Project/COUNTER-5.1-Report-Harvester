@@ -1663,6 +1663,7 @@ export class PrismaReportService {
         }
       }
 
+      // TR Report
       if (report.Report_Header.Report_ID.includes("TR")) {
         for (const rawItem of report.Report_Items) {
           const trItem = rawItem as ITRIRReportItem;
