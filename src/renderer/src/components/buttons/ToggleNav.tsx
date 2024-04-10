@@ -8,14 +8,16 @@ type Props = {
   hint?: string;
   size?: "small" | "large";
   isSelected: boolean;
-  setSelected: (label: string, state: boolean) => void;
   isActive: boolean;
+  disabled?: boolean;
+  setSelected: (label: string, state: boolean) => void;
   setActiveTab: (label: string) => void;
 };
 
 const ToggleNav = ({
   label,
   hint,
+  disabled,
   setSelected,
   setActiveTab,
   isSelected,
@@ -32,36 +34,40 @@ const ToggleNav = ({
     borderRadius: "0",
     textTransform: "none" as const,
     color: isSelected ? primary.contrastText : background.contrastText,
-    backgroundColor: isSelected
-      ? isActive
-        ? primary.hover
-        : primary.main
-      : background.main,
+    backgroundColor:
+      isSelected && !disabled
+        ? isActive
+          ? primary.hover
+          : primary.main
+        : background.main,
     "&:hover": {
-      bgcolor: isSelected ? primary.hover : background.hover,
+      bgcolor: isSelected && !disabled ? primary.hover : background.hover,
     },
   };
 
   const leftSideStyle = {
     borderRadius: "0",
     color: isSelected ? primary.contrastText : background.light,
-    backgroundColor: isSelected
-      ? isActive
-        ? primary.hover
-        : primary.main
-      : background.main,
+    backgroundColor:
+      isSelected && !disabled
+        ? isActive
+          ? primary.hover
+          : primary.main
+        : background.main,
     padding: size === "small" ? ("5px" as const) : ("10px" as const),
     minWidth: "max-content" as const,
     height: "100%" as const,
     // textTransform: "none" as const,
     "&:hover": {
-      bgcolor: isSelected ? primary.hover : background.hover,
+      bgcolor: isSelected && !disabled ? primary.hover : background.hover,
     } as const,
   };
 
   const pillStyle = {
-    color: isSelected ? primary.contrastText : background.contrastText,
-    boxShadow: isActive ? `0px 5px 10px 0px ${primary.dark}` : "none",
+    color:
+      isSelected && !disabled ? primary.contrastText : background.contrastText,
+    boxShadow:
+      isActive && !disabled ? `0px 5px 10px 0px ${primary.dark}` : "none",
     gap: "2px" as const,
     borderRadius: "25px" as const,
     overflow: "hidden" as const,
@@ -83,7 +89,10 @@ const ToggleNav = ({
 
   return hint ? (
     <TooltipBottom hint={hint}>
-      <FlexBetween onClick={handleSelect} sx={pillStyle}>
+      <FlexBetween
+        onClick={!disabled ? handleSelect : undefined}
+        sx={pillStyle}
+      >
         {/* Left side */}
         <Button
           sx={leftSideStyle}
@@ -91,18 +100,22 @@ const ToggleNav = ({
             e.stopPropagation();
             handleUnSelect();
           }}
+          disabled={disabled}
         >
-          {isSelected ? <CheckCircle /> : <Circle />}
+          {isSelected && !disabled ? <CheckCircle /> : <Circle />}
         </Button>
 
         {/* Right Side */}
-        <Button sx={rightSideStyle}>{label.replace(/_/g, " ")}</Button>
+        <Button disabled={disabled} sx={rightSideStyle}>
+          {label.replace(/_/g, " ")}
+        </Button>
       </FlexBetween>
     </TooltipBottom>
   ) : (
     <FlexBetween onClick={handleSelect} sx={pillStyle}>
       {/* Left side */}
       <Button
+        disabled={disabled}
         sx={leftSideStyle}
         onClick={(e) => {
           e.stopPropagation();
@@ -113,7 +126,9 @@ const ToggleNav = ({
       </Button>
 
       {/* Right Side */}
-      <Button sx={rightSideStyle}>{label.replace(/_/g, " ")}</Button>
+      <Button sx={rightSideStyle} disabled={disabled}>
+        {label.replace(/_/g, " ")}
+      </Button>
     </FlexBetween>
   );
 };

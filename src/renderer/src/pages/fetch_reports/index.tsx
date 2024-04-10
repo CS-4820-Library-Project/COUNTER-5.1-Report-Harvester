@@ -32,7 +32,10 @@ import { SideBadge } from "../../components/badge/SideBadge";
 import { reports_5_1 } from "../../../../constants/Reports_5_1";
 import { reports_5 } from "../../../../constants/Reports_5";
 import { FetchResults } from "../../../../types/reports";
-
+import { reportsIds } from "../../../../constants";
+import { Box } from "@mui/material";
+import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
+import HelpMessages from "../../data/HelpMessages";
 /**
  * This is the "FetchReportsPage" component.
  *
@@ -51,11 +54,12 @@ const FetchReportsPage = () => {
   const setNotification = useNotification();
   const isNonMobile = useMediaQuery("(min-width:1300px)");
 
-  // States for managing selected reports, query for searching, vendors, selected vendors, date range, and fetch status
-  const [selectedReports, setSelectedReports] = useState<Report[]>([]);
   const [version, setVersion] = useState<string>("5.0");
-
   const [reports, setReports] = useState(reports_5);
+  const [availableReports, setAvailableReports] =
+    useState<string[]>(reportsIds);
+  const [selectedReports, setSelectedReports] = useState<Report[]>([]);
+  const [resetReportOptions, setResetReportOptions] = useState<boolean>(false);
 
   const [filtersPopUp, setFiltersPopUp] = useState(false);
   const [query, setQuery] = useState<string | null>(null);
@@ -90,7 +94,12 @@ const FetchReportsPage = () => {
     });
   };
 
-  const cancelFetch = () => setFetching(false);
+  const handleResetReportOptions = () => setResetReportOptions((prev) => !prev);
+
+  const cancelFetch = () => {
+    setFetching(false);
+    handleResetReportOptions();
+  };
 
   const openFilters = () => setFiltersPopUp(!filtersPopUp);
 
@@ -104,6 +113,11 @@ const FetchReportsPage = () => {
       return setNotification({
         type: "warning",
         message,
+      });
+    } else if (selectedReports.length < 1 && !all) {
+      return setNotification({
+        type: "warning",
+        message: "Please select at least one report type.",
       });
     }
 
@@ -120,14 +134,31 @@ const FetchReportsPage = () => {
       toDate,
     });
 
+    console.log(allResults);
+
     setFetchResults(allResults);
-    setSelectedReports([]);
+    handleResetReportOptions();
   };
 
   useEffect(() => {
     setSelectedReports([]);
+    setSelectedVendors([]);
     version === "5.1" ? setReports(reports_5_1) : setReports(reports_5);
   }, [version]);
+
+  useEffect(() => {
+    selectedVendors.length === 1
+      ? window.reports.getSupported(selectedVendors[0]).then((reports) => {
+          Array.isArray(reports) && setAvailableReports(reports);
+        })
+      : setAvailableReports(reportsIds);
+  }, [selectedVendors]);
+  const handleHelpClick = () => {
+    const helpContent = HelpMessages.fetchReportsPage.Help.url;
+    if (helpContent) {
+      window.open(helpContent, "_blank"); // Opens the URL in a new tab
+    }
+  };
 
   return (
     <Page>
@@ -155,12 +186,22 @@ const FetchReportsPage = () => {
         <PageTitle>
           <FlexBetween width="100%">
             Fetch Reports
-            <DualToggle
-              option1="5.1"
-              option2="5.0"
-              value={version}
-              setValue={setVersion}
-            />
+            <Box ml={20}>
+              <DualToggle
+                option1="5.1"
+                option2="5.0"
+                value={version}
+                setValue={setVersion}
+              />
+            </Box>
+            <Box mt={0.5} mr={0}>
+              <ActionButton
+                label="Help"
+                color="background"
+                icon={<HelpOutlineIcon fontSize="small" />}
+                onClick={handleHelpClick}
+              />
+            </Box>
           </FlexBetween>
         </PageTitle>
 
@@ -225,9 +266,11 @@ const FetchReportsPage = () => {
 
         <ReportOptions
           reports={reports}
+          resetOptions={resetReportOptions}
           version={version as VendorVersions}
           setSelectedReports={setSelectedReports}
           selectedReports={selectedReports}
+          availableReports={availableReports}
         />
 
         {/* Fetch Tools */}

@@ -20,7 +20,7 @@ export const defaultUserDirectories: UserDirectories = {
  * Service for managing directory settings. Get, Store, and Validate User Paths.
  */
 export class DirectorySettingService {
-  private settingsPath = path.join(__dirname, "../../../settings");
+  private settingsPath = path.join(__dirname, "../../settings");
   private userDirectories: UserDirectories;
 
   constructor() {
@@ -101,7 +101,6 @@ export class DirectorySettingService {
   getPath(dir: keyof UserDirectories | "settings", filepath: string): string {
     const storedPath =
       dir === "settings" ? this.settingsPath : this.userDirectories[dir];
-
     const resolved = path.join(storedPath, filepath);
     return resolved;
   }
@@ -209,5 +208,24 @@ export class DirectorySettingService {
       );
       return false;
     }
+  }
+
+  public static async getDirectoryFromUser(): Promise<string> {
+    let selectedPath: string = "";
+
+    try {
+      const result: Electron.OpenDialogReturnValue =
+        await dialog.showOpenDialog({
+          title: "Select a folder to export the SQLite database to",
+          properties: ["openDirectory"],
+        });
+
+      if (!result.canceled && result.filePaths.length > 0) {
+        selectedPath = result.filePaths[0];
+      }
+    } catch (error) {
+      console.error("Failed to open directory:", error);
+    }
+    return selectedPath;
   }
 }

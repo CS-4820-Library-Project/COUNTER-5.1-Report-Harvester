@@ -1,18 +1,20 @@
 import { IRequestSetting } from "src/renderer/src/interface/IRequestSetting";
 import * as fs from "fs";
-import * as path from "path";
 import { promisify } from "util";
+import { DirectorySettingService } from "./DirectorySettingService";
+import { writeFile } from "../utils/files";
 
-const writeFileAsync = promisify(fs.writeFile);
 const readFileAsync = promisify(fs.readFile);
-
-const settingsDir = path.join(__dirname, "..", "..", "data");
-const settingsPath = path.join(settingsDir, "requestSettings.json");
-
 /**
  * Service class for managing API request settings.
  */
 export class APIRequestSettingService {
+  private dirService = new DirectorySettingService();
+  private reqSettingsDir = this.dirService.getPath(
+    "settings",
+    "requestSettings.json"
+  );
+
   /**
    * Saves the provided request settings to a file.
    * @param settings - The request settings to be saved.
@@ -20,13 +22,8 @@ export class APIRequestSettingService {
    */
   async saveSettings(settings: IRequestSetting): Promise<void> {
     const data = JSON.stringify(settings, null, 2);
-
-    if (!fs.existsSync(settingsDir)) {
-      fs.mkdirSync(settingsDir, { recursive: true });
-    }
-
     try {
-      await writeFileAsync(settingsPath, data);
+      await writeFile(this.reqSettingsDir, data);
     } catch (err) {
       console.error("There was an error writing the file", err);
       throw err;
@@ -38,8 +35,8 @@ export class APIRequestSettingService {
    * @returns The request settings if the file exists, otherwise null.
    */
   async readSettings(): Promise<IRequestSetting | null> {
-    if (fs.existsSync(settingsPath)) {
-      const data = await readFileAsync(settingsPath, "utf-8");
+    if (fs.existsSync(this.reqSettingsDir)) {
+      const data = await readFileAsync(this.reqSettingsDir, "utf-8");
       return JSON.parse(data) as IRequestSetting;
     } else {
       return null;

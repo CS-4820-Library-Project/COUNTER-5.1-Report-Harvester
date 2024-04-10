@@ -31,6 +31,7 @@ const ButtonStyled = styled(Button, {
 type Props = {
   isSelected: boolean;
   onClick: () => void;
+  disabled?: boolean;
   label: string;
   hint: string;
   size?: "small" | "large";
@@ -38,6 +39,7 @@ type Props = {
 
 const Toggle = ({
   isSelected,
+  disabled,
   onClick,
   label,
   hint,
@@ -45,7 +47,12 @@ const Toggle = ({
 }: Props) => {
   return (
     <TooltipBottom hint={hint}>
-      <ButtonStyled isSelected={isSelected} size={size} onClick={onClick}>
+      <ButtonStyled
+        isSelected={!disabled ? isSelected : false}
+        size={size}
+        onClick={onClick}
+        disabled={disabled}
+      >
         {label.replace(/_/g, " ")}
       </ButtonStyled>
     </TooltipBottom>

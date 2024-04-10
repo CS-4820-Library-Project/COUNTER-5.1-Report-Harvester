@@ -1,4 +1,4 @@
-import {useEffect, useState} from "react";
+import { useEffect, useState } from "react";
 import { Typography, Box, useTheme, Button } from "@mui/material";
 import {
   FlexBetween,
@@ -13,6 +13,8 @@ import Strong from "../../components/text/Strong";
 import { useNotification } from "../../components/NotificationBadge";
 import Page from "../../components/page/Page";
 import PageColumn from "../../components/page/PageColumn";
+import { ImportExportOutlined } from "@mui/icons-material";
+import { RefreshOutlined } from "@mui/icons-material";
 
 const SearchReportsPage = () => {
   const theme = useTheme();
@@ -27,8 +29,8 @@ const SearchReportsPage = () => {
   const [searchValue, setSearchValue] = useState<string>("");
 
   useEffect(() => {
-    function handleKeyDown(e) {
-      if (e.keyCode === 13) {
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === "Enter") {
         document.getElementById("hiddenButton")?.click(); // Implemented like this to avoid dealing with state issues
       }
     }
@@ -58,8 +60,10 @@ const SearchReportsPage = () => {
       const results = await window.database.writeSearchedReportsToTSV(
         activeButton === "Title" ? searchValue : "",
         activeButton === "ISSN" ? searchValue : "",
-        activeButton === "ISBN" ? searchValue : "",
+        activeButton === "ISBN" ? searchValue : ""
       );
+
+      console.log(results);
 
       if (results.length > 0) {
         setNotification({
@@ -109,14 +113,23 @@ const SearchReportsPage = () => {
       transition: "background-color 0.3s",
     }) as const;
 
-  const handleHelpClick = () => {
-    const helpContent = HelpMessages.searchReportsPage.Help.message;
-    helpContent && alert(helpContent);
-  };
-
   const handleOpenResults = async () => {
     const searchPath = await window.settings.getDirectory("search");
-    window.settings.openPath(searchPath);
+    await window.settings.openPath(searchPath);
+  };
+  const handleHelpClick = () => {
+    const helpContent = HelpMessages.searchReportsPage.Help.url;
+    if (helpContent) {
+      window.open(helpContent, "_blank"); // Opens the URL in a new tab
+    }
+  };
+
+  const handleExportDatabaseClick = async () => {
+    await window.database.exportDatabase();
+  };
+
+  const handleRebuildDatabaseClick = async () => {
+    await window.database.rebuildDatabase();
   };
 
   return (
@@ -126,12 +139,28 @@ const SearchReportsPage = () => {
           <Typography variant="h1" color="primary">
             Search Reports in Database
           </Typography>
-          <ActionButton
-            label="Help"
-            color="secondary"
-            icon={<HelpOutlineIcon fontSize="small" />}
-            onClick={handleHelpClick} // Updated onClick handler
-          />
+          <div>
+            <ActionButton
+              label="Rebuild Database"
+              color="secondary"
+              icon={<RefreshOutlined fontSize="small" />}
+              onClick={handleRebuildDatabaseClick}
+              style={{ marginRight: "20px" }}
+            />
+            <ActionButton
+              label="Export Database"
+              color="primary"
+              icon={<ImportExportOutlined fontSize="small" />}
+              onClick={handleExportDatabaseClick}
+              style={{ marginRight: "20px" }}
+            />
+            <ActionButton
+              label="Help"
+              color="background"
+              icon={<HelpOutlineIcon fontSize="small" />}
+              onClick={handleHelpClick}
+            />
+          </div>
         </FlexBetween>
 
         <FlexColumnStart
@@ -199,9 +228,9 @@ const SearchReportsPage = () => {
               />
               {/* Used to handle Enter key press, implemented in such a way to avoid issues with state */}
               <button
-                  id="hiddenButton"
-                  style={{ display: "none" }}
-                  onClick={handleSearchButtonClick}
+                id="hiddenButton"
+                onClick={handleSearchButtonClick}
+                hidden
               ></button>
             </Box>
           </Box>

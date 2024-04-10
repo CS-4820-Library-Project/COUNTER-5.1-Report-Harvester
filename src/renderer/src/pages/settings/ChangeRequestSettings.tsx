@@ -1,7 +1,7 @@
 /**
  * This is the "ChangeRequestSettings" component.
  *
- * This component allows users to modify and save settings related to handling requests within an application. 
+ * This component allows users to modify and save settings related to handling requests within an application.
  * It features a user interface for adjusting settings like report request intervals, request timeout durations, and concurrency limits for reports and vendors.
  *
  * The main elements of this component are:
@@ -14,7 +14,7 @@
  *
  * The component leverages Material UI for styling and layout, demonstrating the use of custom hooks for state management, useCallback for memoizing handlers, and styled components for custom styling.
  */
-import React, {useState, ChangeEvent, useCallback, useEffect} from "react";
+import React, { useState, ChangeEvent, useCallback, useEffect } from "react";
 import { Typography, Box, Button, IconButton, Theme } from "@mui/material";
 import { styled } from "@mui/system";
 import { useTheme } from "@mui/material/styles";
@@ -94,29 +94,33 @@ const Spacer = styled(Box)({
 
 // Custom hook for managing the state of a counter. Includes functionality to increase, decrease, and directly update the counter value.
 const useCounter = (initialValue: number) => {
-  const [value, setValue] = useState(initialValue);
+  const [value, setValue] = useState(initialValue); // Actual value
+  const [displayValue, setDisplayValue] = useState(initialValue.toString()); // Display value
 
+  const syncValue = (newValue: string) => {
+    setValue(newValue === "" ? 0 : Math.max(parseInt(newValue, 10), 0));
+    setDisplayValue(newValue);
+  };
   // useCallback is used to memoize callback functions. This prevents unnecessary re-renders of components
   // that depend on these functions, as the same function object is returned on subsequent renders unless dependencies change
   // Memoizing the increase, decrease, and input change handlers to prevent unnecessary re-renders.
   const handleIncrease = useCallback(() => {
-    setValue((prevValue) => prevValue + 1);
-  }, []);
+    syncValue((Math.max(value, 0) + 1).toString());
+  }, [value]);
 
   const handleDecrease = useCallback(() => {
-    setValue((prevValue) => Math.max(prevValue - 1, 0));
-  }, []);
+    syncValue((Math.max(value - 1, 0)).toString());
+  }, [value]);
 
   const handleInputChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
-    const newValue = Math.max(parseInt(e.target.value, 10), 0);
-    setValue(newValue);
+    const newValue = e.target.value;
+    syncValue(newValue);
   }, []);
 
-  return { value, handleIncrease, handleDecrease, handleInputChange };
+  return { displayValue, handleIncrease, handleDecrease, handleInputChange };
 };
-
 interface CounterProps {
-  value: number;
+  displayValue: string;
   onDecrease: () => void;
   onIncrease: () => void;
   onInputChange: (e: ChangeEvent<HTMLInputElement>) => void;
@@ -126,7 +130,7 @@ interface CounterProps {
 // Counter component illustrates how to handle state and events in a function component with props.
 // The component demonstrates a common pattern for inputs that need to validate or process their data before updating state.
 const Counter: React.FC<CounterProps> = ({
-  value,
+  displayValue,
   onDecrease,
   onIncrease,
   onInputChange,
@@ -147,8 +151,8 @@ const Counter: React.FC<CounterProps> = ({
         <RemoveOutlinedIcon />
       </ButtonWrapper>
       <input
-        type="number"
-        value={value}
+        type="number" // Keeps the input type as number
+        value={displayValue}
         onChange={onInputChange}
         style={inputStyle}
         min="0"
@@ -163,34 +167,34 @@ const Counter: React.FC<CounterProps> = ({
 // Main component where the settings form is constructed. It makes use of the custom `useCounter` hook and
 // demonstrates handling form state and events in a complex component.
 const ChangeRequestSettings: React.FC = () => {
-    const [reportRequestInterval, setReportRequestInterval] = useState(0);
-    const [requestTimeout, setRequestTimeout] = useState(0);
-    const [concurrentReports, setConcurrentReports] = useState(0);
-    const [concurrentVendors, setConcurrentVendors] = useState(0);
+  const [reportRequestInterval, setReportRequestInterval] = useState(0);
+  const [requestTimeout, setRequestTimeout] = useState(0);
+  const [concurrentReports, setConcurrentReports] = useState(0);
+  const [concurrentVendors, setConcurrentVendors] = useState(0);
 
-    useEffect(() => {
-        window.settings.readSettings().then((settings) => {
-            setReportRequestInterval(settings.requestInterval);
-            setRequestTimeout(settings.requestTimeout);
-            setConcurrentReports(settings.concurrentReports);
-            setConcurrentVendors(settings.concurrentVendors);
-        });
-    }, []);
+  useEffect(() => {
+    window.settings.readSettings().then((settings) => {
+      setReportRequestInterval(settings.requestInterval);
+      setRequestTimeout(settings.requestTimeout);
+      setConcurrentReports(settings.concurrentReports);
+      setConcurrentVendors(settings.concurrentVendors);
+    });
+  }, []);
 
-    const saveChanges = async () => {
-        const isSaved = await window.settings.saveSettings({
-            requestInterval: reportRequestInterval,
-            requestTimeout: requestTimeout,
-            concurrentReports: concurrentReports,
-            concurrentVendors: concurrentVendors,
-        });
+  const saveChanges = async () => {
+    const isSaved = await window.settings.saveSettings({
+      requestInterval: reportRequestInterval,
+      requestTimeout: requestTimeout,
+      concurrentReports: concurrentReports,
+      concurrentVendors: concurrentVendors,
+    });
 
-        if (isSaved) {
-          console.log("Settings saved successfully");
-        } else {
-          console.error("Error saving the settings");
-        }
-    };
+    if (isSaved) {
+      console.log("Settings saved successfully");
+    } else {
+      console.error("Error saving the settings");
+    }
+  };
 
   return (
     <SettingsBox>
@@ -216,15 +220,23 @@ const ChangeRequestSettings: React.FC = () => {
       </Description>
       <FieldLabel>Request Interval (seconds)</FieldLabel>
       <Counter
-        value={reportRequestInterval}
-        onDecrease={() => setReportRequestInterval(reportRequestInterval - 1)}
-        onIncrease={() => setReportRequestInterval(reportRequestInterval + 1)}
-      />
+  displayValue={reportRequestInterval.toString()} // Update this line
+  onDecrease={() => setReportRequestInterval(Math.max(reportRequestInterval - 1, 0))}
+  onIncrease={() => setReportRequestInterval(reportRequestInterval + 1)}
+  onInputChange={(e) => {
+    const newValue = Math.max(parseInt(e.target.value, 10) || 0, 0);
+    setReportRequestInterval(newValue);
+  }}
+/>
       <FieldLabel>Request Timeout (seconds)</FieldLabel>
       <Counter
-        value={requestTimeout}
-        onDecrease={() => setRequestTimeout(requestTimeout - 1)}
+        displayValue={requestTimeout.toString()}
+        onDecrease={() => setRequestTimeout(Math.max(requestTimeout - 1, 0))}
         onIncrease={() => setRequestTimeout(requestTimeout + 1)}
+        onInputChange={(e) => {
+          const newValue = Math.max(parseInt(e.target.value, 10) || 0, 0);
+          setRequestTimeout(newValue);
+        }}
       />
       {/*
       <FieldLabel>Concurrent Reports</FieldLabel>

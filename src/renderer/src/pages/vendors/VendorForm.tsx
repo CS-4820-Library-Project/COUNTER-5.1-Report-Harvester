@@ -411,11 +411,11 @@ const VendorForm = ({ selectedVendor, isAdding, refreshVendors }: Props) => {
                         label="Does it require  IP checking?*"
                       />
                       <ToggleInput
-                        name="data5_1.requireTwoAttemptsPerReport"
+                        name="data5_0.requireTwoAttemptsPerReport"
                         label="Does it require two attempts per report?*"
                       />
                       <ToggleInput
-                        name="data5_1.requireRequestsThrottled"
+                        name="data5_0.requireRequestsThrottled"
                         label="Does it need requests throttled?* "
                       />
                     </>

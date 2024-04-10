@@ -7,7 +7,7 @@ COUNTER 5.1 Report Harvester is an open-source desktop application that helps li
 # Alpha Release Available
 
 This project is still under development. Please use the main branch to test the app or download the installer for your platform. See all releases and installers down below
-This project is still under development. Please use the main branch to test the app or download the installer for your platform. See all releases and installers down below
+<img width="1624" alt="Screenshot 2024-04-05 at 5 37 13 PM" src="https://github.com/CS-4820-Library-Project/COUNTER-5.1-Report-Harvester/assets/124853347/1517cf2e-d915-42fa-8d75-37750d3a4579">
 
 ### Download in Windows
 
@@ -17,7 +17,7 @@ This project is still under development. Please use the main branch to test the 
 
 ### Download in Mac - M series (ARM Architecture)
 
-Requires to disable gatekeeper for installation. We currently don't have a apple developer program certificate. You can also create an installer locally for your machine. See Wiki for more details.
+Requires to disable gatekeeper for installation. We currently don't have an Apple developer program certificate. You can also create a local installer for your machine. Take a look at Wiki for more details.
 
 ##
 
@@ -69,6 +69,23 @@ https://github.com/CS-4820-Library-Project/COUNTER-5.1-Report-Harvester.git
 # COUNTER Documentation
 
 https://cop5.projectcounter.org/en/5.1/
+
+# Counter Harvester: Comprehensive Technical Documentation
+
+This documentation serves as a guide for the Counter Harvester, a data harvesting and analytics platform designed to enhance the efficiency of data collection, analysis, and visualization. Within these pages, readers will find a detailed exploration of the application's architecture, the technologies used, and a thorough breakdown of its key functionalities.
+
+[Final Technical Documentation.pdf](https://github.com/CS-4820-Library-Project/COUNTER-5.1-Report-Harvester/files/14908620/Final.Technical.Documentation.pdf)
+
+
+
+[Final Technical Documentation.docx](https://github.com/CS-4820-Library-Project/COUNTER-5.1-Report-Harvester/files/14908621/Final.Technical.Documentation.docx)
+
+
+# Counter Harvester: User Documentation
+
+This User Documentation is to guide users through the COUNTER Harvester App, an open-source desktop application designed for libraries to harvest and manage Project COUNTER-compliant usage reports efficiently. With a focus on user-friendly interaction, the documentation encompasses a wide range of topics from initial installation on various platforms (Windows, Mac, including M series with ARM architecture, and Linux) to detailed functionalities like managing vendors, fetching and searching reports, and customizing settings for optimized performance.
+
+[User Documentation.docx](https://github.com/CS-4820-Library-Project/COUNTER-5.1-Report-Harvester/files/14908508/User.Documentation.docx)
 
 # Project Setup instructions (windows) -- Developers
 

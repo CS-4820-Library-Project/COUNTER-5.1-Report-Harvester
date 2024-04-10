@@ -2,10 +2,11 @@ import { Close } from "@mui/icons-material";
 import ProgressBar from "./ProgressBar";
 import { useEffect, useState } from "react";
 import { FlexColumn, FlexRowEnd } from "../../../components/flex";
-import { IconButton, useTheme } from "@mui/material";
+import { Button, IconButton, useTheme } from "@mui/material";
 import ResultsHeader from "../../../components/text/ResultsHeader";
 import { FetchResults } from "../../../../../types/reports";
 import { UserDirectories } from "src/types/settings";
+import { useNotification } from "../../../components/NotificationBadge";
 
 type Props = {
   close: () => void;
@@ -25,6 +26,7 @@ type Props = {
 
 const FetchProgress = ({ close, totalVendors, fetchResults }: Props) => {
   const { palette } = useTheme();
+  const setNotification = useNotification();
 
   const [directories, setDirectories] = useState<UserDirectories>();
 
@@ -36,11 +38,24 @@ const FetchProgress = ({ close, totalVendors, fetchResults }: Props) => {
     setDirectories(directories);
   };
 
+  const openFetchResults = () => {
+    if (!fetchResults)
+      return setNotification({
+        type: "warning",
+        message: "No fetch results available.",
+      });
+    window.reports.exportFetchResults(fetchResults);
+
+    setNotification({
+      type: "info",
+      message: "Fetch results opened in default text editor.",
+    });
+  };
+
   useEffect(() => {
     window.reports.onVendorCompleted(() => {
       setProgress((prevProgress) => prevProgress + 100 / totalVendors);
     });
-    console.log("Vendor Completed Listener Added");
 
     // Cleanup
     return window.reports.removeVendorCompletedListeners;
@@ -51,7 +66,7 @@ const FetchProgress = ({ close, totalVendors, fetchResults }: Props) => {
     if (progress >= 1) setCheckpoint(1); // Connection Works
     if (progress >= 5) setCheckpoint(3); // Fetching Reports if working so far
     if (progress >= 50) setCheckpoint(4); // Some reports might be written
-    if (progress >= 99) setCheckpoint(5); // All reports are written
+    if (progress >= 98) setCheckpoint(5); // All reports are written
 
     // Cleanup
     return () => setCheckpoint(0);
@@ -62,7 +77,7 @@ const FetchProgress = ({ close, totalVendors, fetchResults }: Props) => {
   }, []);
 
   useEffect(() => {
-    console.log("Fetch Results", fetchResults);
+    // console.log("Fetch Results", fetchResults);
   }, [fetchResults]);
 
   return (
@@ -115,12 +130,17 @@ const FetchProgress = ({ close, totalVendors, fetchResults }: Props) => {
 
             <ResultsHeader
               message={
-                fetchResults.failed +
-                " reports failed. See log file for more details"
+                (fetchResults.failed
+                  ? fetchResults.failed + " reports failed. "
+                  : "") + "See log file for more details"
               }
               file={fetchResults.log || "/"}
-              color="error"
+              color={fetchResults.failed ? "error" : "primary"}
             />
+
+            <Button variant="text" onClick={openFetchResults}>
+              Export Fetch Results
+            </Button>
           </FlexColumn>
         )}
       </FlexColumn>

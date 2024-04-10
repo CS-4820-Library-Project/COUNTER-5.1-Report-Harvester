@@ -18,6 +18,15 @@ import TextButton from "../../components/buttons/TextButton";
 import { VendorVersions } from "src/types/vendors";
 import YopFilter from "./YopFilter";
 
+type Props = {
+  setSelectedReports: React.Dispatch<React.SetStateAction<Report[]>>;
+  selectedReports: Report[];
+  version: VendorVersions;
+  reports: Reports;
+  availableReports: string[]; // When there is one Selected Vendor
+  resetOptions: boolean;
+};
+
 /**
  * The "ReportOptions" component allows users to select and customize reports based on predefined criteria.
  * It provides functionalities to select report types, customize reports by selecting specific attributes and filters,
@@ -30,18 +39,13 @@ import YopFilter from "./YopFilter";
  * - Dynamic handling of UI state based on user interactions for a responsive and intuitive configuration experience.
  */
 
-type Props = {
-  setSelectedReports: React.Dispatch<React.SetStateAction<Report[]>>;
-  selectedReports: Report[];
-  version: VendorVersions;
-  reports: Reports;
-};
-
 const ReportOptions = ({
   setSelectedReports,
+  availableReports,
   selectedReports,
   version,
   reports,
+  resetOptions,
 }: Props) => {
   const { palette } = useTheme();
 
@@ -295,23 +299,39 @@ const ReportOptions = ({
     }
   };
 
-  // Reset Reports on version change
-  useEffect(() => {
+  // Handler to reset the options
+  const handleResetOptions = () => {
     setSelectedReports([]);
     setSelectedAttribute(undefined);
     setCustomReport(undefined);
     setActiveReport(undefined);
-  }, [version]);
+  };
+
+  useEffect(handleResetOptions, [resetOptions]);
+
+  useEffect(handleResetOptions, [version]);
 
   useEffect(handleCustomize, [customize]);
 
   useEffect(() => handleFiltersSelection("YOP"), [yop]);
 
+  // Clear not available options
+  useEffect(() => {
+    console.log("Available Reports", availableReports);
+    if (!availableReports.includes(activeReport?.id || "")) {
+      setCustomReport(undefined);
+      setActiveReport(undefined);
+    }
+    setSelectedReports((currentReports) =>
+      currentReports.filter((report) => availableReports.includes(report.id))
+    );
+  }, [availableReports]);
+
   /* Debugging Logs - Keep for peace of mind :) */
 
-  // useEffect(() => {
-  //   console.log("Active Report", activeReport);
-  // }, [activeReport]);
+  useEffect(() => {
+    console.log("Active Report", activeReport);
+  }, [activeReport]);
 
   // useEffect(() => {
   //   console.log("Custom Report", customReport);
@@ -373,6 +393,7 @@ const ReportOptions = ({
                 setSelected={handleSelectedReport}
                 isActive={activeReport?.id === report.id}
                 setActiveTab={handleActiveReport}
+                disabled={!availableReports.includes(report.id)}
               />
             ) : (
               <Toggle
@@ -383,6 +404,7 @@ const ReportOptions = ({
                 isSelected={selectedReports.some(
                   (selectedReport) => selectedReport.id === report.id
                 )}
+                disabled={!availableReports.includes(report.id)}
                 onClick={() =>
                   handleSelectedReport(
                     report.id,
@@ -594,6 +616,7 @@ const ReportOptions = ({
                 hint={report.name}
                 label={report.id}
                 isSelected={isSelected}
+                disabled={!availableReports.includes(report.id)}
                 onClick={() => handleSelectedReport(report.id, !isSelected)}
               />
             );
