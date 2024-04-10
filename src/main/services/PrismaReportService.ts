@@ -41,12 +41,12 @@ import {
   ITRIRReportItem,
 } from "src/renderer/src/interface/IReport";
 import { DirectorySettingService } from "./DirectorySettingService";
-import { writeFile } from "fs-extra";
 import { format } from "date-fns";
 import fs from "fs";
 import path from "path";
 import { execSync } from "child_process";
 import { reports_5 } from "src/constants/Reports_5";
+import { writeFile } from "../utils/files";
 
 const prisma = new PrismaClient();
 
@@ -2124,7 +2124,7 @@ export class PrismaReportService {
     report: any,
     title?: string,
     issn?: string,
-    isbn?: string,
+    isbn?: string
   ): Promise<string> {
     let tsv = "";
 
@@ -2135,14 +2135,13 @@ export class PrismaReportService {
       if (issn) {
         matches.push(
           item.printIssn?.toLowerCase().includes(issn.toLowerCase()),
-          item.onlineIssn?.toLowerCase().includes(issn.toLowerCase()),
+          item.onlineIssn?.toLowerCase().includes(issn.toLowerCase())
         );
       }
       if (isbn)
         matches.push(item.isbn?.toLowerCase().includes(isbn.toLowerCase()));
       return matches.some(Boolean);
     };
-
 
     if (report.report_id.includes("TR")) {
       switch (report.report_id) {
@@ -2232,6 +2231,7 @@ export class PrismaReportService {
    */
   async writeTSVToFile(tsv: string, fileName: string): Promise<void> {
     const dirService = new DirectorySettingService();
+
     const filePath = dirService.getPath("search", `${fileName}.tsv`);
 
     writeFile(filePath, tsv);
@@ -2255,15 +2255,13 @@ export class PrismaReportService {
     tsv += `Title\tPublisher\tPublisher_ID\tPlatform\tDOI\tYOP\tProprietary_ID\tISBN\tPrint_ISSN\tOnline_ISSN\tURI\tData_Type\tMetric_Type\tReporting_Period_Total\n`;
 
     for (const report of reports) {
-
       const reportTsv = await this.convertReportToTSV(
         report,
         title,
         issn,
-        isbn,
+        isbn
       );
       tsv += reportTsv;
-
     }
 
     await this.writeTSVToFile(tsv, "search_results");
