@@ -14,6 +14,7 @@ import {
 import {
   ReportIDTSVHeaderDict,
   TSVHeaders as THd,
+  TSVHeaderSuffix,
 } from "../../renderer/src/const/TSVStrings";
 import { CounterVersion } from "../../renderer/src/const/CounterVersion";
 import { NameValue, TypeValue } from "src/types/reports";
@@ -22,7 +23,6 @@ import { NameValue, TypeValue } from "src/types/reports";
 
 export class ReportService {
   /** Converts a 5.0 report from JSON into an **IReport** object. */
-
   static get50ReportFromJSON(data: any): IReport | null {
     if (!(data && data.Report_Header && data.Report_Items)) {
       return null;
@@ -41,7 +41,6 @@ export class ReportService {
   }
 
   /** Converts a 5.1 report from JSON into an **IReport** object. */
-
   static get51ReportFromJson(data: any): IReport | null {
     try {
       if (data.Report_Header.Report_ID.includes("IR"))
@@ -241,6 +240,8 @@ export class ReportService {
    * @throws An string error message if the conversion fails.
    */
   static convertReportToTSV(report: IReport): string {
+    // console.log(JSON.stringify(report.Report_Header));
+    // console.log(JSON.stringify(report.Report_Items[0]));
     let tsv = "";
 
     try {
@@ -298,8 +299,9 @@ export class ReportService {
       });
 
       tsv += itemIdHeaders.join("\t") + "\t";
-      // tsv += TSVHeaderSuffix;
+      tsv += TSVHeaderSuffix;
 
+      console.log(tsv);
       // PARSE REPORT ITEMS
       const reportItems = report.Report_Items;
 
