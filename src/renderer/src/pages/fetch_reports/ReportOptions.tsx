@@ -141,7 +141,11 @@ const ReportOptions = ({
     }
   };
 
-  // Handler for selecting or deselecting attributes and filters within a custom report.
+  /**
+   * Handler for selecting or deselecting attributes and filters within a custom report.
+   * @param property - The attribute or filter to be selected or deselected.
+   * @param selected - A boolean value indicating whether the attribute or filter is selected.
+   */
   const handleSelectedAttribute = (property: string, selected: boolean) => {
     if (activeReport) {
       const customReportId = activeReport.id as Report_Id;
