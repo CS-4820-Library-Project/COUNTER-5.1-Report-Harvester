@@ -21,9 +21,6 @@ const tsvRouter = () => {
         const dirService = new DirectorySettingService();
         const logsPath = await dirService.getPath("logs", `${filename}.txt`);
 
-        //TODO: Remove this
-        console.log("\nLOGGER ROUTER Writing logs to file:", logsPath, "\n");
-
         await writeFile(logsPath, content);
         return true;
       } catch (error) {
