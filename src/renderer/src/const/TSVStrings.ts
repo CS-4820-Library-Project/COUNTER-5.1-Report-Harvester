@@ -55,8 +55,8 @@ const TRIRSharedHeaders = [TSVHeaders.TITLE, ...DRTRIRSharedHeaders];
 /** A dictionary mapping Report IDs (report types) to their respective TSV headers */
 
 export const ReportIDTSVHeaderDict: Record<string, string> = {
-  TR: createHeaderRow([TSVHeaders.TITLE, ...TRIRSharedHeaders]),
+  TR: createHeaderRow([TSVHeaders.TITLE, ...DRTRIRSharedHeaders]),
   PR: createHeaderRow([TSVHeaders.PLATFORM]),
-  IR: createHeaderRow([TSVHeaders.ITEM, ...TRIRSharedHeaders]),
+  IR: createHeaderRow([TSVHeaders.ITEM, ...DRTRIRSharedHeaders]),
   DR: createHeaderRow([TSVHeaders.DATABASE, ...DRTRIRSharedHeaders]),
 };

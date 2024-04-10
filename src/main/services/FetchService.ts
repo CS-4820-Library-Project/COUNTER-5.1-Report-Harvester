@@ -344,9 +344,6 @@ export class FetchService {
           ? ReportService.get50ReportFromJSON
           : ReportService.get51ReportFromJson;
 
-      if (data) console.log(JSON.stringify(data.Report_Header));
-      if (data) console.log(JSON.stringify(data.Report_Items[0]));
-
       let report = reportFromJsonFunc(data);
       if (!report) return fetchResult;
 
