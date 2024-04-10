@@ -1386,7 +1386,7 @@ export class PrismaReportService {
           >();
 
           for (let i = 0; i < rawItem.Performance.length; i++) {
-            const period = `${rawItem.Performance[i].Period.Begin_Date} - ${rawItem.Performance[i].Period.End_Date}`;
+            const period = `${rawItem.Performance[i].Period.Begin_Date.slice(0, 7)} - ${rawItem.Performance[i].Period.End_Date.slice(0, 7)}`;
 
             for (let j = 0; j < rawItem.Performance[i].Instance.length; j++) {
               const metricType = rawItem.Performance[i].Instance[j].Metric_Type;
@@ -1486,8 +1486,7 @@ export class PrismaReportService {
           >();
 
           for (let i = 0; i < rawItem.Performance.length; i++) {
-            const period = `${rawItem.Performance[i].Period.Begin_Date} - ${rawItem.Performance[i].Period.End_Date}`;
-
+            const period = `${rawItem.Performance[i].Period.Begin_Date.slice(0, 7)} - ${rawItem.Performance[i].Period.End_Date.slice(0, 7)}`;
             for (let j = 0; j < rawItem.Performance[i].Instance.length; j++) {
               const metricType = rawItem.Performance[i].Instance[j].Metric_Type;
               const count = rawItem.Performance[i].Instance[j].Count;
@@ -1590,7 +1589,7 @@ export class PrismaReportService {
           >();
 
           for (let i = 0; i < rawItem.Performance.length; i++) {
-            const period = `${rawItem.Performance[i].Period.Begin_Date} - ${rawItem.Performance[i].Period.End_Date}`;
+            const period = `${rawItem.Performance[i].Period.Begin_Date.slice(0, 7)} - ${rawItem.Performance[i].Period.End_Date.slice(0, 7)}`;
 
             for (let j = 0; j < rawItem.Performance[i].Instance.length; j++) {
               const metricType = rawItem.Performance[i].Instance[j].Metric_Type;
@@ -1723,7 +1722,7 @@ export class PrismaReportService {
           >();
 
           for (let i = 0; i < rawItem.Performance.length; i++) {
-            const period = `${rawItem.Performance[i].Period.Begin_Date} - ${rawItem.Performance[i].Period.End_Date}`;
+            const period = `${rawItem.Performance[i].Period.Begin_Date.slice(0, 7)} - ${rawItem.Performance[i].Period.End_Date.slice(0, 7)}`;
 
             for (let j = 0; j < rawItem.Performance[i].Instance.length; j++) {
               const metricType = rawItem.Performance[i].Instance[j].Metric_Type;
@@ -2148,72 +2147,88 @@ export class PrismaReportService {
         case "TR":
           for (const item of report.TR_Item) {
             if (!includesSearchParameter(item)) continue;
+            let row = `${item.title}\t${item.publisher}\t${item.publisherId}\t${item.platform}\t${item.doi}\t${item.yop}\t${item.proprietaryId}\t${item.isbn}\t${item.printIssn}\t${item.onlineIssn}\t${item.uri}\t${item.dataType}\t${item.metricType}\t${item.reportingPeriodTotal}`;
             for (const metric of item.TR_ItemMetric) {
-              tsv += `${item.title}\t${item.publisher}\t${item.publisherId}\t${item.platform}\t${item.doi}\t${item.yop}\t${item.proprietaryId}\t${item.isbn}\t${item.printIssn}\t${item.onlineIssn}\t${item.uri}\t${item.dataType}\t${metric.metricType}\t${item.reportingPeriodTotal}\n`;
+              row += `\t${metric.period}\t${metric.value}`;
             }
+            tsv += row + "\n";
           }
           break;
 
         case "TR_B1":
           for (const item of report.TR_B1_Item) {
             if (!includesSearchParameter(item)) continue;
+            let row = `${item.title}\t${item.publisher}\t${item.publisherId}\t${item.platform}\t${item.doi}\t${item.yop}\t${item.proprietaryId}\t${item.isbn}\t${item.printIssn}\t${item.onlineIssn}\t${item.uri}\t${item.dataType}\t${item.metricType}\t${item.reportingPeriodTotal}`;
             for (const metric of item.TR_B1_ItemMetric) {
-              tsv += `${item.title}\t${item.publisher}\t${item.publisherId}\t${item.platform}\t${item.doi}\t${item.yop}\t${item.proprietaryId}\t${item.isbn}\t${item.printIssn}\t${item.onlineIssn}\t${item.uri}\t${item.dataType}\t${metric.metricType}\t${item.reportingPeriodTotal}\n`;
+              row += `\t${metric.period}\t${metric.value}`;
             }
+            tsv += row + "\n";
           }
           break;
 
         case "TR_B2":
           for (const item of report.TR_B2_Item) {
             if (!includesSearchParameter(item)) continue;
+            let row = `${item.title}\t${item.publisher}\t${item.publisherId}\t${item.platform}\t${item.doi}\t${item.yop}\t${item.proprietaryId}\t${item.isbn}\t${item.printIssn}\t${item.onlineIssn}\t${item.uri}\t${item.dataType}\t${item.metricType}\t${item.reportingPeriodTotal}`;
             for (const metric of item.TR_B2_ItemMetric) {
-              tsv += `${item.title}\t${item.publisher}\t${item.publisherId}\t${item.platform}\t${item.doi}\t${item.yop}\t${item.proprietaryId}\t${item.isbn}\t${item.printIssn}\t${item.onlineIssn}\t${item.uri}\t${item.dataType}\t${metric.metricType}\t${item.reportingPeriodTotal}\n`;
+              row += `\t${metric.period}\t${metric.value}`;
             }
+            tsv += row + "\n";
           }
           break;
 
         case "TR_B3":
           for (const item of report.TR_B3_Item) {
             if (!includesSearchParameter(item)) continue;
+            let row = `${item.title}\t${item.publisher}\t${item.publisherId}\t${item.platform}\t${item.doi}\t${item.yop}\t${item.proprietaryId}\t${item.isbn}\t${item.printIssn}\t${item.onlineIssn}\t${item.uri}\t${item.dataType}\t${item.metricType}\t${item.reportingPeriodTotal}`;
             for (const metric of item.TR_B3_ItemMetric) {
-              tsv += `${item.title}\t${item.publisher}\t${item.publisherId}\t${item.platform}\t${item.doi}\t${item.yop}\t${item.proprietaryId}\t${item.isbn}\t${item.printIssn}\t${item.onlineIssn}\t${item.uri}\t${item.dataType}\t${metric.metricType}\t${item.reportingPeriodTotal}\n`;
+              row += `\t${metric.period}\t${metric.value}`;
             }
+            tsv += row + "\n";
           }
           break;
 
         case "TR_J1":
           for (const item of report.TR_J1_Item) {
             if (!includesSearchParameter(item)) continue;
+            let row = `${item.title}\t${item.publisher}\t${item.publisherId}\t${item.platform}\t${item.doi}\t${item.yop}\t${item.proprietaryId}\t${item.isbn}\t${item.printIssn}\t${item.onlineIssn}\t${item.uri}\t${item.dataType}\t${item.metricType}\t${item.reportingPeriodTotal}`;
             for (const metric of item.TR_J1_ItemMetric) {
-              tsv += `${item.title}\t${item.publisher}\t${item.publisherId}\t${item.platform}\t${item.doi}\t${item.yop}\t${item.proprietaryId}\t${item.isbn}\t${item.printIssn}\t${item.onlineIssn}\t${item.uri}\t${item.dataType}\t${metric.metricType}\t${item.reportingPeriodTotal}\n`;
+              row += `\t${metric.period}\t${metric.value}`;
             }
+            tsv += row + "\n";
           }
           break;
 
         case "TR_J2":
           for (const item of report.TR_J2_Item) {
             if (!includesSearchParameter(item)) continue;
+            let row = `${item.title}\t${item.publisher}\t${item.publisherId}\t${item.platform}\t${item.doi}\t${item.yop}\t${item.proprietaryId}\t${item.isbn}\t${item.printIssn}\t${item.onlineIssn}\t${item.uri}\t${item.dataType}\t${item.metricType}\t${item.reportingPeriodTotal}`;
             for (const metric of item.TR_J2_ItemMetric) {
-              tsv += `${item.title}\t${item.publisher}\t${item.publisherId}\t${item.platform}\t${item.doi}\t${item.yop}\t${item.proprietaryId}\t${item.isbn}\t${item.printIssn}\t${item.onlineIssn}\t${item.uri}\t${item.dataType}\t${metric.metricType}\t${item.reportingPeriodTotal}\n`;
+              row += `\t${metric.period}\t${metric.value}`;
             }
+            tsv += row + "\n";
           }
           break;
 
         case "TR_J3":
           for (const item of report.TR_J3_Item) {
             if (!includesSearchParameter(item)) continue;
+            let row = `${item.title}\t${item.publisher}\t${item.publisherId}\t${item.platform}\t${item.doi}\t${item.yop}\t${item.proprietaryId}\t${item.isbn}\t${item.printIssn}\t${item.onlineIssn}\t${item.uri}\t${item.dataType}\t${item.metricType}\t${item.reportingPeriodTotal}`;
             for (const metric of item.TR_J3_ItemMetric) {
-              tsv += `${item.title}\t${item.publisher}\t${item.publisherId}\t${item.platform}\t${item.doi}\t${item.yop}\t${item.proprietaryId}\t${item.isbn}\t${item.printIssn}\t${item.onlineIssn}\t${item.uri}\t${item.dataType}\t${metric.metricType}\t${item.reportingPeriodTotal}\n`;
+              row += `\t${metric.period}\t${metric.value}`;
             }
+            tsv += row + "\n";
           }
           break;
 
         case "TR_J4":
           for (const item of report.TR_J4_Item) {
             if (!includesSearchParameter(item)) continue;
+            let row = `${item.title}\t${item.publisher}\t${item.publisherId}\t${item.platform}\t${item.doi}\t${item.yop}\t${item.proprietaryId}\t${item.isbn}\t${item.printIssn}\t${item.onlineIssn}\t${item.uri}\t${item.dataType}\t${item.metricType}\t${item.reportingPeriodTotal}`;
             for (const metric of item.TR_J4_ItemMetric) {
-              tsv += `${item.title}\t${item.publisher}\t${item.publisherId}\t${item.platform}\t${item.doi}\t${item.yop}\t${item.proprietaryId}\t${item.isbn}\t${item.printIssn}\t${item.onlineIssn}\t${item.uri}\t${item.dataType}\t${metric.metricType}\t${item.reportingPeriodTotal}\n`;
+              row += `\t${metric.period}\t${metric.value}`;
             }
+            tsv += row + "\n";
           }
           break;
       }
