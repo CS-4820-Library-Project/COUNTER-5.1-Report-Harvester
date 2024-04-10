@@ -36,6 +36,12 @@ export type VendorTSV = VendorInfo & {
   requireIpChecking?: boolean;
 };
 
+export type VendorTsvError = {
+  id: number;
+  vendor: string;
+  errors: string[];
+};
+
 export type VendorHeaders = keyof VendorTSV;
 
 export type SortOptions = "name" | "updatedAt" | "createdAt";
