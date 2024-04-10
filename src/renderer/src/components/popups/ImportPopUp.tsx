@@ -12,7 +12,7 @@ import {
 import ActionButton from "../buttons/ActionButton";
 import { AddCircleOutlined, CancelOutlined, Repeat } from "@mui/icons-material";
 import VendorServiceInstance from "../../service/VendorService";
-import { VendorVersions } from "src/types/vendors";
+import { VendorTsvError, VendorVersions } from "src/types/vendors";
 import { FlexBetween } from "../flex";
 import { useNotification } from "../NotificationBadge";
 
@@ -32,7 +32,7 @@ const ImportPopUp: React.FC<ImportPopUpProps> = ({
   const [file, setFile] = useState<File | null>(null);
 
   const [submitted, setSubmitted] = useState(false);
-  const [errors, setErrors] = useState<string[]>();
+  const [errors, setErrors] = useState<VendorTsvError[]>();
 
   const [version, setVersion] = useState<VendorVersions>("5.0");
 
@@ -61,7 +61,7 @@ const ImportPopUp: React.FC<ImportPopUpProps> = ({
       if (typeof imported === "boolean" && imported === true) {
         handleClose();
         setNotification({ type: "success", message: "Imported Correctly" });
-      } else setErrors(imported as string[]);
+      } else setErrors(imported as VendorTsvError[]);
 
       reloadVendors(true);
     }
@@ -202,26 +202,37 @@ const ImportPopUp: React.FC<ImportPopUpProps> = ({
             {/* Display Errors */}
             {
               errors &&
-                errors.map(
-                  (error, index) =>
-                    // Break Lines in the error message
-                    error.split("\n").map((line, lineIndex) => (
+                errors.map((vendorError, index) => {
+                  // Break Lines in the error message
+                  return (
+                    <>
                       <Typography
                         sx={{
-                          paddingLeft: lineIndex === 0 ? "0" : "10px",
-                          color:
-                            lineIndex === 0
-                              ? palette.error.main
-                              : palette.text.main,
-                          wordWrap: "break-word",
-                          overflowWrap: "break-word",
+                          color: palette.error.main,
+                          fontSize: "1rem",
+                          marginBottom: "5px",
                         }}
                       >
-                        {lineIndex === 0 ? `${index + 1}. ${line}` : line}
+                        {index + 1}. {vendorError.vendor}:
                       </Typography>
-                    ))
-                  //
-                )
+
+                      {/*  Render errors Found */}
+                      {vendorError.errors.map((error) => (
+                        <Typography
+                          sx={{
+                            paddingLeft: "10px",
+                            color: palette.text.main,
+                            wordWrap: "break-word",
+                            overflowWrap: "break-word",
+                          }}
+                        >
+                          - {error}
+                        </Typography>
+                      ))}
+                    </>
+                  );
+                })
+
               //
             }
           </>
