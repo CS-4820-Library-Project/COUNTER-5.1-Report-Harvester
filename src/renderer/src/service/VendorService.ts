@@ -5,6 +5,7 @@ import {
   VendorRecord,
   DataVersions,
   VendorVersions,
+  VendorTsvError,
 } from "src/types/vendors";
 import { toCamelCase } from "../utils/string";
 
@@ -242,7 +243,7 @@ class VendorService {
     version: VendorVersions,
     tsv: File,
     action: "add" | "replace"
-  ): Promise<boolean | string[]> {
+  ): Promise<boolean | VendorTsvError[]> {
     return new Promise((resolve, reject) => {
       const fileReader = new FileReader();
 
@@ -290,16 +291,20 @@ class VendorService {
       let headers = lines[0].split("\t");
       headers = headers.map((header) => toCamelCase(header));
 
+      const vendorNameIndex = headers.indexOf("name");
+
       // Create Vendor Objects
       let newVendors: VendorRecord[] = [];
-      const linesData = lines.slice(1);
+      const vendorLines = lines.slice(1);
 
-      for (const line of linesData) {
-        // Skip empty rows
-        if (!line.trim()) continue;
+      // Collects all errors are returns after parsing all lines
+      const tsvErrors: VendorTsvError[] = [];
+
+      for (const vendorData of vendorLines) {
+        if (!vendorData.trim()) continue; // Skip empty rows
 
         // Parse Values to JS types
-        const values: (string | boolean | number)[] = line
+        const vendorValues: (string | boolean | number)[] = vendorData
           .split("\t")
           .map((value) => {
             const normalizedValue = value.trim().toLowerCase();
@@ -313,17 +318,27 @@ class VendorService {
         vendor[dataVersion] = {};
 
         headers.forEach((header, index) => {
-          this.validateImportValues(header, index, values, version);
+          this.validateImportValues(
+            header,
+            index,
+            vendorValues,
+            version,
+            tsvErrors,
+            vendorNameIndex
+          );
 
           // Add valid values to the vendor object
           !recordHeaders.includes(header)
-            ? (vendor[dataVersion][header] = values[index])
-            : (vendor[header] = values[index]);
+            ? (vendor[dataVersion][header] = vendorValues[index])
+            : (vendor[header] = vendorValues[index]);
         });
 
         newVendors.push(vendor as VendorRecord);
       }
 
+      if (tsvErrors.length) throw tsvErrors;
+
+      // Add or replace vendors
       if (action === "add") {
         const notUpdated = this.vendors.filter(
           (vendor) =>
@@ -331,14 +346,15 @@ class VendorService {
         );
 
         this.vendors = [...notUpdated, ...newVendors];
-        //
-      } else this.vendors = newVendors;
+      }
+      // Replace all vendors
+      else this.vendors = newVendors;
 
       this.storeVendors();
       return true;
     } catch (errors) {
       console.error(errors);
-      return errors as string[];
+      return errors as VendorTsvError[];
     }
   }
 
@@ -354,9 +370,10 @@ class VendorService {
     header: string,
     index: number,
     values: any[],
-    version: VendorVersions
+    version: VendorVersions,
+    tsvErrors: VendorTsvError[],
+    vendorNameIndex: number
   ) {
-    const locationError = ` at row ${index + 1}: \n${values.join("\t")}`;
     const errors: string[] = [];
 
     if (!vendorHeaders.includes(header))
@@ -381,7 +398,7 @@ class VendorService {
     ) {
       errors.push(
         `COUNTER 5.1 - Missing a value in required field:\n
-            - ${header} is missing` + locationError
+            - ${header} is missing`
       );
     }
 
@@ -397,8 +414,7 @@ class VendorService {
       version === "5.0"
     ) {
       errors.push(
-        `COUNTER 5.0.3 - Missing a value in required field:\n
-            - ${header} is missing` + locationError
+        `COUNTER 5.0.3 - Missing a value in required field: ${header} is missing`
       );
     }
 
@@ -414,12 +430,10 @@ class VendorService {
 
     if (header === "baseURL") {
       if (!values[index].startsWith("https://"))
-        errors.push(`Base URL must start with 'https://` + locationError);
+        errors.push(`Base URL must start with 'https://`);
 
       if (!values[index].includes("/r51/") && version === "5.1")
-        errors.push(
-          `Base URL must contain '/r51/' in COUNTER 5.1 vendors` + locationError
-        );
+        errors.push(`Base URL must contain '/r51/' in COUNTER 5.1 vendors`);
     }
 
     if (
@@ -431,11 +445,16 @@ class VendorService {
       typeof values[index] === "string"
     )
       errors.push(
-        `Invalid value for ${header}: ${values[index]}.\n
-          - Must be a boolean value. (true/false)\n\n` + locationError
+        `Invalid value for ${header}: ${values[index]}. Must be a boolean value. (true/false)`
       );
 
-    if (errors.length) throw errors as string[];
+    if (errors.length) {
+      tsvErrors.push({
+        id: index + 1,
+        vendor: values[vendorNameIndex],
+        errors,
+      });
+    }
   }
 }
 
