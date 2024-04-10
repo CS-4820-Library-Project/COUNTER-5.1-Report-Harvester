@@ -1386,7 +1386,7 @@ export class PrismaReportService {
           >();
 
           for (let i = 0; i < rawItem.Performance.length; i++) {
-            const period = `${rawItem.Performance[i].Period.Begin_Date.slice(0, 7)} - ${rawItem.Performance[i].Period.End_Date.slice(0, 7)}`;
+            const period = `${rawItem.Performance[i].Period.Begin_Date.slice(0, 7)}`;
 
             for (let j = 0; j < rawItem.Performance[i].Instance.length; j++) {
               const metricType = rawItem.Performance[i].Instance[j].Metric_Type;
@@ -1486,7 +1486,8 @@ export class PrismaReportService {
           >();
 
           for (let i = 0; i < rawItem.Performance.length; i++) {
-            const period = `${rawItem.Performance[i].Period.Begin_Date.slice(0, 7)} - ${rawItem.Performance[i].Period.End_Date.slice(0, 7)}`;
+            const period = `${rawItem.Performance[i].Period.Begin_Date.slice(0, 7)}`;
+
             for (let j = 0; j < rawItem.Performance[i].Instance.length; j++) {
               const metricType = rawItem.Performance[i].Instance[j].Metric_Type;
               const count = rawItem.Performance[i].Instance[j].Count;
@@ -1589,7 +1590,7 @@ export class PrismaReportService {
           >();
 
           for (let i = 0; i < rawItem.Performance.length; i++) {
-            const period = `${rawItem.Performance[i].Period.Begin_Date.slice(0, 7)} - ${rawItem.Performance[i].Period.End_Date.slice(0, 7)}`;
+            const period = `${rawItem.Performance[i].Period.Begin_Date.slice(0, 7)}`;
 
             for (let j = 0; j < rawItem.Performance[i].Instance.length; j++) {
               const metricType = rawItem.Performance[i].Instance[j].Metric_Type;
@@ -1722,7 +1723,7 @@ export class PrismaReportService {
           >();
 
           for (let i = 0; i < rawItem.Performance.length; i++) {
-            const period = `${rawItem.Performance[i].Period.Begin_Date.slice(0, 7)} - ${rawItem.Performance[i].Period.End_Date.slice(0, 7)}`;
+            const period = `${rawItem.Performance[i].Period.Begin_Date.slice(0, 7)}`;
 
             for (let j = 0; j < rawItem.Performance[i].Instance.length; j++) {
               const metricType = rawItem.Performance[i].Instance[j].Metric_Type;
