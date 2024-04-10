@@ -205,7 +205,7 @@ export class FetchService {
     const newReports = [];
 
     // Double-fetch default TRs by adding YOP filter to second fetch
-    for (const reportSettings: Report of fetchReports) {
+    for (const reportSettings of fetchReports) {
       if (
         reportSettings.id === "TR" &&
         !reportSettings.name.includes("Custom")
