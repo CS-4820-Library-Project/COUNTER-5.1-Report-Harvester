@@ -1,7 +1,7 @@
 {
   "name": "counter-harvester",
   "private": true,
-  "version": "0.3.0",
+  "version": "0.6.0",
   "main": "./out/main/main.js",
   "author": {
     "name": "UPEI ",
