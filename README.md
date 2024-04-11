@@ -11,21 +11,29 @@ This project is still under development. Please use the main branch to test the 
 
 ### Download in Windows
 
+Available for X86 architecture. Counter Harvester lacks a Windows certificate. So, it pops up a warning. If this is your case, click on see more details or a similar call to action and continue with the installation.
+
+##
+
 <a target="_blank" href="https://github.com/CS-4820-Library-Project/COUNTER-5.1-Report-Harvester/releases/download/v0.2.0/COUNTER.Report.Haverster.Setup.0.1.0.exe">
   <img alt="Download for Windows" src="https://github.com/CS-4820-Library-Project/COUNTER-5.1-Report-Harvester/assets/124853347/d60506ab-a00d-4930-b629-0197d3e2e935" width="280px"/>
 </a>
 
 ### Download in Mac - M series (ARM Architecture)
 
-Requires to disable gatekeeper for installation. We currently don't have an Apple developer program certificate. You can also create a local installer for your machine. Take a look at Wiki for more details.
+It requires disabling the gatekeeper for installation. We currently don't have an Apple developer program certificate. You can also create a local installer for your machine. Take a look at the Wiki for more details.
 
 ##
 
-<a target="_blank" href="https://github.com/CS-4820-Library-Project/COUNTER-5.1-Report-Harvester/releases/download/v0.2.0/COUNTER.Report.Haverster-0.2.0-arm64.dmg">
+<a target="_blank" href="https://github.com/CS-4820-Library-Project/COUNTER-5.1-Report-Harvester/releases/download/v0.6.0/COUNTER.Report.Haverster-0.6.0-arm64.dmg">
   <img alt="Download for Mac" src="https://github.com/CS-4820-Library-Project/COUNTER-5.1-Report-Harvester/assets/124853347/6a750ede-05f5-4ef1-ab19-3a6619228529" width="280px"/>
 </a>
 
 ### Download in Linux - AppImage
+
+Available for multiple distributions. See all releases to find yours. This installer uses the standard AppImage. This might not work as expected in all distributions.
+
+##
 
 <a target="_blank" href="https://github.com/CS-4820-Library-Project/COUNTER-5.1-Report-Harvester/releases/download/v0.2.0/COUNTER.Report.Haverster-0.2.0.AppImage">
   <img alt="Download for Linux" src="https://github.com/CS-4820-Library-Project/COUNTER-5.1-Report-Harvester/assets/124853347/53eddd68-e076-410f-bf76-a1d57756ba80" width="280px"/>
