@@ -2148,88 +2148,72 @@ export class PrismaReportService {
         case "TR":
           for (const item of report.TR_Item) {
             if (!includesSearchParameter(item)) continue;
-            let row = `${item.title}\t${item.publisher}\t${item.publisherId}\t${item.platform}\t${item.doi}\t${item.yop}\t${item.proprietaryId}\t${item.isbn}\t${item.printIssn}\t${item.onlineIssn}\t${item.uri}\t${item.dataType}\t${item.metricType}\t${item.reportingPeriodTotal}`;
             for (const metric of item.TR_ItemMetric) {
-              row += `\t${metric.period}\t${metric.value}`;
+              tsv += `${item.title}\t${item.publisher}\t${item.publisherId}\t${item.platform}\t${item.doi}\t${item.yop}\t${item.proprietaryId}\t${item.isbn}\t${item.printIssn}\t${item.onlineIssn}\t${item.uri}\t${item.dataType}\t${item.metricType}\t${metric.value}\t${metric.period}\n`;
             }
-            tsv += row + "\n";
           }
           break;
 
         case "TR_B1":
           for (const item of report.TR_B1_Item) {
             if (!includesSearchParameter(item)) continue;
-            let row = `${item.title}\t${item.publisher}\t${item.publisherId}\t${item.platform}\t${item.doi}\t${item.yop}\t${item.proprietaryId}\t${item.isbn}\t${item.printIssn}\t${item.onlineIssn}\t${item.uri}\t${item.dataType}\t${item.metricType}\t${item.reportingPeriodTotal}`;
             for (const metric of item.TR_B1_ItemMetric) {
-              row += `\t${metric.period}\t${metric.value}`;
+              tsv += `${item.title}\t${item.publisher}\t${item.publisherId}\t${item.platform}\t${item.doi}\t${item.yop}\t${item.proprietaryId}\t${item.isbn}\t${item.printIssn}\t${item.onlineIssn}\t${item.uri}\t${item.dataType}\t${item.metricType}\t${metric.value}\t${metric.period}\n`;
             }
-            tsv += row + "\n";
           }
           break;
 
         case "TR_B2":
           for (const item of report.TR_B2_Item) {
             if (!includesSearchParameter(item)) continue;
-            let row = `${item.title}\t${item.publisher}\t${item.publisherId}\t${item.platform}\t${item.doi}\t${item.yop}\t${item.proprietaryId}\t${item.isbn}\t${item.printIssn}\t${item.onlineIssn}\t${item.uri}\t${item.dataType}\t${item.metricType}\t${item.reportingPeriodTotal}`;
             for (const metric of item.TR_B2_ItemMetric) {
-              row += `\t${metric.period}\t${metric.value}`;
+              tsv += `${item.title}\t${item.publisher}\t${item.publisherId}\t${item.platform}\t${item.doi}\t${item.yop}\t${item.proprietaryId}\t${item.isbn}\t${item.printIssn}\t${item.onlineIssn}\t${item.uri}\t${item.dataType}\t${item.metricType}\t${metric.value}\t${metric.period}\n`;
             }
-            tsv += row + "\n";
           }
           break;
 
         case "TR_B3":
           for (const item of report.TR_B3_Item) {
             if (!includesSearchParameter(item)) continue;
-            let row = `${item.title}\t${item.publisher}\t${item.publisherId}\t${item.platform}\t${item.doi}\t${item.yop}\t${item.proprietaryId}\t${item.isbn}\t${item.printIssn}\t${item.onlineIssn}\t${item.uri}\t${item.dataType}\t${item.metricType}\t${item.reportingPeriodTotal}`;
             for (const metric of item.TR_B3_ItemMetric) {
-              row += `\t${metric.period}\t${metric.value}`;
+              tsv += `${item.title}\t${item.publisher}\t${item.publisherId}\t${item.platform}\t${item.doi}\t${item.yop}\t${item.proprietaryId}\t${item.isbn}\t${item.printIssn}\t${item.onlineIssn}\t${item.uri}\t${item.dataType}\t${item.metricType}\t${metric.value}\t${metric.period}\n`;
             }
-            tsv += row + "\n";
           }
           break;
 
         case "TR_J1":
           for (const item of report.TR_J1_Item) {
             if (!includesSearchParameter(item)) continue;
-            let row = `${item.title}\t${item.publisher}\t${item.publisherId}\t${item.platform}\t${item.doi}\t${item.yop}\t${item.proprietaryId}\t${item.isbn}\t${item.printIssn}\t${item.onlineIssn}\t${item.uri}\t${item.dataType}\t${item.metricType}\t${item.reportingPeriodTotal}`;
             for (const metric of item.TR_J1_ItemMetric) {
-              row += `\t${metric.period}\t${metric.value}`;
+              tsv += `${item.title}\t${item.publisher}\t${item.publisherId}\t${item.platform}\t${item.doi}\t${item.yop}\t${item.proprietaryId}\t${item.isbn}\t${item.printIssn}\t${item.onlineIssn}\t${item.uri}\t${item.dataType}\t${item.metricType}\t${metric.value}\t${metric.period}\n`;
             }
-            tsv += row + "\n";
           }
           break;
 
         case "TR_J2":
           for (const item of report.TR_J2_Item) {
             if (!includesSearchParameter(item)) continue;
-            let row = `${item.title}\t${item.publisher}\t${item.publisherId}\t${item.platform}\t${item.doi}\t${item.yop}\t${item.proprietaryId}\t${item.isbn}\t${item.printIssn}\t${item.onlineIssn}\t${item.uri}\t${item.dataType}\t${item.metricType}\t${item.reportingPeriodTotal}`;
             for (const metric of item.TR_J2_ItemMetric) {
-              row += `\t${metric.period}\t${metric.value}`;
+              tsv += `${item.title}\t${item.publisher}\t${item.publisherId}\t${item.platform}\t${item.doi}\t${item.yop}\t${item.proprietaryId}\t${item.isbn}\t${item.printIssn}\t${item.onlineIssn}\t${item.uri}\t${item.dataType}\t${item.metricType}\t${metric.value}\t${metric.period}\n`;
             }
-            tsv += row + "\n";
           }
           break;
 
         case "TR_J3":
           for (const item of report.TR_J3_Item) {
             if (!includesSearchParameter(item)) continue;
-            let row = `${item.title}\t${item.publisher}\t${item.publisherId}\t${item.platform}\t${item.doi}\t${item.yop}\t${item.proprietaryId}\t${item.isbn}\t${item.printIssn}\t${item.onlineIssn}\t${item.uri}\t${item.dataType}\t${item.metricType}\t${item.reportingPeriodTotal}`;
             for (const metric of item.TR_J3_ItemMetric) {
-              row += `\t${metric.period}\t${metric.value}`;
+              tsv += `${item.title}\t${item.publisher}\t${item.publisherId}\t${item.platform}\t${item.doi}\t${item.yop}\t${item.proprietaryId}\t${item.isbn}\t${item.printIssn}\t${item.onlineIssn}\t${item.uri}\t${item.dataType}\t${item.metricType}\t${metric.value}\t${metric.period}\n`;
             }
-            tsv += row + "\n";
           }
           break;
 
         case "TR_J4":
           for (const item of report.TR_J4_Item) {
             if (!includesSearchParameter(item)) continue;
-            let row = `${item.title}\t${item.publisher}\t${item.publisherId}\t${item.platform}\t${item.doi}\t${item.yop}\t${item.proprietaryId}\t${item.isbn}\t${item.printIssn}\t${item.onlineIssn}\t${item.uri}\t${item.dataType}\t${item.metricType}\t${item.reportingPeriodTotal}`;
             for (const metric of item.TR_J4_ItemMetric) {
-              row += `\t${metric.period}\t${metric.value}`;
+              tsv += `${item.title}\t${item.publisher}\t${item.publisherId}\t${item.platform}\t${item.doi}\t${item.yop}\t${item.proprietaryId}\t${item.isbn}\t${item.printIssn}\t${item.onlineIssn}\t${item.uri}\t${item.dataType}\t${item.metricType}\t${metric.value}\t${metric.period}\n`;
             }
-            tsv += row + "\n";
           }
           break;
       }
@@ -2267,7 +2251,7 @@ export class PrismaReportService {
     const reports = await this.searchReport(1, 200, title, issn, isbn);
 
     let tsv = "";
-    tsv += `Title\tPublisher\tPublisher_ID\tPlatform\tDOI\tYOP\tProprietary_ID\tISBN\tPrint_ISSN\tOnline_ISSN\tURI\tData_Type\tMetric_Type\tReporting_Period_Total\n`;
+    tsv += `Title\tPublisher\tPublisher_ID\tPlatform\tDOI\tYOP\tProprietary_ID\tISBN\tPrint_ISSN\tOnline_ISSN\tURI\tData_Type\tMetric_Type\tUsage\tYear-Month\n`;
 
     for (const report of reports) {
       const reportTsv = await this.convertReportToTSV(
