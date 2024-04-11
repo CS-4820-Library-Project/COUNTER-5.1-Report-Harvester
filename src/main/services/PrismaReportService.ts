@@ -2010,7 +2010,7 @@ export class PrismaReportService {
                   },
                 },
                 skip: (page - 1) * limit, // This will skip the items of previous pages
-                take: limit, // This will limit the number of items returned
+                take: 80, // This will limit the number of items returned
               });
             case "TR_J1_Item":
               return prisma.tR_J1_Item.findMany({
