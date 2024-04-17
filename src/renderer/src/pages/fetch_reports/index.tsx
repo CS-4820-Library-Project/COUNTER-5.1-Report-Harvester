@@ -104,6 +104,7 @@ const FetchReportsPage = () => {
   const openFilters = () => setFiltersPopUp(!filtersPopUp);
 
   const handleFetchReports = async (all?: "all") => {
+    setFetchResults(undefined);
     if (selectedVendors.length < 1) {
       const message =
         selectedReports.length < 1 && !all
