@@ -94,10 +94,9 @@ export class FetchService {
     let path = await dirService.chooseDirectory();
     path += "/FetchResults-" + now + ".tsv";
 
-    if (existsSync(path)) {
-      await writeFile(path, tsv.join("\n"));
-      dirService.openPath(path);
-    }
+    await writeFile(path, tsv.join("\n"));
+
+    if (existsSync(path)) dirService.openPath(path);
   }
 
   /**
