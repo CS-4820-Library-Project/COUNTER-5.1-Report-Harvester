@@ -1,6 +1,5 @@
 import fs from "fs";
 import path from "path";
-import { AppSettings } from "../../types/settings";
 
 /**
  * Reads a file from a relative path of the process directory and return its contents as a string.

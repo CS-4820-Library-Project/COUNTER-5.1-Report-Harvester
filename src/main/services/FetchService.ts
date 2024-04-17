@@ -20,6 +20,7 @@ import { BrowserWindow } from "electron";
 import { IReport } from "src/renderer/src/interface/IReport";
 import { DirectorySettingService } from "./DirectorySettingService";
 import { writeFile } from "../utils/files";
+import { existsSync } from "fs";
 
 //
 export type FetchData = {
@@ -92,9 +93,13 @@ export class FetchService {
 
     let path = await dirService.chooseDirectory();
     path += "/FetchResults-" + now + ".tsv";
-    writeFile(path, tsv.join("\n"));
-    dirService.openPath(path);
+
+    if (existsSync(path)) {
+      await writeFile(path, tsv.join("\n"));
+      dirService.openPath(path);
+    }
   }
+
   /**
    * Summarizes the results of fetching reports from vendors.
    * @param fetchResults - The results of fetching reports from vendors.
