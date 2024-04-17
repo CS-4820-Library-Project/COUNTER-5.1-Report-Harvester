@@ -134,8 +134,6 @@ const FetchReportsPage = () => {
       toDate,
     });
 
-    console.log(allResults);
-
     setFetchResults(allResults);
     handleResetReportOptions();
   };

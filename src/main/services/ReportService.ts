@@ -167,7 +167,6 @@ export class ReportService {
   static get51IRFromJSON(data: any): IReport | null {
     const reportItems: ITRIRReportItem[] = [];
 
-    console.log("\n\n", JSON.stringify(data.Report_Items[0]));
     data.Report_Items.forEach((item: any) => {
       item.Items.forEach((subItem: any) => {
         const attrPerf = subItem.Attribute_Performance[0];
@@ -373,7 +372,6 @@ export class ReportService {
 
             if (header.Report_ID.includes("IR")) {
               let irItem = item as ITRIRReportItem;
-              console.log("\n\n", JSON.stringify(irItem));
               rowData += `${irItem.Item}\t${irItem.Publisher}\t`;
 
               let publisherID: IPublisherId[] | string =

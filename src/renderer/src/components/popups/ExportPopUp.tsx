@@ -26,7 +26,6 @@ const ExportPopUp: React.FC<ExportPopUpProps> = ({ open, onClose }) => {
   const handleExport = async () => {
     const path = await window.settings.saveDirectory("export");
 
-    console.log(path);
     if (path !== "") {
       await VendorServiceInstance.exportVendors(
         version === "5.0" ? "data5_0" : "data5_1",

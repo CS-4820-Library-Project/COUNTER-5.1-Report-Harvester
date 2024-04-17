@@ -45,7 +45,6 @@ import { format } from "date-fns";
 import fs from "fs";
 import path from "path";
 import { execSync } from "child_process";
-import { reports_5 } from "src/constants/Reports_5";
 import { writeFile } from "../utils/files";
 
 const prisma = new PrismaClient();
@@ -1878,7 +1877,7 @@ export class PrismaReportService {
         }
       }
     } catch (error) {
-      console.log("There was an error while saving reports:", error);
+      // console.log("There was an error while saving reports:", error);
       throw new Error("Failed to save report.");
     }
   }

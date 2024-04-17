@@ -109,7 +109,7 @@ const useCounter = (initialValue: number) => {
   }, [value]);
 
   const handleDecrease = useCallback(() => {
-    syncValue((Math.max(value - 1, 0)).toString());
+    syncValue(Math.max(value - 1, 0).toString());
   }, [value]);
 
   const handleInputChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
@@ -125,7 +125,6 @@ interface CounterProps {
   onIncrease: () => void;
   onInputChange: (e: ChangeEvent<HTMLInputElement>) => void;
 }
-
 
 // Counter component illustrates how to handle state and events in a function component with props.
 // The component demonstrates a common pattern for inputs that need to validate or process their data before updating state.
@@ -191,9 +190,11 @@ const ChangeRequestSettings: React.FC = () => {
 
     if (isSaved) {
       console.log("Settings saved successfully");
-    } else {
-      console.error("Error saving the settings");
+      return true;
     }
+
+    console.error("Error saving the settings");
+    return false;
   };
 
   return (
@@ -220,14 +221,16 @@ const ChangeRequestSettings: React.FC = () => {
       </Description>
       <FieldLabel>Request Interval (seconds)</FieldLabel>
       <Counter
-  displayValue={reportRequestInterval.toString()} // Update this line
-  onDecrease={() => setReportRequestInterval(Math.max(reportRequestInterval - 1, 0))}
-  onIncrease={() => setReportRequestInterval(reportRequestInterval + 1)}
-  onInputChange={(e) => {
-    const newValue = Math.max(parseInt(e.target.value, 10) || 0, 0);
-    setReportRequestInterval(newValue);
-  }}
-/>
+        displayValue={reportRequestInterval.toString()} // Update this line
+        onDecrease={() =>
+          setReportRequestInterval(Math.max(reportRequestInterval - 1, 0))
+        }
+        onIncrease={() => setReportRequestInterval(reportRequestInterval + 1)}
+        onInputChange={(e) => {
+          const newValue = Math.max(parseInt(e.target.value, 10) || 0, 0);
+          setReportRequestInterval(newValue);
+        }}
+      />
       <FieldLabel>Request Timeout (seconds)</FieldLabel>
       <Counter
         displayValue={requestTimeout.toString()}
