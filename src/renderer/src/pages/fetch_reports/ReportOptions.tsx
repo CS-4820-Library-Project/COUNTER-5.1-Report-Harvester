@@ -321,7 +321,7 @@ const ReportOptions = ({
 
   // Clear not available options
   useEffect(() => {
-    console.log("Available Reports", availableReports);
+    // console.log("Available Reports", availableReports);
     if (!availableReports.includes(activeReport?.id || "")) {
       setCustomReport(undefined);
       setActiveReport(undefined);
@@ -333,9 +333,9 @@ const ReportOptions = ({
 
   /* Debugging Logs - Keep for peace of mind :) */
 
-  useEffect(() => {
-    console.log("Active Report", activeReport);
-  }, [activeReport]);
+  // useEffect(() => {
+  //   console.log("Active Report", activeReport);
+  // }, [activeReport]);
 
   // useEffect(() => {
   //   console.log("Custom Report", customReport);
