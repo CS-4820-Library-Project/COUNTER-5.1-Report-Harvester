@@ -9,6 +9,10 @@ COUNTER 5.1 Report Harvester is an open-source desktop application that helps li
 This project is still under development. Please use the main branch to test the app or download the installer for your platform. See all releases and installers down below
 <img width="1624" alt="Screenshot 2024-04-05 at 5 37 13 PM" src="https://github.com/CS-4820-Library-Project/COUNTER-5.1-Report-Harvester/assets/124853347/1517cf2e-d915-42fa-8d75-37750d3a4579">
 
+### Important - First Run instructions
+
+When running this application for the first time after installation, before adding any vendor data or fetching reports, immediately go to Settings and select the directories you want the files saved in.
+
 ### Download in Windows
 
 Available for X86 architecture. Counter Harvester lacks a Windows certificate. So, it pops up a warning. If this is your case, click on see more details or a similar call to action and continue with the installation.
